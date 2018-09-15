@@ -45,7 +45,8 @@ class Privileges
     public function __construct(Template $template)
     {
         $this->template = $template;
-        $this->relationCleanup = new RelationCleanup();
+        $relation = new Relation($GLOBALS['dbi']);
+        $this->relationCleanup = new RelationCleanup($GLOBALS['dbi'], $relation);
     }
 
     /**
@@ -4200,16 +4201,16 @@ class Privileges
     /**
      * update Data for information: Adds a user
      *
-     * @param string|null $dbname      db name
-     * @param string      $username    user name
-     * @param string      $hostname    host name
-     * @param string|null $password    password
-     * @param bool        $is_menuwork is_menuwork set?
+     * @param string|array|null $dbname      db name
+     * @param string            $username    user name
+     * @param string            $hostname    host name
+     * @param string|null       $password    password
+     * @param bool              $is_menuwork is_menuwork set?
      *
      * @return array
      */
     public function addUser(
-        ?string $dbname,
+        $dbname,
         $username,
         $hostname,
         ?string $password,
