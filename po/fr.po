@@ -3,9 +3,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phpMyAdmin-docs 4.0.0-dev\n"
 "Report-Msgid-Bugs-To: translators@phpmyadmin.net\n"
-"POT-Creation-Date: 2018-09-17 18:18-0300\n"
-"PO-Revision-Date: 2018-09-19 17:25+0000\n"
-"Last-Translator: Olivier Humbert <trebmuh@tuxfamily.org>\n"
+"POT-Creation-Date: 2018-09-27 13:13-0300\n"
+"PO-Revision-Date: 2018-09-28 22:25+0000\n"
+"Last-Translator: Marc Delisle <marc@infomarc.info>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/phpmyadmin/master/"
 "fr/>\n"
 "Language: fr\n"
@@ -491,8 +491,8 @@ msgid ""
 "You were logged out from one server, to logout completely from phpMyAdmin, "
 "you need to logout from all servers."
 msgstr ""
-"Vous avez été déconnecté d'un serveur ; pour se déconnecter complètement de "
-"phpMyAdmin, il faut se déconnecter de tous les serveurs."
+"Vous avez été déconnecté d'un seul serveur ; pour se déconnecter "
+"complètement de phpMyAdmin, il faut se déconnecter de tous les serveurs."
 
 #: index.php:193 libraries/classes/Footer.php:83
 #: libraries/classes/Plugins/Auth/AuthenticationCookie.php:143
@@ -818,9 +818,8 @@ msgid ""
 "You are trying to reduce the number of rows, but have already entered data "
 "in those rows which will be lost. Do you wish to continue?"
 msgstr ""
-"Vous êtes en train d'essayer de réduire le nombre de rangées, mais vous avez "
-"déjà entré des données dans ces rangées qui seront perdues. Souhaitez-vous "
-"continuer ?"
+"Le nombre de rangées va être réduit alors que des données ont déjà été "
+"saisies dans ces rangées qui seront perdues. Faut-il continuer ?"
 
 #: js/messages.php:75
 msgid "Do you really want to revoke the selected user(s) ?"
@@ -1217,7 +1216,7 @@ msgstr "Merci ajouter au moins une variable aux séries !"
 #: libraries/classes/Plugins/Export/ExportSql.php:2200
 #: libraries/classes/Plugins/Schema/SchemaPdf.php:105
 #: libraries/classes/Server/Status/Monitor.php:245
-#: libraries/classes/Server/Status/Processes.php:287
+#: libraries/classes/Server/Status/Processes.php:289
 #: libraries/config.values.php:80 templates/table/search/selection_form.twig:35
 #: templates/display/export/options_output_compression.twig:7
 #: templates/server/privileges/privileges_summary.twig:30
@@ -1662,7 +1661,7 @@ msgstr "Exécuter"
 msgid "Cancel"
 msgstr "Annuler"
 
-#: js/messages.php:356 libraries/classes/Header.php:467
+#: js/messages.php:356 libraries/classes/Header.php:486
 msgid "Page-related settings"
 msgstr "Paramètres relatifs à la page"
 
@@ -5844,7 +5843,7 @@ msgstr "Expliquer SQL"
 
 #: libraries/classes/Config/Descriptions.php:820
 #: libraries/classes/Export.php:534
-#: libraries/classes/Server/Status/Processes.php:235
+#: libraries/classes/Server/Status/Processes.php:237
 #: libraries/classes/Server/Status/Variables.php:52
 #: libraries/classes/Util.php:1165 templates/console/display.twig:99
 msgid "Refresh"
@@ -6596,12 +6595,12 @@ msgid "Previous"
 msgstr "Précédent"
 
 #: libraries/classes/Controllers/Server/ServerBinlogController.php:214
-#: libraries/classes/Server/Status/Processes.php:183
+#: libraries/classes/Server/Status/Processes.php:184
 msgid "Truncate Shown Queries"
 msgstr "Tronquer les requêtes affichées"
 
 #: libraries/classes/Controllers/Server/ServerBinlogController.php:218
-#: libraries/classes/Server/Status/Processes.php:185
+#: libraries/classes/Server/Status/Processes.php:187
 msgid "Show Full Queries"
 msgstr "Afficher les requêtes complètes"
 
@@ -6840,11 +6839,11 @@ msgstr ""
 
 #: libraries/classes/Core.php:1241
 msgid ""
-"You have disabled ini_get and/or ini_set in php.ini. This option is "
-"incompatible with phpMyAdmin!"
+"The ini_get and/or ini_set functions are disabled in php.ini. phpMyAdmin "
+"requires these functions!"
 msgstr ""
-"Vous avez désactivé ini_get et/ou ini_set dans php.ini. Ces options sont "
-"incompatibles avec phpMyAdmin !"
+"Les fonctions ini_get et/ou ini_set sont désactivées dans php.ini. "
+"phpMyAdmin requiert ces fonctions !"
 
 #: libraries/classes/Core.php:1296
 msgid "GLOBALS overwrite attempt"
@@ -7052,7 +7051,7 @@ msgstr "Le serveur ne répond pas."
 
 #: libraries/classes/DatabaseInterface.php:2227
 msgid "Logout and try as another user."
-msgstr "Déconnectez-vous et essayer en tant qu'un autre utilisateur."
+msgstr "Se déconnecter et réessayer en tant qu'autre utilisateur."
 
 #: libraries/classes/DatabaseInterface.php:2233
 msgid "Please check privileges of directory containing database."
@@ -7267,7 +7266,7 @@ msgstr "La ligne a été supprimée."
 
 #: libraries/classes/Display/Results.php:3560
 #: libraries/classes/Display/Results.php:4916
-#: libraries/classes/Server/Status/Processes.php:281
+#: libraries/classes/Server/Status/Processes.php:283
 msgid "Kill"
 msgstr "Tuer"
 
@@ -7789,15 +7788,15 @@ msgstr "Information Git manquante !"
 msgid "Open new phpMyAdmin window"
 msgstr "Ouvrir une nouvelle fenêtre phpMyAdmin"
 
-#: libraries/classes/Header.php:396
+#: libraries/classes/Header.php:403
 msgid "Print view"
 msgstr "Version imprimable"
 
-#: libraries/classes/Header.php:474
+#: libraries/classes/Header.php:493
 msgid "Click on the bar to scroll to top of page"
 msgstr "Cliquer sur la barre pour faire défiler en haut de page"
 
-#: libraries/classes/Header.php:785 templates/login/header.twig:11
+#: libraries/classes/Header.php:707 templates/login/header.twig:11
 msgid "Javascript must be enabled past this point!"
 msgstr "JavaScript doit être activé !"
 
@@ -12254,12 +12253,12 @@ msgstr "Commande"
 msgid "Progress"
 msgstr "Progression"
 
-#: libraries/classes/Server/Status/Processes.php:232
+#: libraries/classes/Server/Status/Processes.php:234
 #: libraries/classes/Server/Status/Variables.php:49 templates/filter.twig:2
 msgid "Filters"
 msgstr "Filtres"
 
-#: libraries/classes/Server/Status/Processes.php:240
+#: libraries/classes/Server/Status/Processes.php:242
 msgid "Show only active"
 msgstr "N'afficher que les valeurs actives"
 
@@ -13909,8 +13908,8 @@ msgid ""
 "Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to "
 "access phpMyAdmin."
 msgstr ""
-"Impossible de créer le cookie de session. Peut-être que vous utilisez HTTP "
-"au lieu de HTTPS pour accéder à phpMyAdmin."
+"Impossible de créer le cookie de session. Peut-être HTTP est-il utilisé au "
+"lieu de HTTPS pour accéder à phpMyAdmin."
 
 #: libraries/common.inc.php:336
 msgid "Invalid authentication method set in configuration:"
@@ -17839,6 +17838,13 @@ msgstr ""
 #: libraries/advisory_rules.txt:446
 msgid "concurrent_insert is set to 0"
 msgstr "Le paramètre concurrent_insert a une valeur de 0"
+
+#~ msgid ""
+#~ "You have disabled ini_get and/or ini_set in php.ini. This option is "
+#~ "incompatible with phpMyAdmin!"
+#~ msgstr ""
+#~ "ini_get et/ou ini_set sont désactivés dans php.ini. Ces options sont "
+#~ "incompatibles avec phpMyAdmin !"
 
 #~ msgid "No auto-saved query"
 #~ msgstr "Aucune requête sauvegardée automatiquement"
