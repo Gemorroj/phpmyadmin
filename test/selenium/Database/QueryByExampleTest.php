@@ -8,7 +8,9 @@
  */
 declare(strict_types=1);
 
-namespace PhpMyAdmin\Tests\Selenium;
+namespace PhpMyAdmin\Tests\Selenium\Database;
+
+use PhpMyAdmin\Tests\Selenium\TestBase;
 
 /**
  * QueryByExampleTest class
@@ -19,7 +21,6 @@ namespace PhpMyAdmin\Tests\Selenium;
  */
 class QueryByExampleTest extends TestBase
 {
-
     /**
      * Setup the browser environment to run the selenium test case
      *
@@ -27,7 +28,6 @@ class QueryByExampleTest extends TestBase
      */
     protected function setUp()
     {
-        $this->markTestSkipped('Broken, see https://github.com/phpmyadmin/phpmyadmin/issues/13621');
         parent::setUp();
 
         $this->dbQuery(
@@ -57,13 +57,16 @@ class QueryByExampleTest extends TestBase
         $this->waitForElement('partialLinkText', 'Query')->click();
         $this->waitAjax();
 
+        $this->waitForElement('partialLinkText', 'Query by example')->click();
+        $this->waitAjax();
+
         /* Select Columns to be used in the query */
-        $this->selectByLabel(
+        $this->selectByValue(
             $this->waitForElement('name', 'criteriaColumn[0]'),
             '`test_table`.`id`'
         );
 
-        $this->selectByLabel(
+        $this->selectByValue(
             $this->waitForElement('name', 'criteriaColumn[1]'),
             '`test_table`.`val`'
         );
@@ -84,12 +87,12 @@ class QueryByExampleTest extends TestBase
         );
 
         /* Select sort order amongst columns */
-        $this->selectByLabel(
+        $this->selectByValue(
             $this->waitForElement('name', 'criteriaSortOrder[0]'),
             '2'
         );
 
-        $this->selectByLabel(
+        $this->selectByValue(
             $this->waitForElement('name', 'criteriaSortOrder[1]'),
             '1'
         );

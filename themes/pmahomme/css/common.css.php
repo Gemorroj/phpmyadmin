@@ -990,6 +990,10 @@ form.login select {
     color: gray;
 }
 
+.max_height_400 {
+    max-height: 400px;
+}
+
 .pma_sliding_message{
     display: inline-block;
 }
@@ -2151,6 +2155,7 @@ select.invalid_value,
 
     <?php echo $theme->getCssGradient('ffffff', 'cccccc'); ?>
     cursor: pointer;
+    float:right;
 }
 
 .format_specific_options h3 {

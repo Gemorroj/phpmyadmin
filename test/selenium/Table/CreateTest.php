@@ -8,16 +8,18 @@
  */
 declare(strict_types=1);
 
-namespace PhpMyAdmin\Tests\Selenium;
+namespace PhpMyAdmin\Tests\Selenium\Table;
+
+use PhpMyAdmin\Tests\Selenium\TestBase;
 
 /**
- * TableCreateTest class
+ * CreateTest class
  *
  * @package    PhpMyAdmin-test
  * @subpackage Selenium
  * @group      selenium
  */
-class TableCreateTest extends TestBase
+class CreateTest extends TestBase
 {
     /**
      * @return void
@@ -60,11 +62,6 @@ class TableCreateTest extends TestBase
 
         $this->waitForElement('id', "field_1_7")->click(); // null
         $this->waitForElement('id', "field_0_9")->click(); // auto increment
-
-        // Do this separately since this opens a dialog
-        // Since auto-increment auto sets a PRIMARY key since no key present
-        $this->waitAjax();
-        $this->waitForElement('xpath', '//button[contains(text(), \'Go\')]')->click();
 
         // column details
         $column_text_details = [
