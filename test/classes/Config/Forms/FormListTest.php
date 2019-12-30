@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for FormList classes in config folder
  *
@@ -11,9 +10,6 @@ namespace PhpMyAdmin\Tests\Config\Forms;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\ConfigFile;
-use PhpMyAdmin\Config\Forms\User\UserFormList;
-use PhpMyAdmin\Config\Forms\Page\PageFormList;
-use PhpMyAdmin\Config\Forms\Setup\SetupFormList;
 use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
@@ -26,7 +22,7 @@ class FormListTest extends PmaTestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['server'] = 1;
@@ -42,7 +38,7 @@ class FormListTest extends PmaTestCase
      *
      * @dataProvider formObjects
      */
-    public function testForms($class, $prefix)
+    public function testForms($class, $prefix): void
     {
         $cf = new ConfigFile($GLOBALS['PMA_Config']->base_settings);
 

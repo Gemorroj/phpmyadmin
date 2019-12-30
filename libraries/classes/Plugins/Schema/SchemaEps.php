@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * PDF schema export code
  *
@@ -10,13 +9,13 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema;
 
-use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
-use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
-use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
 use PhpMyAdmin\Plugins\Schema\Eps\EpsRelationSchema;
 use PhpMyAdmin\Plugins\SchemaPlugin;
-use PhpMyAdmin\Properties\Plugins\SchemaPluginProperties;
+use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
+use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
+use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\SelectPropertyItem;
+use PhpMyAdmin\Properties\Plugins\SchemaPluginProperties;
 
 /**
  * Handles the schema export for the EPS format
@@ -50,11 +49,11 @@ class SchemaEps extends SchemaPlugin
         // $schemaPluginProperties
         // this will be shown as "Format specific options"
         $exportSpecificOptions = new OptionsPropertyRootGroup(
-            "Format Specific Options"
+            'Format Specific Options'
         );
 
         // specific options main group
-        $specificOptions = new OptionsPropertyMainGroup("general_opts");
+        $specificOptions = new OptionsPropertyMainGroup('general_opts');
         // add options common to all plugins
         $this->addCommonOptions($specificOptions);
 
@@ -66,7 +65,7 @@ class SchemaEps extends SchemaPlugin
         $specificOptions->addProperty($leaf);
 
         $leaf = new SelectPropertyItem(
-            "orientation",
+            'orientation',
             __('Orientation')
         );
         $leaf->setValues(
@@ -96,5 +95,6 @@ class SchemaEps extends SchemaPlugin
     {
         $export = new EpsRelationSchema($db);
         $export->showOutput();
+        return true;
     }
 }

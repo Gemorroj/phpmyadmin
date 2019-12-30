@@ -711,7 +711,7 @@ Server connection settings
 
     More information on regular expressions can be found in the `PCRE
     pattern syntax
-    <https://secure.php.net/manual/en/reference.pcre.pattern.syntax.php>`_ portion
+    <https://www.php.net/manual/en/reference.pcre.pattern.syntax.php>`_ portion
     of the PHP reference manual.
 
 .. config:option:: $cfg['Servers'][$i]['verbose']
@@ -1044,7 +1044,7 @@ Server connection settings
 
     Since release 4.1.0 you can create different user groups with menu items
     attached to them. Users can be assigned to these groups and the logged in
-    user would only see menu items configured to the usergroup he is assigned to.
+    user would only see menu items configured to the usergroup they are assigned to.
     To do this it needs two tables "usergroups" (storing allowed menu items for each
     user group) and "users" (storing users and their assignments to user groups).
 
@@ -1383,6 +1383,26 @@ Server connection settings
 
     * ``xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xx[yyy-zzz]`` (partial :term:`IPv6` address range)
 
+    Examples:
+
+    .. code-block:: none
+
+        $cfg['Servers'][$i]['AllowDeny']['order'] = 'allow,deny';
+        $cfg['Servers'][$i]['AllowDeny']['rules'] = array('allow bob from all');
+        // Allow only 'bob' to connect from any host
+
+        $cfg['Servers'][$i]['AllowDeny']['order'] = 'allow,deny';
+        $cfg['Servers'][$i]['AllowDeny']['rules'] = array('allow mary from 192.168.100.[50-100]');
+        // Allow only 'mary' to connect from host 192.168.100.50 through 192.168.100.100
+
+        $cfg['Servers'][$i]['AllowDeny']['order'] = 'allow,deny';
+        $cfg['Servers'][$i]['AllowDeny']['rules'] = array('allow % from 192.168.[5-6].10');
+        // Allow any user to connect from host 192.168.5.10 or 192.168.6.10
+
+        $cfg['Servers'][$i]['AllowDeny']['order'] = 'allow,deny';
+        $cfg['Servers'][$i]['AllowDeny']['rules'] = array('allow root from 192.168.5.50','allow % from 192.168.6.10');
+        // Allow any user to connect from 192.168.6.10, and additionally allow root to connect from 192.168.5.50
+
 .. config:option:: $cfg['Servers'][$i]['DisableIS']
 
     :type: boolean
@@ -1438,7 +1458,7 @@ Server connection settings
     An associative array of session cookie parameters of other authentication system.
     It is not needed if the other system doesn't use session_set_cookie_params().
     Keys should include 'lifetime', 'path', 'domain', 'secure' or 'httponly'.
-    Valid values are mentioned in `session_get_cookie_params <https://secure.php.net/manual/en/
+    Valid values are mentioned in `session_get_cookie_params <https://www.php.net/manual/en/
     function.session-get-cookie-params.php>`_, they should be set to same values as the
     other application uses. Takes effect only if
     :config:option:`$cfg['Servers'][$i]['SignonScript']` is not configured.
@@ -1568,14 +1588,14 @@ Generic settings
     :type: boolean
     :default: false
 
-    Whether `persistent connections <https://secure.php.net/manual/en/features
+    Whether `persistent connections <https://www.php.net/manual/en/features
     .persistent-connections.php>`_ should be used or not. Works with
     following extensions:
 
-    * mysql (`mysql\_pconnect <https://secure.php.net/manual/en/function.mysql-
+    * mysql (`mysql\_pconnect <https://www.php.net/manual/en/function.mysql-
       pconnect.php>`_),
     * mysqli (requires PHP 5.3.0 or newer, `more information
-      <https://secure.php.net/manual/en/mysqli.persistconns.php>`_).
+      <https://www.php.net/manual/en/mysqli.persistconns.php>`_).
 
 .. config:option:: $cfg['ForceSSL']
 
@@ -1612,7 +1632,7 @@ Generic settings
     :default: ``''``
 
     Path for storing session data (`session\_save\_path PHP parameter
-    <https://secure.php.net/session_save_path>`_).
+    <https://www.php.net/session_save_path>`_).
 
     .. warning::
 
@@ -1778,7 +1798,7 @@ Cookie authentication options
 
     Define how long a login cookie is valid. Please note that php
     configuration option `session.gc\_maxlifetime
-    <https://secure.php.net/manual/en/session.configuration.php#ini.session.gc-
+    <https://www.php.net/manual/en/session.configuration.php#ini.session.gc-
     maxlifetime>`_ might limit session validity and if the session is lost,
     the login cookie is also invalidated. So it is a good idea to set
     ``session.gc_maxlifetime`` at least to the same value of
@@ -1858,7 +1878,7 @@ Cookie authentication options
     :default: ``''``
 
     The public key for the reCaptcha service that can be obtained from
-    https://www.google.com/recaptcha/intro/.
+    https://www.google.com/recaptcha/intro/v3.html.
 
     reCaptcha will be then used in :ref:`cookie`.
 
@@ -1868,7 +1888,7 @@ Cookie authentication options
     :default: ``''``
 
     The private key for the reCaptcha service that can be obtain from
-    https://www.google.com/recaptcha/intro/.
+    https://www.google.com/recaptcha/intro/v3.html.
 
     reCaptcha will be then used in :ref:`cookie`.
 
@@ -1986,7 +2006,8 @@ Navigation panel setup
 
     Enter :term:`URL` where logo in the navigation panel will point to.
     For use especially with self made theme which changes this.
-    For external URLs, you should include URL scheme as well.
+    For relative/internal URLs, you need to have leading `` ./ `` or trailing characters `` ? `` such as ``'./sql.php?'``.
+    For external URLs, you should include URL protocol schemes (``http`` or ``https``) with absolute URLs.
 
 .. config:option:: $cfg['NavigationLogoLinkWindow']
 
@@ -2646,8 +2667,8 @@ Languages
     :default: ``'//TRANSLIT'``
 
     Specify some parameters for iconv used in charset conversion. See
-    `iconv documentation <https://www.gnu.org/software/libiconv/documentati
-    on/libiconv/iconv_open.3.html>`_ for details. By default
+    `iconv documentation <https://www.gnu.org/savannah-checkouts/gnu/libiconv/documentati
+    on/libiconv-1.15/iconv_open.3.html>`_ for details. By default
     ``//TRANSLIT`` is used, so that invalid characters will be
     transliterated.
 
@@ -2688,7 +2709,7 @@ Web server settings
     want to use rules for IP addresses behind proxy.
 
     The following example specifies that phpMyAdmin should trust a
-    HTTP\_X\_FORWARDED\_FOR (``X -Forwarded-For``) header coming from the proxy
+    HTTP\_X\_FORWARDED\_FOR (``X-Forwarded-For``) header coming from the proxy
     1.2.3.4:
 
     .. code-block:: php
@@ -2852,6 +2873,16 @@ Design customization
     comments are displayed using a CSS-formatted dashed-line below the
     name of the column. The comment is shown as a tool-tip for that
     column.
+
+.. config:option:: $cfg['FirstDayOfCalendar']
+
+    :type: integer
+    :default: 0
+
+    This will define the first day of week in the calendar. The number
+    can be set from 0 to 6, which represents the seven days of the week,
+    Sunday to Saturday respectively. This value can also be configured by the user
+    in server settings -> features -> general -> First Day calendar field.
 
 Text fields
 -----------
@@ -3027,9 +3058,9 @@ the files.
     :type: string
     :default: ``''``
 
-    The name of the directory where dumps can be saved.
+    The name of the webserver directory where exported files can be saved.
 
-    If you want different directory for each user, %u will be replaced with
+    If you want a different directory for each user, %u will be replaced with the
     username.
 
     Please note that the directory must exist and has to be writable for
@@ -3484,7 +3515,6 @@ This example uses :file:`examples/signon.php` to demonstrate usage of :ref:`auth
     $cfg['Servers'][$i]['auth_type']     = 'signon';
     $cfg['Servers'][$i]['SignonSession'] = 'SignonSession';
     $cfg['Servers'][$i]['SignonURL']     = 'examples/signon.php';
-    ?>`
 
 Example for IP address limited autologin
 ++++++++++++++++++++++++++++++++++++++++
@@ -3540,7 +3570,6 @@ following example shows two of them:
     $cfg['ServerDefault'] = 0; // to choose the server on startup
 
     // further general options ...
-    ?>
 
 .. _example-google-ssl:
 

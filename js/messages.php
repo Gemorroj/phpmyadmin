@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Exporting of translated messages from PHP to Javascript
  *
@@ -7,7 +6,14 @@
  */
 declare(strict_types=1);
 
-if (!defined('TESTSUITE')) {
+use PhpMyAdmin\OutputBuffering;
+use PhpMyAdmin\Sanitize;
+
+if (! defined('ROOT_PATH')) {
+    define('ROOT_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+}
+
+if (! defined('TESTSUITE')) {
     chdir('..');
 
     // Send correct type:
@@ -21,20 +27,16 @@ if (!defined('TESTSUITE')) {
     // non-js-compatible stuff like DOCTYPE
     define('PMA_MINIMUM_COMMON', true);
     define('PMA_PATH_TO_BASEDIR', '../');
-    require_once './libraries/common.inc.php';
-    // Close session early as we won't write anything there
-    session_write_close();
+    define('PMA_NO_SESSION', true);
+    require_once ROOT_PATH . 'libraries/common.inc.php';
 }
 
-// But this one is needed for Sanitize::escapeJsString()
-use PhpMyAdmin\Sanitize;
-
-$buffer = PhpMyAdmin\OutputBuffering::getInstance();
+$buffer = OutputBuffering::getInstance();
 $buffer->start();
-if (!defined('TESTSUITE')) {
+if (! defined('TESTSUITE')) {
     register_shutdown_function(
         function () {
-            echo PhpMyAdmin\OutputBuffering::getInstance()->getContents();
+            echo OutputBuffering::getInstance()->getContents();
         }
     );
 }
@@ -94,7 +96,7 @@ $js_messages['strChangeColumnCollation'] = __(
     . 'collation and refer to the tips at '
 )
     . '<a href="%s" target="garbled_data_wiki">' . __('Garbled Data') . '</a>.'
-    . '<br/><br/>'
+    . '<br><br>'
     . __('Are you sure you wish to change the collation and convert the data?');
 $js_messages['strChangeAllColumnCollationsWarning'] = __(
     'Through this operation, MySQL attempts to map the data values between '
@@ -104,7 +106,7 @@ $js_messages['strChangeAllColumnCollationsWarning'] = __(
     . 'column(s) editing feature (the "Change" Link) on the table structure page. '
     . '</b>'
 )
-. '<br/><br/>'
+. '<br><br>'
 . __(
     'Are you sure you wish to change all the column collations and convert the data?'
 );
@@ -139,7 +141,10 @@ $js_messages['strSQLQuery'] = __('SQL query:');
 /* l10n: Default label for the y-Axis of Charts */
 $js_messages['strYValues'] = __('Y values');
 
-/* For server_privileges.js */
+/* Database multi-table query */
+$js_messages['strEmptyQuery'] = __('Please enter the SQL query first.');
+
+/* For server/privileges.js */
 $js_messages['strHostEmpty'] = __('The host name is empty!');
 $js_messages['strUserEmpty'] = __('The user name is empty!');
 $js_messages['strPasswordEmpty'] = __('The password is empty!');
@@ -379,7 +384,7 @@ $js_messages['strAddingPrimaryKey'] = __('Adding primary key');
 $js_messages['strOK'] = __('OK');
 $js_messages['strDismiss'] = __('Click to dismiss this notification');
 
-/* For db_operations.js */
+/* For database/operations.js */
 $js_messages['strRenamingDatabases'] = __('Renaming databases');
 $js_messages['strCopyingDatabase'] = __('Copying database');
 $js_messages['strChangingCharset'] = __('Changing charset');
@@ -391,7 +396,7 @@ $js_messages['strForeignKeyCheck'] = __('Enable foreign key checks');
 /* For db_stucture.js */
 $js_messages['strErrorRealRowCount'] = __('Failed to get real row count.');
 
-/* For db_search.js */
+/* For database/search.js */
 $js_messages['strSearching'] = __('Searching');
 $js_messages['strHideSearchResults'] = __('Hide search results');
 $js_messages['strShowSearchResults'] = __('Show search results');
@@ -440,7 +445,7 @@ $js_messages['strEmptyCentralList'] = __(
 $js_messages['seeMore'] = __('See more');
 $js_messages['confirmTitle'] = __('Are you sure?');
 $js_messages['makeConsistentMessage'] = __(
-    'This action may change some of the columns definition.<br/>Are you sure you '
+    'This action may change some of the columns definition.<br>Are you sure you '
     . 'want to continue?'
 );
 $js_messages['strContinue'] = __('Continue');
@@ -451,7 +456,7 @@ $js_messages['strPrimaryKeyAdded'] = __('Primary key added.');
 $js_messages['strToNextStep'] = __('Taking you to next step…');
 $js_messages['strFinishMsg']
     = __("The first step of normalization is complete for table '%s'.");
-$js_messages['strEndStep'] = __("End of step");
+$js_messages['strEndStep'] = __('End of step');
 $js_messages['str2NFNormalization'] = __('Second step of normalization (2NF)');
 $js_messages['strDone'] = __('Done');
 $js_messages['strConfirmPd'] = __('Confirm partial dependencies');
@@ -481,10 +486,10 @@ $js_messages['strConfirmTd'] = __('Confirm transitive dependencies');
 $js_messages['strSelectedTd'] = __('Selected dependencies are as follows:');
 $js_messages['strNoTdSelected'] = __('No dependencies selected!');
 
-/* For server_variables.js */
+/* For server/variables.js */
 $js_messages['strSave'] = __('Save');
 
-/* For tbl_select.js */
+/* For table/select.js */
 $js_messages['strHideSearchCriteria'] = __('Hide search criteria');
 $js_messages['strShowSearchCriteria'] = __('Show search criteria');
 $js_messages['strRangeSearch'] = __('Range search');
@@ -493,11 +498,11 @@ $js_messages['strColumnMin'] = __('Column minimum:');
 $js_messages['strMinValue'] = __('Minimum value:');
 $js_messages['strMaxValue'] = __('Maximum value:');
 
-/* For tbl_find_replace.js */
+/* For table/find_replace.js */
 $js_messages['strHideFindNReplaceCriteria'] = __('Hide find and replace criteria');
 $js_messages['strShowFindNReplaceCriteria'] = __('Show find and replace criteria');
 
-/* For tbl_zoom_plot_jqplot.js */
+/* For table/zoom_plot_jqplot.js */
 $js_messages['strDisplayHelp'] = '<ul><li>'
     . __('Each point represents a data row.')
     . '</li><li>'
@@ -518,7 +523,7 @@ $js_messages['strSameInputs'] = '<strong>'
     . '</strong>';
 $js_messages['strDataPointContent'] = __('Data point content');
 
-/* For tbl_change.js */
+/* For table/change.js */
 $js_messages['strIgnore'] = __('Ignore');
 $js_messages['strCopy'] = __('Copy');
 $js_messages['strX'] = __('X');
@@ -581,8 +586,8 @@ $js_messages['strExportRelationalSchema'] = __('Export relational schema');
 $js_messages['strModificationSaved'] = __('Modifications have been saved');
 
 /* Visual query builder (js/designer/move.js) */
-$js_messages['strAddOption'] = __('Add an option for column "%s".');
 $js_messages['strObjectsCreated'] = __('%d object(s) created.');
+$js_messages['strColumnName'] = __('Column name');
 $js_messages['strSubmit'] = __('Submit');
 
 /* For makegrid.js (column reordering, show/hide column, grid editing) */
@@ -595,13 +600,13 @@ $js_messages['strColOrderHint'] = __('Drag to reorder.');
 $js_messages['strSortHint'] = __('Click to sort results by this column.');
 $js_messages['strMultiSortHint'] = __(
     'Shift+Click to add this column to ORDER BY clause or to toggle ASC/DESC.'
-    . '<br />- Ctrl+Click or Alt+Click (Mac: Shift+Option+Click) to remove column '
+    . '<br>- Ctrl+Click or Alt+Click (Mac: Shift+Option+Click) to remove column '
     . 'from ORDER BY clause'
 );
 $js_messages['strColMarkHint'] = __('Click to mark/unmark.');
 $js_messages['strColNameCopyHint'] = __('Double-click to copy column name.');
 $js_messages['strColVisibHint'] = __(
-    'Click the drop-down arrow<br />to toggle column\'s visibility.'
+    'Click the drop-down arrow<br>to toggle column\'s visibility.'
 );
 $js_messages['strShowAllCol'] = __('Show all');
 $js_messages['strAlertNonUnique'] = __(
@@ -633,12 +638,12 @@ $js_messages['back'] = __('Back');
 switch ($GLOBALS['cfg']['GridEditing']) {
     case 'double-click':
         $js_messages['strGridEditFeatureHint'] = __(
-            'You can also edit most values<br />by double-clicking directly on them.'
+            'You can also edit most values<br>by double-clicking directly on them.'
         );
         break;
     case 'click':
         $js_messages['strGridEditFeatureHint'] = __(
-            'You can also edit most values<br />by clicking directly on them.'
+            'You can also edit most values<br>by clicking directly on them.'
         );
         break;
     default:
@@ -680,49 +685,51 @@ $js_messages['strUpToDate'] = __('up to date');
 $js_messages['strCreateView'] = __('Create view');
 
 /* Error Reporting */
-$js_messages['strSendErrorReport'] = __("Send error report");
-$js_messages['strSubmitErrorReport'] = __("Submit error report");
+$js_messages['strSendErrorReport'] = __('Send error report');
+$js_messages['strSubmitErrorReport'] = __('Submit error report');
 $js_messages['strErrorOccurred'] = __(
-    "A fatal JavaScript error has occurred. Would you like to send an error report?"
+    'A fatal JavaScript error has occurred. Would you like to send an error report?'
 );
-$js_messages['strChangeReportSettings'] = __("Change report settings");
-$js_messages['strShowReportDetails'] = __("Show report details");
-$js_messages['strIgnore'] = __("Ignore");
+$js_messages['strChangeReportSettings'] = __('Change report settings');
+$js_messages['strShowReportDetails'] = __('Show report details');
+$js_messages['strIgnore'] = __('Ignore');
 $js_messages['strTimeOutError'] = __(
-    "Your export is incomplete, due to a low execution time limit at the PHP level!"
+    'Your export is incomplete, due to a low execution time limit at the PHP level!'
 );
 
 $js_messages['strTooManyInputs'] = __(
-    "Warning: a form on this page has more than %d fields. On submission, "
+    'Warning: a form on this page has more than %d fields. On submission, '
     . "some of the fields might be ignored, due to PHP's "
-    . "max_input_vars configuration."
+    . 'max_input_vars configuration.'
 );
 
-$js_messages['phpErrorsFound'] = '<div class="error">'
+$js_messages['phpErrorsFound'] = '<div class="alert alert-danger" role="alert">'
     . __('Some errors have been detected on the server!')
-    . '<br/>'
+    . '<br>'
     . __('Please look at the bottom of this window.')
     . '<div>'
     . '<input id="pma_ignore_errors_popup" type="submit" value="'
     . __('Ignore')
-    . '" class="floatright message_errors_found">'
+    . '" class="btn btn-secondary floatright message_errors_found">'
     . '<input id="pma_ignore_all_errors_popup" type="submit" value="'
     . __('Ignore All')
-    . '" class="floatright message_errors_found">'
+    . '" class="btn btn-secondary floatright message_errors_found">'
     . '</div></div>';
 
-$js_messages['phpErrorsBeingSubmitted'] = '<div class="error">'
+$js_messages['phpErrorsBeingSubmitted'] = '<div class="alert alert-danger" role="alert">'
     . __('Some errors have been detected on the server!')
-    . '<br/>'
+    . '<br>'
     . __(
         'As per your settings, they are being submitted currently, please be '
         . 'patient.'
     )
-    . '<br/>'
+    . '<br>'
     . '<img src="'
-    . ($GLOBALS['PMA_Theme']->getImgPath('ajax_clock_small.gif'))
-    . '" width="16" height="16" alt="ajax clock"/>'
+    . $GLOBALS['PMA_Theme']->getImgPath('ajax_clock_small.gif')
+    . '" width="16" height="16" alt="ajax clock">'
     . '</div>';
+$js_messages['strCopyQueryButtonSuccess'] = __('Successfully copied!');
+$js_messages['strCopyQueryButtonFailure'] = __('Copying failed!');
 
 // For console
 $js_messages['strConsoleRequeryConfirm'] = __('Execute this query again?');
@@ -737,7 +744,7 @@ $js_messages['strConsoleDebugShowArgs'] = __('Show arguments');
 $js_messages['strConsoleDebugHideArgs'] = __('Hide arguments');
 $js_messages['strConsoleDebugTimeTaken'] = __('Time taken:');
 $js_messages['strNoLocalStorage'] = __('There was a problem accessing your browser storage, some features may not work properly for you. It is likely that the browser doesn\'t support storage or the quota limit has been reached. In Firefox, corrupted storage can also cause such a problem, clearing your "Offline Website Data" might help. In Safari, such problem is commonly caused by "Private Mode Browsing".');
-// For modals in db_structure.php
+// For modals in /database/structure
 $js_messages['strCopyTablesTo'] = __('Copy tables to');
 $js_messages['strAddPrefix'] = __('Add table prefix');
 $js_messages['strReplacePrefix'] = __('Replace table with prefix');
@@ -754,240 +761,12 @@ $js_messages['strStrong'] = __('Strong');
 $js_messages['strU2FTimeout'] = __('Timed out waiting for security key activation.');
 $js_messages['strU2FError'] = __('Failed security key activation (%s).');
 
-echo "var PMA_messages = new Array();\n";
+/* Designer */
+$js_messages['strTableAlreadyExists'] = _pgettext('The table already exists in the designer and can not be added once more.', 'Table %s already exists!');
+$js_messages['strHide'] = __('Hide');
+$js_messages['strStructure'] = __('Structure');
+
+echo "var Messages = [];\n";
 foreach ($js_messages as $name => $js_message) {
-    Sanitize::printJsValue("PMA_messages['" . $name . "']", $js_message);
+    echo Sanitize::getJsValue('Messages.' . $name, $js_message);
 }
-
-/* Calendar */
-echo "var themeCalendarImage = '" , $GLOBALS['pmaThemeImage']
-    , 'b_calendar.png' , "';\n";
-
-/* Image path */
-echo "var pmaThemeImage = '" , $GLOBALS['pmaThemeImage'] , "';\n";
-
-echo "var mysql_doc_template = '" , PhpMyAdmin\Util::getMySQLDocuURL('%s')
-    , "';\n";
-
-//Max input vars allowed by PHP.
-$maxInputVars = ini_get('max_input_vars');
-echo 'var maxInputVars = '
-    , (false === $maxInputVars || '' == $maxInputVars ? 'false' : (int)$maxInputVars)
-    , ';' . "\n";
-
-echo "if ($.datepicker) {\n";
-/* l10n: Display text for calendar close link */
-Sanitize::printJsValue("$.datepicker.regional['']['closeText']", __('Done'));
-/* l10n: Display text for previous month link in calendar */
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['prevText']",
-    _pgettext('Previous month', 'Prev')
-);
-/* l10n: Display text for next month link in calendar */
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['nextText']",
-    _pgettext('Next month', 'Next')
-);
-/* l10n: Display text for current month link in calendar */
-Sanitize::printJsValue("$.datepicker.regional['']['currentText']", __('Today'));
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['monthNames']",
-    [
-        __('January'),
-        __('February'),
-        __('March'),
-        __('April'),
-        __('May'),
-        __('June'),
-        __('July'),
-        __('August'),
-        __('September'),
-        __('October'),
-        __('November'),
-        __('December')
-    ]
-);
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['monthNamesShort']",
-    [
-        /* l10n: Short month name */
-        __('Jan'),
-        /* l10n: Short month name */
-        __('Feb'),
-        /* l10n: Short month name */
-        __('Mar'),
-        /* l10n: Short month name */
-        __('Apr'),
-        /* l10n: Short month name */
-        _pgettext('Short month name', 'May'),
-        /* l10n: Short month name */
-        __('Jun'),
-        /* l10n: Short month name */
-        __('Jul'),
-        /* l10n: Short month name */
-        __('Aug'),
-        /* l10n: Short month name */
-        __('Sep'),
-        /* l10n: Short month name */
-        __('Oct'),
-        /* l10n: Short month name */
-        __('Nov'),
-        /* l10n: Short month name */
-        __('Dec')
-    ]
-);
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['dayNames']",
-    [
-        __('Sunday'),
-        __('Monday'),
-        __('Tuesday'),
-        __('Wednesday'),
-        __('Thursday'),
-        __('Friday'),
-        __('Saturday')
-    ]
-);
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['dayNamesShort']",
-    [
-        /* l10n: Short week day name */
-        __('Sun'),
-        /* l10n: Short week day name */
-        __('Mon'),
-        /* l10n: Short week day name */
-        __('Tue'),
-        /* l10n: Short week day name */
-        __('Wed'),
-        /* l10n: Short week day name */
-        __('Thu'),
-        /* l10n: Short week day name */
-        __('Fri'),
-        /* l10n: Short week day name */
-        __('Sat')
-    ]
-);
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['dayNamesMin']",
-    [
-        /* l10n: Minimal week day name */
-        __('Su'),
-        /* l10n: Minimal week day name */
-        __('Mo'),
-        /* l10n: Minimal week day name */
-        __('Tu'),
-        /* l10n: Minimal week day name */
-        __('We'),
-        /* l10n: Minimal week day name */
-        __('Th'),
-        /* l10n: Minimal week day name */
-        __('Fr'),
-        /* l10n: Minimal week day name */
-        __('Sa')
-    ]
-);
-/* l10n: Column header for week of the year in calendar */
-Sanitize::printJsValue("$.datepicker.regional['']['weekHeader']", __('Wk'));
-
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['showMonthAfterYear']",
-    /* l10n: Month-year order for calendar, use either "calendar-month-year"
-    * or "calendar-year-month".
-    */
-    (__('calendar-month-year') == 'calendar-year-month')
-);
-/* l10n: Year suffix for calendar, "none" is empty. */
-$year_suffix = _pgettext('Year suffix', 'none');
-Sanitize::printJsValue(
-    "$.datepicker.regional['']['yearSuffix']",
-    ($year_suffix == 'none' ? '' : $year_suffix)
-);
-?>
-$.extend($.datepicker._defaults, $.datepicker.regional['']);
-} /* if ($.datepicker) */
-
-<?php
-echo "if ($.timepicker) {\n";
-Sanitize::printJsValue("$.timepicker.regional['']['timeText']", __('Time'));
-Sanitize::printJsValue("$.timepicker.regional['']['hourText']", __('Hour'));
-Sanitize::printJsValue("$.timepicker.regional['']['minuteText']", __('Minute'));
-Sanitize::printJsValue("$.timepicker.regional['']['secondText']", __('Second'));
-?>
-$.extend($.timepicker._defaults, $.timepicker.regional['']);
-} /* if ($.timepicker) */
-
-<?php
-/* Form validation */
-
-echo "function extendingValidatorMessages() {\n";
-echo "$.extend($.validator.messages, {\n";
-/* Default validation functions */
-Sanitize::printJsValueForFormValidation('required', __('This field is required'));
-Sanitize::printJsValueForFormValidation('remote', __('Please fix this field'));
-Sanitize::printJsValueForFormValidation('email', __('Please enter a valid email address'));
-Sanitize::printJsValueForFormValidation('url', __('Please enter a valid URL'));
-Sanitize::printJsValueForFormValidation('date', __('Please enter a valid date'));
-Sanitize::printJsValueForFormValidation(
-    'dateISO',
-    __('Please enter a valid date ( ISO )')
-);
-Sanitize::printJsValueForFormValidation('number', __('Please enter a valid number'));
-Sanitize::printJsValueForFormValidation(
-    'creditcard',
-    __('Please enter a valid credit card number')
-);
-Sanitize::printJsValueForFormValidation('digits', __('Please enter only digits'));
-Sanitize::printJsValueForFormValidation(
-    'equalTo',
-    __('Please enter the same value again')
-);
-Sanitize::printJsValueForFormValidation(
-    'maxlength',
-    __('Please enter no more than {0} characters'),
-    true
-);
-Sanitize::printJsValueForFormValidation(
-    'minlength',
-    __('Please enter at least {0} characters'),
-    true
-);
-Sanitize::printJsValueForFormValidation(
-    'rangelength',
-    __('Please enter a value between {0} and {1} characters long'),
-    true
-);
-Sanitize::printJsValueForFormValidation(
-    'range',
-    __('Please enter a value between {0} and {1}'),
-    true
-);
-Sanitize::printJsValueForFormValidation(
-    'max',
-    __('Please enter a value less than or equal to {0}'),
-    true
-);
-Sanitize::printJsValueForFormValidation(
-    'min',
-    __('Please enter a value greater than or equal to {0}'),
-    true
-);
-/* customed functions */
-Sanitize::printJsValueForFormValidation(
-    'validationFunctionForDateTime',
-    __('Please enter a valid date or time'),
-    true
-);
-Sanitize::printJsValueForFormValidation(
-    'validationFunctionForHex',
-    __('Please enter a valid HEX input'),
-    true
-);
-Sanitize::printJsValueForFormValidation(
-    'validationFunctionForFuns',
-    __('Error'),
-    true,
-    false
-);
-echo "\n});";
-echo "\n} /* if ($.validator) */";
-?>

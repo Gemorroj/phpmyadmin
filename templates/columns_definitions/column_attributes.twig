@@ -5,7 +5,7 @@
    to be incremented ($ci_offset++) #}
 {% set ci_offset = -1 %}
 
-<td class="center">
+<td class="text-center">
     {# column name #}
     {% include 'columns_definitions/column_name.twig' with {
         'column_number': column_number,
@@ -17,7 +17,7 @@
     } only %}
     {% set ci = ci + 1 %}
 </td>
-<td class="center">
+<td class="text-center">
     {# column type #}
     {% include 'columns_definitions/column_type.twig' with {
         'column_number': column_number,
@@ -28,7 +28,7 @@
     } only %}
     {% set ci = ci + 1 %}
 </td>
-<td class="center">
+<td class="text-center">
     {# column length #}
     {% include 'columns_definitions/column_length.twig' with {
         'column_number': column_number,
@@ -39,7 +39,7 @@
     } only %}
     {% set ci = ci + 1 %}
 </td>
-<td class="center">
+<td class="text-center">
     {# column default #}
     {% include 'columns_definitions/column_default.twig' with {
         'column_number': column_number,
@@ -52,19 +52,24 @@
     } only %}
     {% set ci = ci + 1 %}
 </td>
-<td class="center">
-    {# column collation #}
-    {{ get_collation_dropdown_box(
-        dbi,
-        disable_is,
-        'field_collation[' ~ column_number ~ ']',
-        'field_' ~ column_number ~ '_' ~ (ci - ci_offset),
-        column_meta['Collation'] is not empty ? column_meta['Collation'] : null,
-        false
-    ) }}
-    {% set ci = ci + 1 %}
+<td class="text-center">
+  {# column collation #}
+  <select lang="en" dir="ltr" name="field_collation[{{ column_number }}]" id="field_{{ column_number }}_{{ ci - ci_offset }}">
+    <option value=""></option>
+    {% for charset in charsets %}
+      <optgroup label="{{ charset.name }}" title="{{ charset.description }}">
+        {% for collation in charset.collations %}
+          <option value="{{ collation.name }}" title="{{ collation.description }}"
+            {{- collation.name == column_meta['Collation'] ? ' selected' }}>
+            {{- collation.name -}}
+          </option>
+        {% endfor %}
+      </optgroup>
+    {% endfor %}
+  </select>
+  {% set ci = ci + 1 %}
 </td>
-<td class="center">
+<td class="text-center">
     {# column attribute #}
     {% include 'columns_definitions/column_attribute.twig' with {
         'column_number': column_number,
@@ -77,7 +82,7 @@
     } only %}
     {% set ci = ci + 1 %}
 </td>
-<td class="center">
+<td class="text-center">
     {# column NULL #}
     {% include 'columns_definitions/column_null.twig' with {
         'column_number': column_number,
@@ -89,7 +94,7 @@
 </td>
 {% if change_column is defined and change_column is not empty %}
     {# column Adjust privileges, Only for 'Edit' Column(s) #}
-    <td class="center">
+    <td class="text-center">
         {% include 'columns_definitions/column_adjust_privileges.twig' with {
             'column_number': column_number,
             'ci': ci,
@@ -101,7 +106,7 @@
 {% endif %}
 {% if not is_backup %}
     {# column indexes, See my other comment about  this 'if'. #}
-    <td class="center">
+    <td class="text-center">
         {% include 'columns_definitions/column_indexes.twig' with {
             'column_number': column_number,
             'ci': ci,
@@ -111,7 +116,7 @@
         {% set ci = ci + 1 %}
     </td>
 {% endif %}
-<td class="center">
+<td class="text-center">
     {# column auto_increment #}
     {% include 'columns_definitions/column_auto_increment.twig' with {
         'column_number': column_number,
@@ -121,7 +126,7 @@
     } only %}
     {% set ci = ci + 1 %}
 </td>
-<td class="center">
+<td class="text-center">
     {# column comments #}
     {% include 'columns_definitions/column_comment.twig' with {
         'column_number': column_number,
@@ -137,7 +142,7 @@
 </td>
  {# column virtuality #}
 {% if is_virtual_columns_supported %}
-    <td class="center">
+    <td class="text-center">
         {% include 'columns_definitions/column_virtuality.twig' with {
             'column_number': column_number,
             'ci': ci,
@@ -155,12 +160,14 @@
     {% set current_index = 0 %}
     {% set cols = move_columns|length - 1 %}
     {% set break = false %}
-    {% for mi in 0..cols if move_columns[mi].name == column_meta['Field'] and not break %}
+    {% for mi in 0..cols %}
+      {% if move_columns[mi].name == column_meta['Field'] and not break %}
         {% set current_index = mi %}
         {% set break = true %}
+      {% endif %}
     {% endfor %}
 
-    <td class="center">
+    <td class="text-center">
         {% include 'columns_definitions/move_column.twig' with {
             'column_number': column_number,
             'ci': ci,
@@ -174,7 +181,7 @@
 {% endif %}
 
 {% if cfg_relation['mimework'] and browse_mime and cfg_relation['commwork'] %}
-    <td class="center">
+    <td class="text-center">
         {# Column Mime-type #}
         {% include 'columns_definitions/mime_type.twig' with {
             'column_number': column_number,
@@ -186,7 +193,7 @@
         } only %}
         {% set ci = ci + 1 %}
     </td>
-    <td class="center">
+    <td class="text-center">
         {# Column Browser transformation #}
         {% include 'columns_definitions/transformation.twig' with {
             'column_number': column_number,
@@ -199,7 +206,7 @@
         } only %}
         {% set ci = ci + 1 %}
     </td>
-    <td class="center">
+    <td class="text-center">
         {# column Transformation options #}
         {% include 'columns_definitions/transformation_option.twig' with {
             'column_number': column_number,
@@ -211,7 +218,7 @@
         } only %}
         {% set ci = ci + 1 %}
     </td>
-    <td class="center">
+    <td class="text-center">
         {# Column Input transformation #}
         {% include 'columns_definitions/transformation.twig' with {
             'column_number': column_number,
@@ -224,7 +231,7 @@
         } only %}
         {% set ci = ci + 1 %}
     </td>
-    <td class="center">
+    <td class="text-center">
         {# column Input transformation options #}
         {% include 'columns_definitions/transformation_option.twig' with {
             'column_number': column_number,

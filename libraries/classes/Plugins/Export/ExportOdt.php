@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Set of functions used to build OpenDocument Text dumps of tables
  *
@@ -11,16 +10,14 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Export;
 use PhpMyAdmin\OpenDocument;
 use PhpMyAdmin\Plugins\ExportPlugin;
-use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
 use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\RadioPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\TextPropertyItem;
-use PhpMyAdmin\Transformations;
+use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Util;
 
 /**
@@ -51,7 +48,7 @@ class ExportOdt extends ExportPlugin
         global $plugin_param;
         $hide_structure = false;
         if ($plugin_param['export_type'] == 'table'
-            && !$plugin_param['single_table']
+            && ! $plugin_param['single_table']
         ) {
             $hide_structure = true;
         }
@@ -69,16 +66,16 @@ class ExportOdt extends ExportPlugin
         // $exportPluginProperties
         // this will be shown as "Format specific options"
         $exportSpecificOptions = new OptionsPropertyRootGroup(
-            "Format Specific Options"
+            'Format Specific Options'
         );
 
         // what to dump (structure/data/both) main group
         $dumpWhat = new OptionsPropertyMainGroup(
-            "general_opts",
+            'general_opts',
             __('Dump table')
         );
         // create primary items and add them to the group
-        $leaf = new RadioPropertyItem("structure_or_data");
+        $leaf = new RadioPropertyItem('structure_or_data');
         $leaf->setValues(
             [
                 'structure'          => __('structure'),
@@ -91,29 +88,29 @@ class ExportOdt extends ExportPlugin
         $exportSpecificOptions->addProperty($dumpWhat);
 
         // structure options main group
-        if (!$hide_structure) {
+        if (! $hide_structure) {
             $structureOptions = new OptionsPropertyMainGroup(
-                "structure",
+                'structure',
                 __('Object creation options')
             );
             $structureOptions->setForce('data');
             // create primary items and add them to the group
-            if (!empty($GLOBALS['cfgRelation']['relation'])) {
+            if (! empty($GLOBALS['cfgRelation']['relation'])) {
                 $leaf = new BoolPropertyItem(
-                    "relation",
+                    'relation',
                     __('Display foreign key relationships')
                 );
                 $structureOptions->addProperty($leaf);
             }
             $leaf = new BoolPropertyItem(
-                "comments",
+                'comments',
                 __('Display comments')
             );
             $structureOptions->addProperty($leaf);
-            if (!empty($GLOBALS['cfgRelation']['mimework'])) {
+            if (! empty($GLOBALS['cfgRelation']['mimework'])) {
                 $leaf = new BoolPropertyItem(
-                    "mime",
-                    __('Display MIME types')
+                    'mime',
+                    __('Display media types')
                 );
                 $structureOptions->addProperty($leaf);
             }
@@ -123,13 +120,13 @@ class ExportOdt extends ExportPlugin
 
         // data options main group
         $dataOptions = new OptionsPropertyMainGroup(
-            "data",
+            'data',
             __('Data dump options')
         );
         $dataOptions->setForce('structure');
         // create primary items and add them to the group
         $leaf = new BoolPropertyItem(
-            "columns",
+            'columns',
             __('Put columns names in the first row')
         );
         $dataOptions->addProperty($leaf);
@@ -172,17 +169,11 @@ class ExportOdt extends ExportPlugin
         $GLOBALS['odt_buffer'] .= '</office:text>'
             . '</office:body>'
             . '</office:document-content>';
-        if (!$this->export->outputHandler(
-            OpenDocument::create(
-                'application/vnd.oasis.opendocument.text',
-                $GLOBALS['odt_buffer']
-            )
-        )
-        ) {
-            return false;
-        }
 
-        return true;
+        return $this->export->outputHandler(OpenDocument::create(
+            'application/vnd.oasis.opendocument.text',
+            $GLOBALS['odt_buffer']
+        ));
     }
 
     /**
@@ -286,7 +277,7 @@ class ExportOdt extends ExportPlugin
             $GLOBALS['odt_buffer'] .= '<table:table-row>';
             for ($i = 0; $i < $fields_cnt; $i++) {
                 $col_as = $GLOBALS['dbi']->fieldName($result, $i);
-                if (!empty($aliases[$db]['tables'][$table]['columns'][$col_as])) {
+                if (! empty($aliases[$db]['tables'][$table]['columns'][$col_as])) {
                     $col_as = $aliases[$db]['tables'][$table]['columns'][$col_as];
                 }
                 $GLOBALS['odt_buffer']
@@ -305,14 +296,18 @@ class ExportOdt extends ExportPlugin
         while ($row = $GLOBALS['dbi']->fetchRow($result)) {
             $GLOBALS['odt_buffer'] .= '<table:table-row>';
             for ($j = 0; $j < $fields_cnt; $j++) {
-                if (!isset($row[$j]) || is_null($row[$j])) {
+                if ($fields_meta[$j]->type === 'geometry') {
+                    // export GIS types as hex
+                    $row[$j] = '0x' . bin2hex($row[$j]);
+                }
+                if (! isset($row[$j]) || $row[$j] === null) {
                     $GLOBALS['odt_buffer']
                         .= '<table:table-cell office:value-type="string">'
                         . '<text:p>'
                         . htmlspecialchars($GLOBALS[$what . '_null'])
                         . '</text:p>'
                         . '</table:table-cell>';
-                } elseif (stristr($field_flags[$j], 'BINARY')
+                } elseif (false !== stripos($field_flags[$j], 'BINARY')
                     && $fields_meta[$j]->blob
                 ) {
                     // ignore BLOB
@@ -322,7 +317,7 @@ class ExportOdt extends ExportPlugin
                         . '</table:table-cell>';
                 } elseif ($fields_meta[$j]->numeric
                     && $fields_meta[$j]->type != 'timestamp'
-                    && !$fields_meta[$j]->blob
+                    && ! $fields_meta[$j]->blob
                 ) {
                     $GLOBALS['odt_buffer']
                         .= '<table:table-cell office:value-type="float"'
@@ -397,8 +392,8 @@ class ExportOdt extends ExportPlugin
 
         $columns = $GLOBALS['dbi']->getColumns($db, $view);
         foreach ($columns as $column) {
-            $col_as = $column['Field'];
-            if (!empty($aliases[$db]['tables'][$view]['columns'][$col_as])) {
+            $col_as = $column['Field'] ?? null;
+            if (! empty($aliases[$db]['tables'][$view]['columns'][$col_as])) {
                 $col_as = $aliases[$db]['tables'][$view]['columns'][$col_as];
             }
             $GLOBALS['odt_buffer'] .= $this->formatOneColumnDefinition(
@@ -410,7 +405,7 @@ class ExportOdt extends ExportPlugin
 
         $GLOBALS['odt_buffer'] .= '</table:table>';
 
-        return true;
+        return '';
     }
 
     /**
@@ -424,7 +419,7 @@ class ExportOdt extends ExportPlugin
      * @param bool   $do_comments   whether to include the pmadb-style column
      *                              comments as comments in the structure;
      *                              this is deprecated but the parameter is
-     *                              left here because export.php calls
+     *                              left here because /export calls
      *                              PMA_exportStructure() also for other
      * @param bool   $do_mime       whether to include mime comments
      * @param bool   $show_dates    whether to include creation/update/check dates
@@ -460,7 +455,7 @@ class ExportOdt extends ExportPlugin
 
         // Check if we can use Relations
         list($res_rel, $have_rel) = $this->relation->getRelationsAndStatus(
-            $do_relation && !empty($cfgRelation['relation']),
+            $do_relation && ! empty($cfgRelation['relation']),
             $db,
             $table
         );
@@ -508,7 +503,7 @@ class ExportOdt extends ExportPlugin
         }
         if ($do_mime && $cfgRelation['mimework']) {
             $GLOBALS['odt_buffer'] .= '<table:table-cell office:value-type="string">'
-                . '<text:p>' . __('MIME type') . '</text:p>'
+                . '<text:p>' . __('Media type') . '</text:p>'
                 . '</table:table-cell>';
             $mime_map = $this->transformations->getMime($db, $table, true);
         }
@@ -517,7 +512,7 @@ class ExportOdt extends ExportPlugin
         $columns = $GLOBALS['dbi']->getColumns($db, $table);
         foreach ($columns as $column) {
             $col_as = $field_name = $column['Field'];
-            if (!empty($aliases[$db]['tables'][$table]['columns'][$col_as])) {
+            if (! empty($aliases[$db]['tables'][$table]['columns'][$col_as])) {
                 $col_as = $aliases[$db]['tables'][$table]['columns'][$col_as];
             }
             $GLOBALS['odt_buffer'] .= $this->formatOneColumnDefinition(
@@ -529,12 +524,12 @@ class ExportOdt extends ExportPlugin
                 if ($foreigner) {
                     $rtable = $foreigner['foreign_table'];
                     $rfield = $foreigner['foreign_field'];
-                    if (!empty($aliases[$db]['tables'][$rtable]['columns'][$rfield])
+                    if (! empty($aliases[$db]['tables'][$rtable]['columns'][$rfield])
                     ) {
                         $rfield
                             = $aliases[$db]['tables'][$rtable]['columns'][$rfield];
                     }
-                    if (!empty($aliases[$db]['tables'][$rtable]['alias'])) {
+                    if (! empty($aliases[$db]['tables'][$rtable]['alias'])) {
                         $rtable = $aliases[$db]['tables'][$rtable]['alias'];
                     }
                     $relation = htmlspecialchars($rtable . ' (' . $rfield . ')');
@@ -593,7 +588,7 @@ class ExportOdt extends ExportPlugin
      * @param string $table   table name
      * @param array  $aliases Aliases of db/table/columns
      *
-     * @return bool true
+     * @return string
      */
     protected function getTriggers($db, $table, array $aliases = [])
     {
@@ -648,7 +643,7 @@ class ExportOdt extends ExportPlugin
 
         $GLOBALS['odt_buffer'] .= '</table:table>';
 
-        return true;
+        return $GLOBALS['odt_buffer'];
     }
 
     /**
@@ -665,7 +660,7 @@ class ExportOdt extends ExportPlugin
      * @param bool   $do_comments whether to include the pmadb-style column
      *                            comments as comments in the structure;
      *                            this is deprecated but the parameter is
-     *                            left here because export.php calls
+     *                            left here because /export calls
      *                            PMA_exportStructure() also for other
      * @param bool   $do_mime     whether to include mime comments
      * @param bool   $dates       whether to include creation/update/check dates
@@ -786,7 +781,7 @@ class ExportOdt extends ExportPlugin
         $definition .= '<table:table-cell office:value-type="string">'
             . '<text:p>' . htmlspecialchars($type) . '</text:p>'
             . '</table:table-cell>';
-        if (!isset($column['Default'])) {
+        if (! isset($column['Default'])) {
             if ($column['Null'] != 'NO') {
                 $column['Default'] = 'NULL';
             } else {
@@ -795,7 +790,7 @@ class ExportOdt extends ExportPlugin
         }
         $definition .= '<table:table-cell office:value-type="string">'
             . '<text:p>'
-            . (($column['Null'] == '' || $column['Null'] == 'NO')
+            . ($column['Null'] == '' || $column['Null'] == 'NO'
                 ? __('No')
                 : __('Yes'))
             . '</text:p>'

@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeViewContainer class
  *
@@ -11,7 +10,6 @@ namespace PhpMyAdmin\Tests\Navigation\Nodes;
 
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeViewContainer class
@@ -25,7 +23,7 @@ class NodeViewContainerTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['NavigationTreeEnableGrouping'] = true;
@@ -47,11 +45,11 @@ class NodeViewContainerTest extends PmaTestCase
             'text',
             $parent->links
         );
-        $this->assertContains(
-            'db_structure.php',
+        $this->assertStringContainsString(
+            'index.php?route=/database/structure',
             $parent->links['text']
         );
-        $this->assertEquals('views', $parent->real_name);
-        $this->assertContains('viewContainer', $parent->classes);
+        $this->assertEquals('views', $parent->realName);
+        $this->assertStringContainsString('viewContainer', $parent->classes);
     }
 }

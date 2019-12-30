@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Contains PhpMyAdmin\Plugins\Schema\Svg\RelationStatsSvg class
  *
@@ -9,14 +8,12 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Svg;
 
-use PhpMyAdmin\Plugins\Schema\Dia\RelationStatsDia;
+use PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia;
 use PhpMyAdmin\Plugins\Schema\Eps\TableStatsEps;
 use PhpMyAdmin\Plugins\Schema\ExportRelationSchema;
 use PhpMyAdmin\Plugins\Schema\Pdf\TableStatsPdf;
 use PhpMyAdmin\Plugins\Schema\Svg\Svg;
 use PhpMyAdmin\Plugins\Schema\Svg\TableStatsSvg;
-use PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia;
-use PhpMyAdmin\Relation;
 
 /**
  * RelationStatsSvg Relation Schema Class
@@ -36,10 +33,10 @@ use PhpMyAdmin\Relation;
 class SvgRelationSchema extends ExportRelationSchema
 {
     /**
-     * @var \PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia[]|TableStatsEps[]|TableStatsPdf[]|TableStatsSvg[]
+     * @var TableStatsDia[]|TableStatsEps[]|TableStatsPdf[]|TableStatsSvg[]
      */
     private $_tables = [];
-    /** @var RelationStatsDia[] Relations */
+    /** @var RelationStatsSvg[] Relations */
     private $_relations = [];
     private $_xMax = 0;
     private $_yMax = 0;
@@ -53,9 +50,9 @@ class SvgRelationSchema extends ExportRelationSchema
      * Upon instantiation This starts writing the SVG XML document
      * user will be prompted for download as .svg extension
      *
-     * @param string $db database name
-     *
      * @see PMA_SVG
+     *
+     * @param string $db database name
      */
     public function __construct($db)
     {
@@ -80,7 +77,7 @@ class SvgRelationSchema extends ExportRelationSchema
         $alltables = $this->getTablesFromRequest();
 
         foreach ($alltables as $table) {
-            if (!isset($this->_tables[$table])) {
+            if (! isset($this->_tables[$table])) {
                 $this->_tables[$table] = new TableStatsSvg(
                     $this->diagram,
                     $this->db,
@@ -112,7 +109,7 @@ class SvgRelationSchema extends ExportRelationSchema
         $seen_a_relation = false;
         foreach ($alltables as $one_table) {
             $exist_rel = $this->relation->getForeigners($this->db, $one_table, '', 'both');
-            if (!$exist_rel) {
+            if (! $exist_rel) {
                 continue;
             }
 
@@ -139,7 +136,7 @@ class SvgRelationSchema extends ExportRelationSchema
                 }
 
                 foreach ($rel as $one_key) {
-                    if (!in_array($one_key['ref_table_name'], $alltables)) {
+                    if (! in_array($one_key['ref_table_name'], $alltables)) {
                         continue;
                     }
 
@@ -178,7 +175,7 @@ class SvgRelationSchema extends ExportRelationSchema
     /**
      * Sets X and Y minimum and maximum for a table cell
      *
-     * @param string $table The table name
+     * @param TableStatsSvg $table The table
      *
      * @return void
      */
@@ -193,6 +190,9 @@ class SvgRelationSchema extends ExportRelationSchema
     /**
      * Defines relation objects
      *
+     * @see _setMinMax,Table_Stats_Svg::__construct(),
+     *       PhpMyAdmin\Plugins\Schema\Svg\RelationStatsSvg::__construct()
+     *
      * @param string  $masterTable    The master table name
      * @param string  $font           The font face
      * @param int     $fontSize       Font size
@@ -202,9 +202,6 @@ class SvgRelationSchema extends ExportRelationSchema
      * @param boolean $tableDimension Whether to display table position or not
      *
      * @return void
-     *
-     * @see _setMinMax,Table_Stats_Svg::__construct(),
-     *       PhpMyAdmin\Plugins\Schema\Svg\RelationStatsSvg::__construct()
      */
     private function _addRelation(
         $masterTable,
@@ -215,7 +212,7 @@ class SvgRelationSchema extends ExportRelationSchema
         $foreignField,
         $tableDimension
     ) {
-        if (!isset($this->_tables[$masterTable])) {
+        if (! isset($this->_tables[$masterTable])) {
             $this->_tables[$masterTable] = new TableStatsSvg(
                 $this->diagram,
                 $this->db,
@@ -229,7 +226,7 @@ class SvgRelationSchema extends ExportRelationSchema
             );
             $this->_setMinMax($this->_tables[$masterTable]);
         }
-        if (!isset($this->_tables[$foreignTable])) {
+        if (! isset($this->_tables[$foreignTable])) {
             $this->_tables[$foreignTable] = new TableStatsSvg(
                 $this->diagram,
                 $this->db,
@@ -257,9 +254,9 @@ class SvgRelationSchema extends ExportRelationSchema
      * connects master table's master field to
      * foreign table's foreign field
      *
-     * @return void
-     *
      * @see Relation_Stats_Svg::relationDraw()
+     *
+     * @return void
      */
     private function _drawRelations()
     {
@@ -271,9 +268,9 @@ class SvgRelationSchema extends ExportRelationSchema
     /**
      * Draws tables
      *
-     * @return void
-     *
      * @see Table_Stats_Svg::Table_Stats_tableDraw()
+     *
+     * @return void
      */
     private function _drawTables()
     {

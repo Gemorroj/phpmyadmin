@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for Charset Conversions
  *
@@ -22,7 +21,7 @@ class EncodingTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         Encoding::initEngine();
     }
@@ -30,7 +29,7 @@ class EncodingTest extends TestCase
     /**
      * @return void
      */
-    public function tearDown()
+    protected function tearDown(): void
     {
         Encoding::initEngine();
     }
@@ -39,8 +38,8 @@ class EncodingTest extends TestCase
      * Test for Encoding::convertString
      *
      * @return void
-     * @test
      *
+     * @test
      * @group medium
      */
     public function testNoConversion()
@@ -85,6 +84,9 @@ class EncodingTest extends TestCase
     }
 
     /**
+     * This group is used on debian packaging to exclude the test
+     * @see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=854821#27
+     * @group extension-iconv
      * @return void
      */
     public function testIconv()
@@ -93,16 +95,31 @@ class EncodingTest extends TestCase
             $this->markTestSkipped('iconv extension missing');
         }
 
-        $GLOBALS['cfg']['IconvExtraParams'] = '//TRANSLIT';
-        Encoding::setEngine(Encoding::ENGINE_ICONV);
-        $this->assertEquals(
-            "This is the Euro symbol 'EUR'.",
-            Encoding::convertString(
-                'UTF-8',
-                'ISO-8859-1',
-                "This is the Euro symbol '€'."
-            )
-        );
+        if (PHP_INT_SIZE === 8) {
+            $GLOBALS['cfg']['IconvExtraParams'] = '//TRANSLIT';
+            Encoding::setEngine(Encoding::ENGINE_ICONV);
+            $this->assertEquals(
+                "This is the Euro symbol 'EUR'.",
+                Encoding::convertString(
+                    'UTF-8',
+                    'ISO-8859-1',
+                    "This is the Euro symbol '€'."
+                )
+            );
+        } elseif (PHP_INT_SIZE === 4) {
+            // NOTE: this does not work on 32bit systems and requires "//IGNORE"
+            // NOTE: or it will throw "iconv(): Detected an illegal character in input string"
+            $GLOBALS['cfg']['IconvExtraParams'] = '//TRANSLIT//IGNORE';
+            Encoding::setEngine(Encoding::ENGINE_ICONV);
+            $this->assertEquals(
+                "This is the Euro symbol ''.",
+                Encoding::convertString(
+                    'UTF-8',
+                    'ISO-8859-1',
+                    "This is the Euro symbol '€'."
+                )
+            );
+        }
     }
 
     /**
@@ -125,6 +142,7 @@ class EncodingTest extends TestCase
      * Test for kanjiChangeOrder
      *
      * @return void
+     *
      * @test
      */
     public function testChangeOrder()
@@ -140,6 +158,7 @@ class EncodingTest extends TestCase
      * Test for Encoding::kanjiStrConv
      *
      * @return void
+     *
      * @test
      */
     public function testKanjiStrConv()
@@ -172,14 +191,15 @@ class EncodingTest extends TestCase
      * Test for Encoding::kanjiFileConv
      *
      * @return void
+     *
      * @test
      */
     public function testFileConv()
     {
-        $file_str = "教育漢字常用漢字";
+        $file_str = '教育漢字常用漢字';
         $filename = 'test.kanji';
         $file = fopen($filename, 'w');
-        fputs($file, $file_str);
+        fwrite($file, $file_str);
         fclose($file);
         $GLOBALS['kanji_encoding_list'] = 'ASCII,EUC-JP,SJIS,JIS';
 
@@ -198,29 +218,30 @@ class EncodingTest extends TestCase
      * Test for Encoding::kanjiEncodingForm
      *
      * @return void
+     *
      * @test
      */
     public function testEncodingForm()
     {
         $actual = Encoding::kanjiEncodingForm();
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<input type="radio" name="knjenc"',
             $actual
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             'type="radio" name="knjenc"',
             $actual
         );
-        $this->assertContains(
-            '<input type="radio" name="knjenc" value="EUC-JP" id="kj-euc" />',
+        $this->assertStringContainsString(
+            '<input type="radio" name="knjenc" value="EUC-JP" id="kj-euc">',
             $actual
         );
-        $this->assertContains(
-            '<input type="radio" name="knjenc" value="SJIS" id="kj-sjis" />',
+        $this->assertStringContainsString(
+            '<input type="radio" name="knjenc" value="SJIS" id="kj-sjis">',
             $actual
         );
-        $this->assertContains(
-            '<input type="checkbox" name="xkana" value="kana" id="kj-kana" />',
+        $this->assertStringContainsString(
+            '<input type="checkbox" name="xkana" value="kana" id="kj-kana">',
             $actual
         );
     }

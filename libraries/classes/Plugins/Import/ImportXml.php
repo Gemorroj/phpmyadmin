@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * XML import plugin for phpMyAdmin
  *
@@ -56,7 +55,7 @@ class ImportXml extends ImportPlugin
     /**
      * Handles the whole import logic
      *
-     * @param array &$sql_data 2-element array with sql data
+     * @param array $sql_data 2-element array with sql data
      *
      * @return void
      */
@@ -66,21 +65,19 @@ class ImportXml extends ImportPlugin
 
         $i = 0;
         $len = 0;
-        $buffer = "";
+        $buffer = '';
 
         /**
          * Read in the file via Import::getNextChunk so that
          * it can process compressed files
          */
-        while (!($finished && $i >= $len) && !$error && !$timeout_passed) {
+        while (! ($finished && $i >= $len) && ! $error && ! $timeout_passed) {
             $data = $this->import->getNextChunk();
             if ($data === false) {
                 /* subtract data we didn't handle yet and stop processing */
                 $GLOBALS['offset'] -= strlen($buffer);
                 break;
-            } elseif ($data === true) {
-                /* Handle rest of buffer */
-            } else {
+            } elseif ($data !== true) {
                 /* Append new data to buffer */
                 $buffer .= $data;
                 unset($data);
@@ -101,7 +98,7 @@ class ImportXml extends ImportPlugin
          * result in increased performance without the need to
          * alter the code in any way. It's basically a freebee.
          */
-        $xml = @simplexml_load_string($buffer, "SimpleXMLElement", LIBXML_COMPACT);
+        $xml = @simplexml_load_string($buffer, 'SimpleXMLElement', LIBXML_COMPACT);
 
         unset($buffer);
 
@@ -145,19 +142,19 @@ class ImportXml extends ImportPlugin
         /**
          * Analyze the data in each table
          */
-        $namespaces = $xml->getNameSpaces(true);
+        $namespaces = $xml->getNamespaces(true);
 
         /**
          * Get the database name, collation and charset
          */
-        $db_attr = $xml->children($namespaces['pma'])
+        $db_attr = $xml->children($namespaces['pma'] ?? null)
             ->{'structure_schemas'}->{'database'};
 
         if ($db_attr instanceof SimpleXMLElement) {
             $db_attr = $db_attr->attributes();
-            $db_name = (string)$db_attr['name'];
-            $collation = (string)$db_attr['collation'];
-            $charset = (string)$db_attr['charset'];
+            $db_name = (string) $db_attr['name'];
+            $collation = (string) $db_attr['collation'];
+            $charset = (string) $db_attr['charset'];
         } else {
             /**
              * If the structure section is not present
@@ -165,7 +162,7 @@ class ImportXml extends ImportPlugin
              */
             $db_attr = $xml->children()
                 ->attributes();
-            $db_name = (string)$db_attr['name'];
+            $db_name = (string) $db_attr['name'];
             $collation = null;
             $charset = null;
         }
@@ -211,16 +208,16 @@ class ImportXml extends ImportPlugin
                      *          into another database.
                      */
                     $attrs = $val2->attributes();
-                    $create[] = "USE "
+                    $create[] = 'USE '
                         . Util::backquote(
-                            $attrs["name"]
+                            $attrs['name']
                         );
 
                     foreach ($val2 as $val3) {
                         /**
                          * Remove the extra cosmetic spacing
                          */
-                        $val3 = str_replace("                ", "", (string)$val3);
+                        $val3 = str_replace('                ', '', (string) $val3);
                         $create[] = $val3;
                     }
                 }
@@ -240,7 +237,7 @@ class ImportXml extends ImportPlugin
         /**
          * Only attempt to analyze/collect data if there is data present
          */
-        if ($xml && @count($xml->children())) {
+        if ($xml && $xml->children()->count()) {
             $data_present = true;
 
             /**
@@ -252,33 +249,35 @@ class ImportXml extends ImportPlugin
                 $isInTables = false;
                 $num_tables = count($tables);
                 for ($i = 0; $i < $num_tables; ++$i) {
-                    if (!strcmp($tables[$i][Import::TBL_NAME], (string)$tbl_attr['name'])) {
+                    if (! strcmp($tables[$i][Import::TBL_NAME], (string) $tbl_attr['name'])) {
                         $isInTables = true;
                         break;
                     }
                 }
 
-                if (!$isInTables) {
-                    $tables[] = [(string)$tbl_attr['name']];
+                if (! $isInTables) {
+                    $tables[] = [(string) $tbl_attr['name']];
                 }
 
                 foreach ($v1 as $v2) {
                     $row_attr = $v2->attributes();
-                    if (!array_search((string)$row_attr['name'], $tempRow)) {
-                        $tempRow[] = (string)$row_attr['name'];
+                    if (! in_array((string) $row_attr['name'], $tempRow)) {
+                        $tempRow[] = (string) $row_attr['name'];
                     }
-                    $tempCells[] = (string)$v2;
+                    $tempCells[] = (string) $v2;
                 }
 
-                $rows[] = [(string)$tbl_attr['name'], $tempRow, $tempCells];
+                $rows[] = [
+                    (string) $tbl_attr['name'],
+                    $tempRow,
+                    $tempCells,
+                ];
 
                 $tempRow = [];
                 $tempCells = [];
             }
 
-            unset($tempRow);
-            unset($tempCells);
-            unset($xml);
+            unset($tempRow, $tempCells, $xml);
 
             /**
              * Bring accumulated rows into the corresponding table
@@ -287,8 +286,8 @@ class ImportXml extends ImportPlugin
             for ($i = 0; $i < $num_tables; ++$i) {
                 $num_rows = count($rows);
                 for ($j = 0; $j < $num_rows; ++$j) {
-                    if (!strcmp($tables[$i][Import::TBL_NAME], $rows[$j][Import::TBL_NAME])) {
-                        if (!isset($tables[$i][Import::COL_NAMES])) {
+                    if (! strcmp($tables[$i][Import::TBL_NAME], $rows[$j][Import::TBL_NAME])) {
+                        if (! isset($tables[$i][Import::COL_NAMES])) {
                             $tables[$i][] = $rows[$j][Import::COL_NAMES];
                         }
 
@@ -299,7 +298,7 @@ class ImportXml extends ImportPlugin
 
             unset($rows);
 
-            if (!$struct_present) {
+            if (! $struct_present) {
                 $analyses = [];
 
                 $len = count($tables);
@@ -309,9 +308,7 @@ class ImportXml extends ImportPlugin
             }
         }
 
-        unset($xml);
-        unset($tempCells);
-        unset($rows);
+        unset($xml, $tempCells, $rows);
 
         /**
          * Only build SQL from data if there is data present
@@ -321,9 +318,9 @@ class ImportXml extends ImportPlugin
              * Set values to NULL if they were not present
              * to maintain Import::buildSql() call integrity
              */
-            if (!isset($analyses)) {
+            if (! isset($analyses)) {
                 $analyses = null;
-                if (!$struct_present) {
+                if (! $struct_present) {
                     $create = null;
                 }
             }
@@ -363,9 +360,7 @@ class ImportXml extends ImportPlugin
         /* Created and execute necessary SQL statements from data */
         $this->import->buildSql($db_name, $tables, $analyses, $create, $options, $sql_data);
 
-        unset($analyses);
-        unset($tables);
-        unset($create);
+        unset($analyses, $tables, $create);
 
         /* Commit any possible data in buffers */
         $this->import->runQuery('', '', $sql_data);

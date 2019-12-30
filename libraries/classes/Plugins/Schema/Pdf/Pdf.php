@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * PDF schema handling
  *
@@ -24,7 +23,7 @@ if (! class_exists('TCPDF')) {
 /**
  * block attempts to directly run this script
  */
-if (getcwd() == dirname(__FILE__)) {
+if (getcwd() == __DIR__) {
     die('Attack stopped');
 }
 
@@ -58,7 +57,7 @@ class Pdf extends PdfLib
     private $_db;
 
     /**
-     * @var Relation $relation
+     * @var Relation
      */
     private $relation;
 
@@ -133,6 +132,8 @@ class Pdf extends PdfLib
     /**
      * Outputs a scaled cell
      *
+     * @see TCPDF::Cell()
+     *
      * @param float|int $w      The cell width
      * @param float|int $h      The cell height
      * @param string    $txt    The text to output
@@ -143,8 +144,6 @@ class Pdf extends PdfLib
      * @param string    $link   Link
      *
      * @return void
-     *
-     * @see TCPDF::Cell()
      */
     public function cellScale(
         $w,
@@ -156,13 +155,15 @@ class Pdf extends PdfLib
         $fill = 0,
         $link = ''
     ) {
-        $h = $h / $this->scale;
-        $w = $w / $this->scale;
+        $h /= $this->scale;
+        $w /= $this->scale;
         $this->Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
     }
 
     /**
      * Draws a scaled line
+     *
+     * @see TCPDF::Line()
      *
      * @param float $x1 The horizontal position of the starting point
      * @param float $y1 The vertical position of the starting point
@@ -170,8 +171,6 @@ class Pdf extends PdfLib
      * @param float $y2 The vertical position of the ending point
      *
      * @return void
-     *
-     * @see TCPDF::Line()
      */
     public function lineScale($x1, $y1, $x2, $y2)
     {
@@ -185,12 +184,12 @@ class Pdf extends PdfLib
     /**
      * Sets x and y scaled positions
      *
+     * @see TCPDF::SetXY()
+     *
      * @param float $x The x position
      * @param float $y The y position
      *
      * @return void
-     *
-     * @see TCPDF::SetXY()
      */
     public function setXyScale($x, $y)
     {
@@ -202,11 +201,11 @@ class Pdf extends PdfLib
     /**
      * Sets the X scaled positions
      *
+     * @see TCPDF::SetX()
+     *
      * @param float $x The x position
      *
      * @return void
-     *
-     * @see TCPDF::SetX()
      */
     public function setXScale($x)
     {
@@ -217,40 +216,40 @@ class Pdf extends PdfLib
     /**
      * Sets the scaled font size
      *
+     * @see TCPDF::SetFontSize()
+     *
      * @param float $size The font size (in points)
      *
      * @return void
-     *
-     * @see TCPDF::SetFontSize()
      */
     public function setFontSizeScale($size)
     {
         // Set font size in points
-        $size = $size / $this->scale;
+        $size /= $this->scale;
         $this->SetFontSize($size);
     }
 
     /**
      * Sets the scaled line width
      *
+     * @see TCPDF::SetLineWidth()
+     *
      * @param float $width The line width
      *
      * @return void
-     *
-     * @see TCPDF::SetLineWidth()
      */
     public function setLineWidthScale($width)
     {
-        $width = $width / $this->scale;
+        $width /= $this->scale;
         $this->SetLineWidth($width);
     }
 
     /**
      * This method is used to render the page header.
      *
-     * @return void
-     *
      * @see TCPDF::Header()
+     *
+     * @return void
      */
     // @codingStandardsIgnoreLine
     public function Header()
@@ -260,7 +259,7 @@ class Pdf extends PdfLib
         // This function must be named "Header" to work with the TCPDF library
         if ($this->_withDoc) {
             if ($this->_offline || $this->_pageNumber == -1) {
-                $pg_name = __("PDF export page");
+                $pg_name = __('PDF export page');
             } else {
                 $test_query = 'SELECT * FROM '
                     . Util::backquote($GLOBALS['cfgRelation']['db']) . '.'
@@ -282,9 +281,9 @@ class Pdf extends PdfLib
     /**
      * This function must be named "Footer" to work with the TCPDF library
      *
-     * @return void
-     *
      * @see PDF::Footer()
+     *
+     * @return void
      */
     // @codingStandardsIgnoreLine
     public function Footer()
@@ -386,7 +385,7 @@ class Pdf extends PdfLib
             if ($c == ' ') {
                 $sep = $i;
             }
-            $l += isset($cw[mb_ord($c)]) ? $cw[mb_ord($c)] : 0 ;
+            $l += $cw[mb_ord($c)] ?? 0 ;
             if ($l > $wmax) {
                 if ($sep == -1) {
                     if ($i == $j) {

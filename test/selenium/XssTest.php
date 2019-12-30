@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Selenium TestCase for SQL query window related tests
  *
@@ -22,10 +21,9 @@ class XssTest extends TestBase
     /**
      * @return void
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
-        $this->maximize();
         $this->login();
     }
 
@@ -41,11 +39,11 @@ class XssTest extends TestBase
         if ($this->isSafari()) {
             $this->markTestSkipped('Alerts not supported on Safari browser.');
         }
-        $this->waitForElement('partialLinkText', "SQL")->click();
+        $this->waitForElement('partialLinkText', 'SQL')->click();
         $this->waitAjax();
 
-        $this->waitForElement('id', "queryboxf");
-        $this->byId("button_submit_query")->click();
-        $this->assertEquals("Missing value in the form!", $this->alertText());
+        $this->waitForElement('id', 'queryboxf');
+        $this->byId('button_submit_query')->click();
+        $this->assertEquals('Missing value in the form!', $this->alertText());
     }
 }

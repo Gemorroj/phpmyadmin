@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Selenium TestCase for table related tests
  *
@@ -26,16 +25,16 @@ class StructureTest extends TestBase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->dbQuery(
-            "CREATE TABLE `test_table` ("
-            . " `id` int(11) NOT NULL AUTO_INCREMENT,"
-            . " `val` int(11) NOT NULL,"
-            . " `val2` int(11) NOT NULL,"
-            . " PRIMARY KEY (`id`)"
-            . ")"
+            'CREATE TABLE `test_table` ('
+            . ' `id` int(11) NOT NULL AUTO_INCREMENT,'
+            . ' `val` int(11) NOT NULL,'
+            . ' `val2` int(11) NOT NULL,'
+            . ' PRIMARY KEY (`id`)'
+            . ')'
         );
 
         $this->login();
@@ -47,7 +46,7 @@ class StructureTest extends TestBase
         )->click();
 
         $this->waitAjax();
-        $this->waitForElement('id', "tablestructure");
+        $this->waitForElement('id', 'tablestructure');
     }
 
     /**
@@ -65,29 +64,29 @@ class StructureTest extends TestBase
         )->click();
         $this->waitAjax();
 
-        $this->waitForElement('className', "append_fields_form");
+        $this->waitForElement('className', 'append_fields_form');
 
-        $this->byId("field_0_1")->sendKeys('val3');
+        $this->byId('field_0_1')->sendKeys('val3');
         $this->byCssSelector("input[name='do_save_data']")->click();
 
         $this->waitAjax();
         $this->waitForElement(
             'xpath',
-            "//div[@class='success' and contains(., "
+            "//div[@class='alert alert-success' and contains(., "
             . "'Table test_table has been altered successfully')]"
         );
 
-        $this->byPartialLinkText("Structure")->click();
+        $this->byPartialLinkText('Structure')->click();
         $this->waitAjax();
-        $this->waitForElement('id', "tablestructure");
+        $this->waitForElement('id', 'tablestructure');
 
         $this->assertEquals(
-            "val3",
+            'val3',
             $this->byCssSelector('label[for=checkbox_row_4]')->getText()
         );
 
         $this->assertEquals(
-            "int(11)",
+            'int(11)',
             $this->getCellByTableId('tablestructure', 4, 4)
         );
     }
@@ -102,30 +101,30 @@ class StructureTest extends TestBase
     public function testChangeColumn()
     {
         $this->byCssSelector(
-            "#tablestructure tbody tr:nth-child(2) td:nth-child(11)"
+            '#tablestructure tbody tr:nth-child(2) td:nth-child(11)'
         )->click();
         $this->waitAjax();
 
-        $this->waitForElement('className', "append_fields_form");
+        $this->waitForElement('className', 'append_fields_form');
 
-        $this->assertEquals("val", $this->byId("field_0_1")->getAttribute('value'));
-        $this->byId("field_0_1")->clear();
-        $this->byId("field_0_1")->sendKeys('val3');
+        $this->assertEquals('val', $this->byId('field_0_1')->getAttribute('value'));
+        $this->byId('field_0_1')->clear();
+        $this->byId('field_0_1')->sendKeys('val3');
         $this->byCssSelector("input[name='do_save_data']")->click();
 
         $this->waitForElement(
             'xpath',
-            "//div[@class='success' and contains(., "
+            "//div[@class='alert alert-success' and contains(., "
             . "'Table test_table has been altered successfully')]"
         );
 
-        $this->byPartialLinkText("Structure")->click();
+        $this->byPartialLinkText('Structure')->click();
         $this->waitAjax();
 
-        $this->waitForElement('id', "tablestructure");
+        $this->waitForElement('id', 'tablestructure');
 
         $this->assertEquals(
-            "val3",
+            'val3',
             $this->waitForElement('cssSelector', 'label[for=checkbox_row_2]')->getText()
         );
     }
@@ -142,7 +141,7 @@ class StructureTest extends TestBase
         $this->waitForElement('cssSelector', 'label[for=checkbox_row_2]')->click();
         $this->waitForElement('cssSelector', 'label[for=checkbox_row_3]')->click();
         $this->byXPath(
-            "//button[@class='mult_submit' and contains(., 'Drop')]"
+            "//button[@name='submit_mult' and contains(., 'Drop')]"
         )->click();
 
         $this->waitForElement(
@@ -152,7 +151,7 @@ class StructureTest extends TestBase
 
         $this->waitForElement(
             'xpath',
-            "//div[@class='success' and contains(., "
+            "//div[@class='alert alert-success' and contains(., "
             . "'Your SQL query has been executed successfully')]"
         );
         $this->waitAjax();

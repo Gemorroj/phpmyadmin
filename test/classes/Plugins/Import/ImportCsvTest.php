@@ -11,7 +11,6 @@ namespace PhpMyAdmin\Tests\Plugins\Import;
 use PhpMyAdmin\File;
 use PhpMyAdmin\Plugins\Import\ImportCsv;
 use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportCsv class
@@ -30,13 +29,14 @@ class ImportCsvTest extends PmaTestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
-        $GLOBALS['plugin_param'] = "csv";
+        $GLOBALS['plugin_param'] = 'csv';
         $this->object = new ImportCsv();
 
         unset($GLOBALS['db']);
@@ -60,6 +60,7 @@ class ImportCsvTest extends PmaTestCase
         $GLOBALS['csv_enclosed'] = '"';
         $GLOBALS['csv_escaped'] = '"';
         $GLOBALS['csv_new_line'] = 'auto';
+        $GLOBALS['import_file_name'] = basename($GLOBALS['import_file'], '.csv');
 
         //$_SESSION
 
@@ -74,10 +75,11 @@ class ImportCsvTest extends PmaTestCase
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }
@@ -119,12 +121,12 @@ class ImportCsvTest extends PmaTestCase
         $this->object->doImport();
 
         //asset that all sql are executed
-        $this->assertContains(
+        $this->assertStringContainsString(
             'CREATE DATABASE IF NOT EXISTS `CSV_DB 1` DEFAULT CHARACTER',
             $sql_query
         );
-        $this->assertContains(
-            'CREATE TABLE IF NOT EXISTS `CSV_DB 1`.`TBL_NAME`',
+        $this->assertStringContainsString(
+            'CREATE TABLE IF NOT EXISTS `CSV_DB 1`.`' . $GLOBALS['import_file_name'] . '`',
             $sql_query
         );
 
@@ -156,11 +158,11 @@ class ImportCsvTest extends PmaTestCase
         $this->object->doImport();
 
         //asset that all sql are executed
-        $this->assertContains(
+        $this->assertStringContainsString(
             'CREATE DATABASE IF NOT EXISTS `ImportTestDb` DEFAULT CHARACTER',
             $sql_query
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             'CREATE TABLE IF NOT EXISTS `ImportTestDb`.`ImportTestTable`',
             $sql_query
         );
@@ -210,13 +212,13 @@ class ImportCsvTest extends PmaTestCase
         $this->object->doImport();
 
         //asset that all sql are executed
-        $this->assertContains(
+        $this->assertStringContainsString(
             'CREATE DATABASE IF NOT EXISTS `CSV_DB 1` DEFAULT CHARACTER',
             $sql_query
         );
 
-        $this->assertContains(
-            'CREATE TABLE IF NOT EXISTS `CSV_DB 1`.`TBL_NAME`',
+        $this->assertStringContainsString(
+            'CREATE TABLE IF NOT EXISTS `CSV_DB 1`.`' . $GLOBALS['import_file_name'] . '`',
             $sql_query
         );
 

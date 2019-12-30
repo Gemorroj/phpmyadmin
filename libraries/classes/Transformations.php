@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Set of functions used with the relation and pdf feature
  *
@@ -20,6 +19,7 @@ declare(strict_types=1);
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Plugins\TransformationsInterface;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Util;
 
@@ -53,7 +53,7 @@ class Transformations
         $result = [];
 
         if (strlen($option_string) === 0
-            || ! $transform_options = preg_split('/,/', $option_string)
+            || ! $transform_options = explode(',', $option_string)
         ) {
             return $result;
         }
@@ -90,9 +90,10 @@ class Transformations
     /**
      * Gets all available MIME-types
      *
+     * @return array    array[mimetype], array[transformation]
+     *
      * @access  public
      * @staticvar   array   mimetypes
-     * @return array    array[mimetype], array[transformation]
      */
     public function getAvailableMimeTypes()
     {
@@ -106,7 +107,7 @@ class Transformations
         $sub_dirs = [
             'Input/' => 'input_',
             'Output/' => '',
-            '' => ''
+            '' => '',
         ];
 
         foreach ($sub_dirs as $sd => $prefix) {
@@ -138,7 +139,7 @@ class Transformations
                 if (preg_match('|^[^.].*_.*_.*\.php$|', $file)) {
                     // File contains transformation functions.
                     $parts = explode('_', str_replace('.php', '', $file));
-                    $mimetype = $parts[0] . "/" . $parts[1];
+                    $mimetype = $parts[0] . '/' . $parts[1];
                     $stack['mimetype'][$mimetype] = $mimetype;
 
                     $stack[$prefix . 'transformation'][] = $mimetype . ': ' . $parts[2];
@@ -172,7 +173,7 @@ class Transformations
     public function getClassName($filename)
     {
         // get the transformation class name
-        $class_name = explode(".php", $filename);
+        $class_name = explode('.php', $filename);
         $class_name = 'PhpMyAdmin\\' . str_replace('/', '\\', mb_substr($class_name[0], 18));
 
         return $class_name;
@@ -183,16 +184,17 @@ class Transformations
      *
      * @param string $file transformation file
      *
-     * @return String the description of the transformation
+     * @return string the description of the transformation
      */
     public function getDescription($file)
     {
         $include_file = 'libraries/classes/Plugins/Transformations/' . $file;
-        /* @var $class_name PhpMyAdmin\Plugins\TransformationsInterface */
+        /** @var TransformationsInterface $class_name */
         $class_name = $this->getClassName($include_file);
-        // include and instantiate the class
-        include_once $include_file;
-        return $class_name::getInfo();
+        if (class_exists($class_name)) {
+            return $class_name::getInfo();
+        }
+        return '';
     }
 
     /**
@@ -200,16 +202,17 @@ class Transformations
      *
      * @param string $file transformation file
      *
-     * @return String the name of the transformation
+     * @return string the name of the transformation
      */
     public function getName($file)
     {
         $include_file = 'libraries/classes/Plugins/Transformations/' . $file;
-        /* @var $class_name PhpMyAdmin\Plugins\TransformationsInterface */
+        /** @var TransformationsInterface $class_name */
         $class_name = $this->getClassName($include_file);
-        // include and instantiate the class
-        include_once $include_file;
-        return $class_name::getName();
+        if (class_exists($class_name)) {
+            return $class_name::getName();
+        }
+        return '';
     }
 
     /**
@@ -227,8 +230,14 @@ class Transformations
     public function fixUpMime($value)
     {
         $value = str_replace(
-            ["jpeg", "png"],
-            ["JPEG", "PNG"],
+            [
+                'jpeg',
+                'png',
+            ],
+            [
+                'JPEG',
+                'PNG',
+            ],
             $value
         );
         return str_replace(
@@ -248,9 +257,9 @@ class Transformations
      * @param boolean $strict   whether to include only results having a mimetype set
      * @param boolean $fullName whether to use full column names as the key
      *
-     * @access public
+     * @return array|bool [field_name][field_key] = field_value
      *
-     * @return array [field_name][field_key] = field_value
+     * @access public
      */
     public function getMime($db, $table, $strict = false, $fullName = false)
     {
@@ -263,11 +272,11 @@ class Transformations
 
         $com_qry = '';
         if ($fullName) {
-            $com_qry .= "SELECT CONCAT("
+            $com_qry .= 'SELECT CONCAT('
                 . "`db_name`, '.', `table_name`, '.', `column_name`"
-                . ") AS column_name, ";
+                . ') AS column_name, ';
         } else {
-            $com_qry  = "SELECT `column_name`, ";
+            $com_qry  = 'SELECT `column_name`, ';
         }
         $com_qry .= '`mimetype`,
                     `transformation`,
@@ -278,7 +287,7 @@ class Transformations
             . Util::backquote($cfgRelation['column_info']) . '
              WHERE `db_name`    = \'' . $GLOBALS['dbi']->escapeString($db) . '\'
                AND `table_name` = \'' . $GLOBALS['dbi']->escapeString($table) . '\'
-               AND ( `mimetype` != \'\'' . (!$strict ? '
+               AND ( `mimetype` != \'\'' . (! $strict ? '
                   OR `transformation` != \'\'
                   OR `transformation_options` != \'\'
                   OR `input_transformation` != \'\'
@@ -292,8 +301,6 @@ class Transformations
 
         foreach ($result as $column => $values) {
             // convert mimetype to new format (f.e. Text_Plain, etc)
-            $delimiter_space = '- ';
-            $delimiter = "_";
             $values['mimetype'] = $this->fixUpMime($values['mimetype']);
 
             // For transformation of form
@@ -328,9 +335,9 @@ class Transformations
      * @param boolean $forcedelete        force delete, will erase any existing
      *                                    comments for this column
      *
-     * @access  public
-     *
      * @return boolean  true, if comment-query was made.
+     *
+     * @access  public
      */
     public function setMime(
         $db,

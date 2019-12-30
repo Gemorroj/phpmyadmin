@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportCodegen class
  *
@@ -33,7 +32,7 @@ class ExportCodegenTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $this->object = new ExportCodegen();
@@ -44,7 +43,7 @@ class ExportCodegenTest extends PmaTestCase
      *
      * @return void
      */
-    public function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }
@@ -69,16 +68,16 @@ class ExportCodegenTest extends PmaTestCase
 
         $this->assertEquals(
             [
-                "NHibernate C# DO",
-                "NHibernate XML"
+                'NHibernate C# DO',
+                'NHibernate XML',
             ],
             $attrCgFormats->getValue($this->object)
         );
 
         $this->assertEquals(
             [
-                "_handleNHibernateCSBody",
-                "_handleNHibernateXMLBody"
+                '_handleNHibernateCSBody',
+                '_handleNHibernateXMLBody',
             ],
             $attrCgHandlers->getValue($this->object)
         );
@@ -182,8 +181,8 @@ class ExportCodegenTest extends PmaTestCase
 
         $this->assertEquals(
             [
-                "NHibernate C# DO",
-                "NHibernate XML"
+                'NHibernate C# DO',
+                'NHibernate XML',
             ],
             $select->getValues()
         );
@@ -266,22 +265,22 @@ class ExportCodegenTest extends PmaTestCase
         );
         $result = ob_get_clean();
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<?xml version="1.0" encoding="utf-8" ?>',
             $result
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<class name="TestTable" table="TestTable">',
             $result
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '</class>',
             $result
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '</hibernate-mapping>',
             $result
         );
@@ -384,7 +383,7 @@ class ExportCodegenTest extends PmaTestCase
             "        #endregion\n" .
             "    }\n" .
             "    #endregion\n" .
-            "}",
+            '}',
             $result
         );
     }
@@ -464,7 +463,10 @@ class ExportCodegenTest extends PmaTestCase
         $setter->invoke($this->object, [1, 2]);
 
         $this->assertEquals(
-            [1, 2],
+            [
+                1,
+                2,
+            ],
             $getter->invoke($this->object)
         );
     }
@@ -489,7 +491,10 @@ class ExportCodegenTest extends PmaTestCase
         $setter->invoke($this->object, [1, 2]);
 
         $this->assertEquals(
-            [1, 2],
+            [
+                1,
+                2,
+            ],
             $getter->invoke($this->object)
         );
     }

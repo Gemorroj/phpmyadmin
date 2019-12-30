@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Common functions for the export functionality for Routines, Triggers and Events.
  *
@@ -12,7 +11,6 @@ namespace PhpMyAdmin\Rte;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Rte\Words;
 use PhpMyAdmin\Util;
 
 /**
@@ -33,8 +31,6 @@ class Export
     private $dbi;
 
     /**
-     * Export constructor.
-     *
      * @param DatabaseInterface $dbi DatabaseInterface object
      */
     public function __construct(DatabaseInterface $dbi)
@@ -69,7 +65,7 @@ class Export
                 $export_data = '<textarea cols="40" rows="15" style="width: 100%;">'
                    . $export_data . '</textarea>';
                 echo "<fieldset>\n"
-                   , "<legend>$title</legend>\n"
+                   , '<legend>' . $title . "</legend>\n"
                    , $export_data
                    , "</fieldset>\n";
             }
@@ -97,7 +93,7 @@ class Export
      */
     public function events()
     {
-        global $_GET, $db;
+        global $db;
 
         if (! empty($_GET['export_item']) && ! empty($_GET['item_name'])) {
             $item_name = $_GET['item_name'];
@@ -117,7 +113,7 @@ class Export
      */
     public function routines()
     {
-        global $_GET, $db;
+        global $db;
 
         if (! empty($_GET['export_item'])
             && ! empty($_GET['item_name'])
@@ -130,7 +126,7 @@ class Export
                         $_GET['item_type'],
                         $_GET['item_name']
                     );
-                if (! $rtn_definition) {
+                if ($rtn_definition === null) {
                     $export_data = false;
                 } else {
                     $export_data = "DELIMITER $$\n"
@@ -151,7 +147,7 @@ class Export
      */
     public function triggers()
     {
-        global $_GET, $db, $table;
+        global $db, $table;
 
         if (! empty($_GET['export_item']) && ! empty($_GET['item_name'])) {
             $item_name = $_GET['item_name'];

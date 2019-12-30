@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Hold the PhpMyAdmin\Utils\HttpRequest class
  *
@@ -45,7 +44,7 @@ class HttpRequest
         if (strlen($this->proxyUrl) > 0) {
             $context['http'] = [
                 'proxy' => $this->proxyUrl,
-                'request_fulluri' => true
+                'request_fulluri' => true,
             ];
             if (strlen($this->proxyUser) > 0) {
                 $auth = base64_encode(
@@ -65,7 +64,7 @@ class HttpRequest
      * @param int   $httpStatus       HTTP response status code
      * @param bool  $returnOnlyStatus If set to true, the method would only return response status
      *
-     * @return mixed
+     * @return string|null|bool
      */
     private function response(
         $response,
@@ -94,7 +93,7 @@ class HttpRequest
      * @param string $header           Header to be set for the HTTP request
      * @param int    $ssl              SSL mode to use
      *
-     * @return mixed
+     * @return string|null|bool
      */
     private function curl(
         $url,
@@ -121,14 +120,14 @@ class HttpRequest
         }
         $curlStatus &= curl_setopt($curlHandle, CURLOPT_USERAGENT, 'phpMyAdmin');
 
-        if ($method != "GET") {
+        if ($method != 'GET') {
             $curlStatus &= curl_setopt($curlHandle, CURLOPT_CUSTOMREQUEST, $method);
         }
         if ($header) {
             $curlStatus &= curl_setopt($curlHandle, CURLOPT_HTTPHEADER, [$header]);
         }
 
-        if ($method == "POST") {
+        if ($method == 'POST') {
             $curlStatus &= curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $content);
         }
 
@@ -141,7 +140,7 @@ class HttpRequest
          *
          * See https://letsencrypt.org/certificates/
          */
-        $certsDir = dirname(__file__) . '/../../certs/';
+        $certsDir = ROOT_PATH . 'libraries/certs/';
         /* See code below for logic */
         if ($ssl == CURLOPT_CAPATH) {
             $curlStatus &= curl_setopt($curlHandle, CURLOPT_CAPATH, $certsDir);
@@ -194,7 +193,7 @@ class HttpRequest
      * @param mixed  $content          Content to be sent with HTTP request
      * @param string $header           Header to be set for the HTTP request
      *
-     * @return mixed
+     * @return string|null|bool
      */
     private function fopen(
         $url,
@@ -209,13 +208,13 @@ class HttpRequest
                 'request_fulluri' => true,
                 'timeout' => 10,
                 'user_agent' => 'phpMyAdmin',
-                'header' => "Accept: */*",
-            ]
+                'header' => 'Accept: */*',
+            ],
         ];
         if ($header) {
             $context['http']['header'] .= "\n" . $header;
         }
-        if ($method == "POST") {
+        if ($method == 'POST') {
             $context['http']['content'] = $content;
         }
         $context = $this->handleContext($context);
@@ -225,7 +224,7 @@ class HttpRequest
             stream_context_create($context)
         );
         if (isset($http_response_header)) {
-            preg_match("#HTTP/[0-9\.]+\s+([0-9]+)#", $http_response_header[0], $out);
+            preg_match('#HTTP/[0-9\.]+\s+([0-9]+)#', $http_response_header[0], $out);
             $httpStatus = intval($out[1]);
             return $this->response($response, $httpStatus, $returnOnlyStatus);
         }
@@ -241,7 +240,7 @@ class HttpRequest
      * @param mixed  $content          Content to be sent with HTTP request
      * @param string $header           Header to be set for the HTTP request
      *
-     * @return mixed
+     * @return string|null|bool
      */
     public function create(
         $url,

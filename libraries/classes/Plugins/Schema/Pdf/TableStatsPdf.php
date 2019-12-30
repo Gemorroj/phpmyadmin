@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Contains PhpMyAdmin\Plugins\Schema\Pdf\TableStatsPdf class
  *
@@ -9,9 +8,9 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Pdf;
 
+use PhpMyAdmin\Pdf as PdfLib;
 use PhpMyAdmin\Plugins\Schema\ExportRelationSchema;
 use PhpMyAdmin\Plugins\Schema\TableStats;
-use PhpMyAdmin\Pdf as PdfLib;
 
 /**
  * Table preferences/statistics
@@ -35,20 +34,20 @@ class TableStatsPdf extends TableStats
     /**
      * The "PhpMyAdmin\Plugins\Schema\Pdf\TableStatsPdf" constructor
      *
+     * @see PMA_Schema_PDF, Table_Stats_Pdf::Table_Stats_setWidth,
+     *     PhpMyAdmin\Plugins\Schema\Pdf\TableStatsPdf::Table_Stats_setHeight
+     *
      * @param object  $diagram        The PDF diagram
      * @param string  $db             The database name
      * @param string  $tableName      The table name
      * @param integer $fontSize       The font size
      * @param integer $pageNumber     The current page number (from the
      *                                $cfg['Servers'][$i]['table_coords'] table)
-     * @param integer &$sameWideWidth The max. width among tables
+     * @param integer $sameWideWidth  The max. width among tables
      * @param boolean $showKeys       Whether to display keys or not
      * @param boolean $tableDimension Whether to display table position or not
      * @param boolean $offline        Whether the coordinates are sent
      *                                from the browser
-     *
-     * @see PMA_Schema_PDF, Table_Stats_Pdf::Table_Stats_setWidth,
-     *     PhpMyAdmin\Plugins\Schema\Pdf\TableStatsPdf::Table_Stats_setHeight
      */
     public function __construct(
         $diagram,
@@ -92,7 +91,7 @@ class TableStatsPdf extends TableStats
     {
         ExportRelationSchema::dieSchema(
             $this->pageNumber,
-            "PDF",
+            'PDF',
             sprintf(__('The %s table doesn\'t exist!'), $this->tableName)
         );
     }
@@ -116,13 +115,13 @@ class TableStatsPdf extends TableStats
     /**
      * Sets the width of the table
      *
-     * @param integer $fontSize The font size
+     * @see    PMA_Schema_PDF
      *
-     * @access private
+     * @param integer $fontSize The font size
      *
      * @return void
      *
-     * @see    PMA_Schema_PDF
+     * @access private
      */
     private function _setWidth($fontSize)
     {
@@ -156,15 +155,15 @@ class TableStatsPdf extends TableStats
     /**
      * Do draw the table
      *
+     * @see    PMA_Schema_PDF
+     *
      * @param integer         $fontSize The font size
      * @param boolean         $withDoc  Whether to include links to documentation
      * @param boolean|integer $setColor Whether to display color
      *
-     * @access public
-     *
      * @return void
      *
-     * @see    PMA_Schema_PDF
+     * @access public
      */
     public function tableDraw($fontSize, $withDoc, $setColor = 0)
     {

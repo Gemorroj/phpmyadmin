@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for Bookmark class
  *
@@ -23,10 +22,11 @@ class BookmarkTest extends TestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['cfg']['Server']['user'] = 'root';
         $GLOBALS['cfg']['Server']['pmadb'] = 'phpmyadmin';

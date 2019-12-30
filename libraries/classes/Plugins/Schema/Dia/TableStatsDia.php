@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Contains PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia class
  *
@@ -30,7 +29,7 @@ class TableStatsDia extends TableStats
     /**
      * The "PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia" constructor
      *
-     * @param object  $diagram    The current dia document
+     * @param Dia     $diagram    The current dia document
      * @param string  $db         The database name
      * @param string  $tableName  The table name
      * @param integer $pageNumber The current page number (from the
@@ -72,7 +71,7 @@ class TableStatsDia extends TableStats
     {
         ExportRelationSchema::dieSchema(
             $this->pageNumber,
-            "DIA",
+            'DIA',
             sprintf(__('The %s table doesn\'t exist!'), $this->tableName)
         );
     }
@@ -86,6 +85,8 @@ class TableStatsDia extends TableStats
      * Object and their attributes are involved in the combination
      * of displaying Database - Table on Dia Document.
      *
+     * @see    Dia
+     *
      * @param boolean $showColor Whether to show color for tables text or not
      *                           if showColor is true then an array of $listOfColors
      *                           will be used to choose the random colors for tables
@@ -94,7 +95,6 @@ class TableStatsDia extends TableStats
      * @return void
      *
      * @access public
-     * @see    Dia
      */
     public function tableDraw($showColor)
     {
@@ -102,7 +102,7 @@ class TableStatsDia extends TableStats
             $listOfColors = [
                 'FF0000',
                 '000099',
-                '00FF00'
+                '00FF00',
             ];
             shuffle($listOfColors);
             $this->tableColor =  '#' . $listOfColors[0] . '';

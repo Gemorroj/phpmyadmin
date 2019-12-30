@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Selenium TestCase for 'query by example' tests
  *
@@ -26,22 +25,21 @@ class QueryByExampleTest extends TestBase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->dbQuery(
-            "CREATE TABLE `test_table` ("
-            . " `id` int(11) NOT NULL AUTO_INCREMENT,"
-            . " `val` int(11) NOT NULL,"
-            . " PRIMARY KEY (`id`)"
-            . ")"
+            'CREATE TABLE `test_table` ('
+            . ' `id` int(11) NOT NULL AUTO_INCREMENT,'
+            . ' `val` int(11) NOT NULL,'
+            . ' PRIMARY KEY (`id`)'
+            . ')'
         );
         $this->dbQuery(
-            "INSERT INTO `test_table` (val) VALUES (2), (6), (5), (3), (4), (4), (5);"
+            'INSERT INTO `test_table` (val) VALUES (2), (6), (5), (3), (4), (4), (5);'
         );
 
-        $this->maximize();
         $this->login();
     }
 
@@ -120,7 +118,7 @@ class QueryByExampleTest extends TestBase
 
         $this->scrollToBottom();
 
-        $expected = "SELECT `test_table`.`id` AS `ID`, `test_table`.`val` AS `VAL`"
+        $expected = 'SELECT `test_table`.`id` AS `ID`, `test_table`.`val` AS `VAL`'
             . "\nFROM `test_table`"
             . "\nWHERE ((`test_table`.`id` > 1) AND (`test_table`.`val` < 6))"
             . "\nORDER BY `test_table`.`val` ASC, `test_table`.`id` DESC";
@@ -143,51 +141,51 @@ class QueryByExampleTest extends TestBase
         /* Assert Row 1 */
         $this->assertEquals(
             4,
-            $this->getCellByTableClass('table_results', 1, 1)
+            $this->getCellByTableClass('table_results', 1, 5)
         );
         $this->assertEquals(
             3,
-            $this->getCellByTableClass('table_results', 1, 2)
+            $this->getCellByTableClass('table_results', 1, 6)
         );
 
         /* Assert Row 2 */
         $this->assertEquals(
             6,
-            $this->getCellByTableClass('table_results', 2, 1)
+            $this->getCellByTableClass('table_results', 2, 5)
         );
         $this->assertEquals(
             4,
-            $this->getCellByTableClass('table_results', 2, 2)
+            $this->getCellByTableClass('table_results', 2, 6)
         );
 
         /* Assert Row 3 */
         $this->assertEquals(
             5,
-            $this->getCellByTableClass('table_results', 3, 1)
+            $this->getCellByTableClass('table_results', 3, 5)
         );
         $this->assertEquals(
             4,
-            $this->getCellByTableClass('table_results', 3, 2)
+            $this->getCellByTableClass('table_results', 3, 6)
         );
 
         /* Assert Row 4 */
         $this->assertEquals(
             7,
-            $this->getCellByTableClass('table_results', 4, 1)
+            $this->getCellByTableClass('table_results', 4, 5)
         );
         $this->assertEquals(
             5,
-            $this->getCellByTableClass('table_results', 4, 2)
+            $this->getCellByTableClass('table_results', 4, 6)
         );
 
         /* Assert Row 5 */
         $this->assertEquals(
             3,
-            $this->getCellByTableClass('table_results', 5, 1)
+            $this->getCellByTableClass('table_results', 5, 5)
         );
         $this->assertEquals(
             5,
-            $this->getCellByTableClass('table_results', 5, 2)
+            $this->getCellByTableClass('table_results', 5, 6)
         );
     }
 }

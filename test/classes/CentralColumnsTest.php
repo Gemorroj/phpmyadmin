@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for PhpMyAdmin\CentralColumns
  *
@@ -12,6 +11,7 @@ namespace PhpMyAdmin\Tests;
 use PhpMyAdmin\CentralColumns;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Types;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
@@ -31,39 +31,65 @@ class CentralColumnsTest extends TestCase
 
     private $columnData = [
         [
-            'col_name' => "id", "col_type" => 'integer',
-            'col_length' => 0, 'col_isNull' => 0,
+            'col_name' => 'id',
+            'col_type' => 'integer',
+            'col_length' => 0,
+            'col_isNull' => 0,
             'col_extra' => 'UNSIGNED,auto_increment',
-            'col_default' => 1, 'col_collation' => ''
-        ],
-        ['col_name' => "col1", 'col_type' => 'varchar',
-            'col_length' => 100, 'col_isNull' => 1, 'col_extra' => 'BINARY',
-            'col_default' => 1, 'col_collation' => ''
+            'col_default' => 1,
+            'col_collation' => '',
         ],
         [
-            'col_name' => "col2", 'col_type' => 'DATETIME',
-            'col_length' => 0, 'col_isNull' => 1,
+            'col_name' => 'col1',
+            'col_type' => 'varchar',
+            'col_length' => 100,
+            'col_isNull' => 1,
+            'col_extra' => 'BINARY',
+            'col_default' => 1,
+            'col_collation' => '',
+        ],
+        [
+            'col_name' => 'col2',
+            'col_type' => 'DATETIME',
+            'col_length' => 0,
+            'col_isNull' => 1,
             'col_extra' => 'on update CURRENT_TIMESTAMP',
-            'col_default' => 'CURRENT_TIMESTAMP', 'col_collation' => ''
-        ]
+            'col_default' => 'CURRENT_TIMESTAMP',
+            'col_collation' => '',
+        ],
     ];
 
     private $modifiedColumnData = [
         [
-            'col_name' => "id", "col_type" => 'integer',
-            'col_length' => 0, 'col_isNull' => 0, 'col_extra' => 'auto_increment',
-            'col_default' => 1, 'col_collation' => '', 'col_attribute' => 'UNSIGNED'
-        ],
-        ['col_name' => "col1", 'col_type' => 'varchar',
-            'col_length' => 100, 'col_isNull' => 1, 'col_extra' => '',
-            'col_default' => 1, 'col_collation' => '', 'col_attribute' => 'BINARY'
+            'col_name' => 'id',
+            'col_type' => 'integer',
+            'col_length' => 0,
+            'col_isNull' => 0,
+            'col_extra' => 'auto_increment',
+            'col_default' => 1,
+            'col_collation' => '',
+            'col_attribute' => 'UNSIGNED',
         ],
         [
-            'col_name' => "col2", 'col_type' => 'DATETIME',
-            'col_length' => 0, 'col_isNull' => 1, 'col_extra' => '',
-            'col_default' => 'CURRENT_TIMESTAMP', 'col_collation' => '',
-            'col_attribute' => 'on update CURRENT_TIMESTAMP'
-        ]
+            'col_name' => 'col1',
+            'col_type' => 'varchar',
+            'col_length' => 100,
+            'col_isNull' => 1,
+            'col_extra' => '',
+            'col_default' => 1,
+            'col_collation' => '',
+            'col_attribute' => 'BINARY',
+        ],
+        [
+            'col_name' => 'col2',
+            'col_type' => 'DATETIME',
+            'col_length' => 0,
+            'col_isNull' => 1,
+            'col_extra' => '',
+            'col_default' => 'CURRENT_TIMESTAMP',
+            'col_collation' => '',
+            'col_attribute' => 'on update CURRENT_TIMESTAMP',
+        ],
     ];
 
     /**
@@ -71,13 +97,13 @@ class CentralColumnsTest extends TestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['cfg']['Server']['user'] = 'pma_user';
         $GLOBALS['cfg']['Server']['DisableIS'] = true;
         $GLOBALS['cfg']['MaxRows'] = 10;
-        $GLOBALS['cfg']['ServerDefault'] = "PMA_server";
+        $GLOBALS['cfg']['ServerDefault'] = 'PMA_server';
         $GLOBALS['cfg']['ActionLinksMode'] = 'icons';
         $GLOBALS['cfg']['CharEditing'] = '';
         $GLOBALS['cfg']['LimitChars'] = 50;
@@ -92,7 +118,7 @@ class CentralColumnsTest extends TestCase
             'relwork' => 1,
             'db' => 'phpmyadmin',
             'relation' => 'relation',
-            'central_columns' => 'pma_central_columns'
+            'central_columns' => 'pma_central_columns',
         ];
 
         // mock DBI
@@ -111,22 +137,31 @@ class CentralColumnsTest extends TestCase
             ->will(
                 $this->returnValue(
                     [
-                        "id" => ["Type" => "integer", "Null" => "NO"],
-                        "col1" => ["Type" => 'varchar(100)', "Null" => "YES"],
-                        "col2" => ["Type" => 'DATETIME', "Null" => "NO"]
+                        'id' => [
+                            'Type' => 'integer',
+                            'Null' => 'NO',
+                        ],
+                        'col1' => [
+                            'Type' => 'varchar(100)',
+                            'Null' => 'YES',
+                        ],
+                        'col2' => [
+                            'Type' => 'DATETIME',
+                            'Null' => 'NO',
+                        ],
                     ]
                 )
             );
         $dbi->expects($this->any())
             ->method('getColumnNames')
-            ->will($this->returnValue(["id", "col1", "col2"]));
+            ->will($this->returnValue(['id', 'col1', 'col2']));
         $dbi->expects($this->any())
             ->method('tryQuery')
             ->will($this->returnValue(true));
         $dbi->expects($this->any())
             ->method('getTables')
             ->will(
-                $this->returnValue(["PMA_table", "PMA_table1", "PMA_table2"])
+                $this->returnValue(['PMA_table', 'PMA_table1', 'PMA_table2'])
             );
         $dbi->expects($this->any())->method('escapeString')
             ->will($this->returnArgument(0));
@@ -168,7 +203,7 @@ class CentralColumnsTest extends TestCase
             [
                 'user' => 'pma_user',
                 'db' => 'phpmyadmin',
-                'table' => 'pma_central_columns'
+                'table' => 'pma_central_columns',
             ],
             $this->centralColumns->getParams()
         );
@@ -208,7 +243,7 @@ class CentralColumnsTest extends TestCase
         $GLOBALS['dbi']->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT count(db_name) FROM `pma_central_columns` "
+                'SELECT count(db_name) FROM `pma_central_columns` '
                 . "WHERE db_name = 'phpmyadmin';",
                 null,
                 null,
@@ -231,8 +266,8 @@ class CentralColumnsTest extends TestCase
      */
     public function testSyncUniqueColumns()
     {
-        $_REQUEST['db'] = 'PMA_db';
-        $_REQUEST['table'] = 'PMA_table';
+        $_POST['db'] = 'PMA_db';
+        $_POST['table'] = 'PMA_table';
 
         $this->assertTrue(
             $this->centralColumns->syncUniqueColumns(
@@ -248,14 +283,14 @@ class CentralColumnsTest extends TestCase
      */
     public function testDeleteColumnsFromList()
     {
-        $_REQUEST['db'] = 'PMA_db';
-        $_REQUEST['table'] = 'PMA_table';
+        $_POST['db'] = 'PMA_db';
+        $_POST['table'] = 'PMA_table';
 
         // when column exists in the central column list
         $GLOBALS['dbi']->expects($this->at(4))
             ->method('fetchResult')
             ->with(
-                "SELECT col_name FROM `pma_central_columns` "
+                'SELECT col_name FROM `pma_central_columns` '
                 . "WHERE db_name = 'PMA_db' AND col_name IN ('col1');",
                 null,
                 null,
@@ -268,7 +303,7 @@ class CentralColumnsTest extends TestCase
         $GLOBALS['dbi']->expects($this->at(7))
             ->method('tryQuery')
             ->with(
-                "DELETE FROM `pma_central_columns` "
+                'DELETE FROM `pma_central_columns` '
                 . "WHERE db_name = 'PMA_db' AND col_name IN ('col1');",
                 DatabaseInterface::CONNECT_CONTROL
             )
@@ -278,7 +313,8 @@ class CentralColumnsTest extends TestCase
 
         $this->assertTrue(
             $this->centralColumns->deleteColumnsFromList(
-                ["col1"],
+                $_POST['db'],
+                ['col1'],
                 false
             )
         );
@@ -287,6 +323,7 @@ class CentralColumnsTest extends TestCase
         $this->assertInstanceOf(
             'PhpMyAdmin\Message',
             $this->centralColumns->deleteColumnsFromList(
+                $_POST['db'],
                 ['column1'],
                 false
             )
@@ -295,6 +332,7 @@ class CentralColumnsTest extends TestCase
         $this->assertInstanceOf(
             'PhpMyAdmin\Message',
             $this->centralColumns->deleteColumnsFromList(
+                $_POST['db'],
                 ['PMA_table']
             )
         );
@@ -319,7 +357,7 @@ class CentralColumnsTest extends TestCase
             );
         $this->assertTrue(
             $this->centralColumns->makeConsistentWithList(
-                "phpmyadmin",
+                'phpmyadmin',
                 ['PMA_table']
             )
         );
@@ -338,17 +376,20 @@ class CentralColumnsTest extends TestCase
         $GLOBALS['dbi']->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT col_name FROM `pma_central_columns` "
+                'SELECT col_name FROM `pma_central_columns` '
                 . "WHERE db_name = 'PMA_db' AND col_name IN ('id','col1','col2');",
                 null,
                 null,
                 DatabaseInterface::CONNECT_CONTROL
             )
             ->will(
-                $this->returnValue(['id','col1'])
+                $this->returnValue(['id', 'col1'])
             );
         $this->assertEquals(
-            ["id", "col1"],
+            [
+                'id',
+                'col1',
+            ],
             $this->centralColumns->getFromTable(
                 $db,
                 $table
@@ -369,7 +410,7 @@ class CentralColumnsTest extends TestCase
         $GLOBALS['dbi']->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT * FROM `pma_central_columns` "
+                'SELECT * FROM `pma_central_columns` '
                 . "WHERE db_name = 'PMA_db' AND col_name IN ('id','col1','col2');",
                 null,
                 null,
@@ -397,30 +438,30 @@ class CentralColumnsTest extends TestCase
     {
         $this->assertTrue(
             $this->centralColumns->updateOneColumn(
-                "phpmyadmin",
-                "",
-                "",
-                "",
-                "",
-                "",
+                'phpmyadmin',
+                '',
+                '',
+                '',
+                '',
+                '',
                 0,
-                "",
-                "",
-                ""
+                '',
+                '',
+                ''
             )
         );
         $this->assertTrue(
             $this->centralColumns->updateOneColumn(
-                "phpmyadmin",
-                "col1",
-                "",
-                "",
-                "",
-                "",
+                'phpmyadmin',
+                'col1',
+                '',
+                '',
+                '',
+                '',
                 0,
-                "",
-                "",
-                ""
+                '',
+                '',
+                ''
             )
         );
     }
@@ -432,17 +473,41 @@ class CentralColumnsTest extends TestCase
      */
     public function testUpdateMultipleColumn()
     {
-        $_POST['db'] = 'phpmyadmin';
-        $_POST['orig_col_name'] = ["col1","col2"];
-        $_POST['field_name'] = ["col1","col2"];
-        $_POST['field_default_type'] = ["",""];
-        $_POST['col_extra'] = ["",""];
-        $_POST['field_length'] = ["",""];
-        $_POST['field_attribute'] = ["",""];
-        $_POST['field_type'] = ["",""];
-        $_POST['field_collation'] = ["",""];
+        $params['db'] = 'phpmyadmin';
+        $params['orig_col_name'] = [
+            'col1',
+            'col2',
+        ];
+        $params['field_name'] = [
+            'col1',
+            'col2',
+        ];
+        $params['field_default_type'] = [
+            '',
+            '',
+        ];
+        $params['col_extra'] = [
+            '',
+            '',
+        ];
+        $params['field_length'] = [
+            '',
+            '',
+        ];
+        $params['field_attribute'] = [
+            '',
+            '',
+        ];
+        $params['field_type'] = [
+            '',
+            '',
+        ];
+        $params['field_collation'] = [
+            '',
+            '',
+        ];
         $this->assertTrue(
-            $this->centralColumns->updateMultipleColumn()
+            $this->centralColumns->updateMultipleColumn($params)
         );
     }
 
@@ -456,7 +521,7 @@ class CentralColumnsTest extends TestCase
         $GLOBALS['dbi']->expects($this->any())
             ->method('fetchResult')
             ->with(
-                "SELECT * FROM `pma_central_columns` "
+                'SELECT * FROM `pma_central_columns` '
                 . "WHERE db_name = 'phpmyadmin' AND col_name IN ('col1','col2');",
                 null,
                 null,
@@ -466,18 +531,27 @@ class CentralColumnsTest extends TestCase
                 $this->returnValue($this->columnData)
             );
         $result = $this->centralColumns->getHtmlForEditingPage(
-            ["col1", "col2"],
+            [
+                'col1',
+                'col2',
+            ],
             'phpmyadmin'
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<form',
             $result
         );
         $header_cells = [
-        __('Name'), __('Type'), __('Length/Values'), __('Default'),
-        __('Collation'), __('Attributes'), __('Null'), __('A_I')
+            __('Name'),
+            __('Type'),
+            __('Length/Values'),
+            __('Default'),
+            __('Collation'),
+            __('Attributes'),
+            __('Null'),
+            __('A_I'),
         ];
-        $this->assertContains(
+        $this->assertStringContainsString(
             $this->callProtectedMethod(
                 'getEditTableHeader',
                 [$header_cells]
@@ -492,7 +566,7 @@ class CentralColumnsTest extends TestCase
                 true,
             ]
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $this->callProtectedMethod(
                 'getHtmlForEditTableRow',
                 [
@@ -502,7 +576,7 @@ class CentralColumnsTest extends TestCase
             ),
             $result
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $this->callProtectedMethod('getEditTableFooter'),
             $result
         );
@@ -518,7 +592,7 @@ class CentralColumnsTest extends TestCase
         $GLOBALS['dbi']->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT * FROM `pma_central_columns` "
+                'SELECT * FROM `pma_central_columns` '
                 . "WHERE db_name = 'phpmyadmin';",
                 null,
                 null,
@@ -528,7 +602,7 @@ class CentralColumnsTest extends TestCase
                 $this->returnValue($this->columnData)
             );
         $this->assertEquals(
-            json_encode($this->modifiedColumnData),
+            $this->modifiedColumnData,
             $this->centralColumns->getListRaw(
                 'phpmyadmin',
                 ''
@@ -546,7 +620,7 @@ class CentralColumnsTest extends TestCase
         $GLOBALS['dbi']->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT * FROM `pma_central_columns` "
+                'SELECT * FROM `pma_central_columns` '
                 . "WHERE db_name = 'phpmyadmin' AND col_name "
                 . "NOT IN ('id','col1','col2');",
                 null,
@@ -557,7 +631,7 @@ class CentralColumnsTest extends TestCase
                 $this->returnValue($this->columnData)
             );
         $this->assertEquals(
-            json_encode($this->modifiedColumnData),
+            $this->modifiedColumnData,
             $this->centralColumns->getListRaw(
                 'phpmyadmin',
                 'table1'
@@ -575,8 +649,8 @@ class CentralColumnsTest extends TestCase
         $db = 'phpmyadmin';
         $total_rows = 50;
         $pos = 26;
-        $pmaThemeImage = "pmaThemeImage";
-        $text_dir = "text_dir";
+        $pmaThemeImage = 'pmaThemeImage';
+        $text_dir = 'text_dir';
         $max_rows = (int) $GLOBALS['cfg']['MaxRows'];
         // test for not empty table
         $result = $this->centralColumns->getHtmlForMain(
@@ -586,23 +660,25 @@ class CentralColumnsTest extends TestCase
             $pmaThemeImage,
             $text_dir
         );
-        $this->assertContains(
-            '<form action="db_central_columns.php" method="post">',
+        $this->assertStringContainsString(
+            '<form action="index.php?route=/database/central-columns',
             $result
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
+            '" method="post">',
+            $result
+        );
+        $this->assertStringContainsString(
             Url::getHiddenInputs(
                 'phpmyadmin'
             ),
             $result
         );
-        $this->assertContains(
-            '<input type="submit" name="navig"'
-            . ' class="ajax" '
-            . 'value="&lt" />',
+        $this->assertStringContainsString(
+            '<input class="btn btn-secondary ajax" type="submit" name="navig" value="&lt">',
             $result
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             Util::pageselector(
                 'pos',
                 $max_rows,
@@ -611,29 +687,29 @@ class CentralColumnsTest extends TestCase
             ),
             $result
         );
-        $this->assertContains('<span>+', $result);
-        $this->assertContains('class="new_central_col hide"', $result);
-        $this->assertContains(__('Filter rows') . ':', $result);
-        $this->assertContains(__('Add column'), $result);
-        $this->assertContains(__('Click to sort.'), $result);
-        $this->assertContains(Url::getHiddenInputs($db), $result);
-        $this->assertContains(Url::getHiddenInputs($db), $result);
-        $editSelectedButton = Util::getButtonOrImage(
+        $this->assertStringContainsString('<span>+', $result);
+        $this->assertStringContainsString('class="new_central_col hide"', $result);
+        $this->assertStringContainsString(__('Filter rows') . ':', $result);
+        $this->assertStringContainsString(__('Add column'), $result);
+        $this->assertStringContainsString(__('Click to sort.'), $result);
+        $this->assertStringContainsString(Url::getHiddenInputs($db), $result);
+        $this->assertStringContainsString(Url::getHiddenInputs($db), $result);
+        $editSelectedButton = Generator::getButtonOrImage(
             'edit_central_columns',
             'mult_submit change_central_columns',
             __('Edit'),
             'b_edit',
             'edit central columns'
         );
-        $deleteSelectedButton = Util::getButtonOrImage(
+        $deleteSelectedButton = Generator::getButtonOrImage(
             'delete_central_columns',
             'mult_submit',
             __('Delete'),
             'b_drop',
             'remove_from_central_columns'
         );
-        $this->assertContains($editSelectedButton, $result);
-        $this->assertContains($deleteSelectedButton, $result);
+        $this->assertStringContainsString($editSelectedButton, $result);
+        $this->assertStringContainsString($deleteSelectedButton, $result);
         // test for empty table
         $total_rows = 0;
         $result = $this->centralColumns->getHtmlForMain(
@@ -643,11 +719,11 @@ class CentralColumnsTest extends TestCase
             $pmaThemeImage,
             $text_dir
         );
-        $this->assertContains('<span>-', $result);
-        $this->assertContains('class="new_central_col"', $result);
-        $this->assertContains(__('Add column'), $result);
-        $this->assertContains(Url::getHiddenInputs($db), $result);
-        $this->assertContains(__('The central list of columns for the current database is empty'), $result);
+        $this->assertStringContainsString('<span>-', $result);
+        $this->assertStringContainsString('class="new_central_col"', $result);
+        $this->assertStringContainsString(__('Add column'), $result);
+        $this->assertStringContainsString(Url::getHiddenInputs($db), $result);
+        $this->assertStringContainsString(__('The central list of columns for the current database is empty'), $result);
     }
 
     /**
@@ -702,16 +778,16 @@ class CentralColumnsTest extends TestCase
      */
     public function testGetTableFooter()
     {
-        $pmaThemeImage = "pmaThemeImage";
-        $text_dir = "text_dir";
+        $pmaThemeImage = 'pmaThemeImage';
+        $text_dir = 'text_dir';
         $result = $this->centralColumns->getTableFooter($pmaThemeImage, $text_dir);
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<input type="checkbox" id="tableslistcontainer_checkall" class="checkall_box"',
             $result
         );
-        $this->assertContains("With selected:", $result);
-        $this->assertContains(
-            '<button class="mult_submit change_central_columns"',
+        $this->assertStringContainsString('With selected:', $result);
+        $this->assertStringContainsString(
+            '<button class="btn btn-link mult_submit change_central_columns"',
             $result
         );
     }

@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Bootstrap for phpMyAdmin tests
  *
@@ -11,7 +10,12 @@ use PhpMyAdmin\Config;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\LanguageManager;
 use PhpMyAdmin\MoTranslator\Loader;
+use PhpMyAdmin\Tests\Stubs\DbiDummy;
 use PhpMyAdmin\Theme;
+
+if (! defined('ROOT_PATH')) {
+    define('ROOT_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+}
 
 /**
  * Set precision to sane value, with higher values
@@ -28,7 +32,7 @@ date_default_timezone_set('UTC');
 
 // Adding phpMyAdmin sources to include path
 set_include_path(
-    get_include_path() . PATH_SEPARATOR . dirname((string) realpath("../index.php"))
+    get_include_path() . PATH_SEPARATOR . dirname((string) realpath('../index.php'))
 );
 
 // Setting constants for testing
@@ -50,7 +54,7 @@ $test_defaults = [
     'TESTSUITE_BROWSERSTACK_USER' => '',
     'TESTSUITE_BROWSERSTACK_KEY' => '',
     'TESTSUITE_FULL' => '',
-    'CI_MODE' => ''
+    'CI_MODE' => '',
 ];
 if (PHP_SAPI == 'cli') {
     foreach ($test_defaults as $varname => $defvalue) {
@@ -63,7 +67,7 @@ if (PHP_SAPI == 'cli') {
     }
 }
 
-require_once 'libraries/vendor_config.php';
+require_once ROOT_PATH . 'libraries/vendor_config.php';
 require_once AUTOLOAD_FILE;
 Loader::loadFunctions();
 $GLOBALS['PMA_Config'] = new Config();
@@ -75,7 +79,7 @@ define('PMA_MAJOR_VERSION', $GLOBALS['PMA_Config']->get('PMA_MAJOR_VERSION'));
 LanguageManager::getInstance()->getLanguage('en')->activate();
 
 /* Load Database interface */
-DatabaseInterface::load();
+$GLOBALS['dbi'] = DatabaseInterface::load(new DbiDummy());
 
 // Set proxy information from env, if available
 $http_proxy = getenv('http_proxy');
@@ -94,6 +98,6 @@ session_start();
 
 // Standard environment for tests
 $_SESSION[' PMA_token '] = 'token';
-$GLOBALS['PMA_Theme'] = Theme::load('./themes/pmahomme');
+$GLOBALS['PMA_Theme'] = Theme::load(ROOT_PATH . 'themes/pmahomme');
 $_SESSION['tmpval']['pftext'] = 'F';
 $GLOBALS['lang'] = 'en';

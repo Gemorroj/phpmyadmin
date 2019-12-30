@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * hold PhpMyAdmin\Twig\UrlExtension class
  *
@@ -11,11 +10,8 @@ namespace PhpMyAdmin\Twig;
 
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-use Twig\TwigFilter;
 
 /**
- * Class UrlExtension
- *
  * @package PhpMyAdmin\Twig
  */
 class UrlExtension extends AbstractExtension
@@ -48,20 +44,10 @@ class UrlExtension extends AbstractExtension
                 'PhpMyAdmin\Url::getCommonRaw',
                 ['is_safe' => ['html']]
             ),
-        ];
-    }
-
-    /**
-     * Returns a list of filters to add to the existing list.
-     *
-     * @return TwigFilter[]
-     */
-    public function getFilters()
-    {
-        return [
-            new TwigFilter(
-                'link',
-                'PhpMyAdmin\Core::linkURL'
+            new TwigFunction(
+                'url',
+                'PhpMyAdmin\Url::getFromRoute',
+                ['is_safe' => ['html']]
             ),
         ];
     }

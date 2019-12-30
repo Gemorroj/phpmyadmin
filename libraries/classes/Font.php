@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Class with Font related methods.
  *
@@ -20,6 +19,7 @@ class Font
      * Get list with characters and the corresponding width modifiers.
      *
      * @return array with characters and corresponding width modifier
+     *
      * @access public
      */
     public function getCharLists(): array
@@ -28,48 +28,137 @@ class Font
         $charLists = [];
 
         //ijl
-        $charLists[] = ["chars" => ["i", "j", "l"], "modifier" => 0.23];
+        $charLists[] = [
+            'chars' => [
+                'i',
+                'j',
+                'l',
+            ], 'modifier' => 0.23,
+        ];
         //f
-        $charLists[] = ["chars" => ["f"], "modifier" => 0.27];
+        $charLists[] = [
+            'chars' => ['f'],
+            'modifier' => 0.27,
+        ];
         //tI
-        $charLists[] = ["chars" => ["t", "I"], "modifier" => 0.28];
+        $charLists[] = [
+            'chars' => [
+                't',
+                'I',
+            ], 'modifier' => 0.28,
+        ];
         //r
-        $charLists[] = ["chars" => ["r"], "modifier" => 0.34];
+        $charLists[] = [
+            'chars' => ['r'],
+            'modifier' => 0.34,
+        ];
         //1
-        $charLists[] = ["chars" => ["1"], "modifier" => 0.49];
+        $charLists[] = [
+            'chars' => ['1'],
+            'modifier' => 0.49,
+        ];
         //cksvxyzJ
         $charLists[] = [
-            "chars" => ["c", "k", "s", "v", "x", "y", "z", "J"],
-            "modifier" => 0.5
+            'chars' => [
+                'c',
+                'k',
+                's',
+                'v',
+                'x',
+                'y',
+                'z',
+                'J',
+            ],
+            'modifier' => 0.5,
         ];
         //abdeghnopquL023456789
         $charLists[] = [
-            "chars" => [
-                "a", "b", "d", "e", "g", "h", "n", "o", "p", "q", "u", "L",
-                "0", "2", "3", "4", "5", "6", "7", "8", "9"
+            'chars' => [
+                'a',
+                'b',
+                'd',
+                'e',
+                'g',
+                'h',
+                'n',
+                'o',
+                'p',
+                'q',
+                'u',
+                'L',
+                '0',
+                '2',
+                '3',
+                '4',
+                '5',
+                '6',
+                '7',
+                '8',
+                '9',
             ],
-            "modifier" => 0.56
+            'modifier' => 0.56,
         ];
         //FTZ
-        $charLists[] = ["chars" => ["F", "T", "Z"], "modifier" => 0.61];
+        $charLists[] = [
+            'chars' => [
+                'F',
+                'T',
+                'Z',
+            ], 'modifier' => 0.61,
+        ];
         //ABEKPSVXY
         $charLists[] = [
-            "chars" => ["A", "B", "E", "K", "P", "S", "V", "X", "Y"],
-            "modifier" => 0.67
+            'chars' => [
+                'A',
+                'B',
+                'E',
+                'K',
+                'P',
+                'S',
+                'V',
+                'X',
+                'Y',
+            ],
+            'modifier' => 0.67,
         ];
         //wCDHNRU
         $charLists[] = [
-            "chars" => ["w", "C", "D", "H", "N", "R", "U"],
-            "modifier" => 0.73
+            'chars' => [
+                'w',
+                'C',
+                'D',
+                'H',
+                'N',
+                'R',
+                'U',
+            ],
+            'modifier' => 0.73,
         ];
         //GOQ
-        $charLists[] = ["chars" => ["G", "O", "Q"], "modifier" => 0.78];
+        $charLists[] = [
+            'chars' => [
+                'G',
+                'O',
+                'Q',
+            ], 'modifier' => 0.78,
+        ];
         //mM
-        $charLists[] = ["chars" => ["m", "M"], "modifier" => 0.84];
+        $charLists[] = [
+            'chars' => [
+                'm',
+                'M',
+            ], 'modifier' => 0.84,
+        ];
         //W
-        $charLists[] = ["chars" => ["W"], "modifier" => 0.95];
+        $charLists[] = [
+            'chars' => ['W'],
+            'modifier' => 0.95,
+        ];
         //" "
-        $charLists[] = ["chars" => [" "], "modifier" => 0.28];
+        $charLists[] = [
+            'chars' => [' '],
+            'modifier' => 0.28,
+        ];
 
         return $charLists;
     }
@@ -86,6 +175,7 @@ class Font
      * @param array|null $charLists list of characters and their width modifiers
      *
      * @return integer width of the text
+     *
      * @access public
      */
     public function getStringWidth(
@@ -94,9 +184,8 @@ class Font
         int $fontSize,
         ?array $charLists = null
     ): int {
-        if (empty($charLists)
-            || !isset($charLists[0]["chars"]) || !is_array($charLists[0]["chars"])
-            || !isset($charLists[0]["modifier"])
+        if (! isset($charLists[0]['chars'], $charLists[0]['modifier']) || empty($charLists)
+            || ! is_array($charLists[0]['chars'])
         ) {
             $charLists = $this->getCharLists();
         }
@@ -107,15 +196,14 @@ class Font
         $count = 0;
 
         foreach ($charLists as $charList) {
-            $count += ((mb_strlen($text)
-                - mb_strlen(str_replace($charList["chars"], "", $text))
-                ) * $charList["modifier"]);
+            $count += (mb_strlen($text)
+                - mb_strlen(str_replace($charList['chars'], '', $text))
+                ) * $charList['modifier'];
         }
 
-        $text  = str_replace(" ", "", $text);//remove the " "'s
+        $text  = str_replace(' ', '', $text);//remove the " "'s
         //all other chars
-        $count = $count
-            + (mb_strlen(preg_replace("/[a-z0-9]/i", "", $text)) * 0.3);
+        $count += mb_strlen(preg_replace('/[a-z0-9]/i', '', $text)) * 0.3;
 
         $modifier = 1;
         $font = mb_strtolower($font);

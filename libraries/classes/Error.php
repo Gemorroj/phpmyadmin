@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Holds class PhpMyAdmin\Error
  *
@@ -39,6 +38,7 @@ class Error extends Message
         E_USER_NOTICE        => 'User Notice',
         E_STRICT             => 'Runtime Notice',
         E_DEPRECATED         => 'Deprecation Notice',
+        E_USER_DEPRECATED    => 'Deprecation Notice',
         E_RECOVERABLE_ERROR  => 'Catchable Fatal Error',
     ];
 
@@ -62,6 +62,7 @@ class Error extends Message
         E_USER_NOTICE        => 'notice',
         E_STRICT             => 'notice',
         E_DEPRECATED         => 'notice',
+        E_USER_DEPRECATED    => 'notice',
         E_RECOVERABLE_ERROR  => 'error',
     ];
 
@@ -131,7 +132,12 @@ class Error extends Message
     {
         $result = [];
 
-        $members = ['line', 'function', 'class', 'type'];
+        $members = [
+            'line',
+            'function',
+            'class',
+            'type',
+        ];
 
         foreach ($backtrace as $idx => $step) {
             /* Create new backtrace entry */
@@ -324,8 +330,8 @@ class Error extends Message
     {
         return self::formatBacktrace(
             $this->getBacktrace(),
-            "<br />\n",
-            "<br />\n"
+            "<br>\n",
+            "<br>\n"
         );
     }
 
@@ -346,7 +352,7 @@ class Error extends Message
         $retval = '';
 
         foreach ($backtrace as $step) {
-            if (isset($step['file']) && isset($step['line'])) {
+            if (isset($step['file'], $step['line'])) {
                 $retval .= self::relPath($step['file'])
                     . '#' . $step['line'] . ': ';
             }
@@ -415,13 +421,13 @@ class Error extends Message
             'mysqli_connect',
             'mysqli_real_connect',
             'connect',
-            '_realConnect'
+            '_realConnect',
         ];
 
         if (in_array($function, $include_functions)) {
             $retval .= self::relPath($arg);
         } elseif (in_array($function, $connect_functions)
-            && gettype($arg) === 'string'
+            && is_string($arg)
         ) {
             $retval .= gettype($arg) . ' ********';
         } elseif (is_scalar($arg)) {
@@ -444,18 +450,25 @@ class Error extends Message
     public function getDisplay(): string
     {
         $this->isDisplayed(true);
-        $retval = '<div class="' . $this->getLevel() . '">';
+
+        $context = 'primary';
+        $level = $this->getLevel();
+        if ($level === 'error') {
+            $context = 'danger';
+        }
+
+        $retval = '<div class="alert alert-' . $context . '" role="alert">';
         if (! $this->isUserError()) {
             $retval .= '<strong>' . $this->getType() . '</strong>';
             $retval .= ' in ' . $this->getFile() . '#' . $this->getLine();
-            $retval .= "<br />\n";
+            $retval .= "<br>\n";
         }
         $retval .= $this->getMessage();
         if (! $this->isUserError()) {
-            $retval .= "<br />\n";
-            $retval .= "<br />\n";
-            $retval .= "<strong>Backtrace</strong><br />\n";
-            $retval .= "<br />\n";
+            $retval .= "<br>\n";
+            $retval .= "<br>\n";
+            $retval .= "<strong>Backtrace</strong><br>\n";
+            $retval .= "<br>\n";
             $retval .= $this->getBacktraceDisplay();
         }
         $retval .= '</div>';

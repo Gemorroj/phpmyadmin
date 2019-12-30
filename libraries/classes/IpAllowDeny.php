@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * This library is used with the server IP allow/deny host authentication
  * feature
@@ -46,7 +45,7 @@ class IpAllowDeny
     /**
      * Based on IP Pattern Matcher
      * Originally by J.Adams <jna@retina.net>
-     * Found on <https://secure.php.net/manual/en/function.ip2long.php>
+     * Found on <https://www.php.net/manual/en/function.ip2long.php>
      * Modified for phpMyAdmin
      *
      * Matches:
@@ -83,7 +82,7 @@ class IpAllowDeny
 
             for ($i = 0; $i < 31; $i++) {
                 if ($i < $regs[5] - 1) {
-                    $maskl = $maskl + pow(2, (30 - $i));
+                    $maskl += pow(2, 30 - $i);
                 } // end if
             } // end for
 
@@ -186,7 +185,7 @@ class IpAllowDeny
             $first_bin = inet_pton($first_ip);
             $first_hex = bin2hex($first_bin);
 
-            $flexbits = 128 - $subnet;
+            $flexbits = 128 - (int) $subnet;
 
             // Build the hexadecimal string of the last address
             $last_hex = $first_hex;
@@ -200,7 +199,7 @@ class IpAllowDeny
                 $origval = hexdec($orig);
 
                 // OR it with (2^flexbits)-1, with flexbits limited to 4 at a time
-                $newval = $origval | (pow(2, min(4, $flexbits)) - 1);
+                $newval = $origval | pow(2, min(4, $flexbits)) - 1;
 
                 // Convert it back to a hexadecimal character
                 $new = dechex($newval);
@@ -223,41 +222,41 @@ class IpAllowDeny
     /**
      * Runs through IP Allow rules the use of it below for more information
      *
+     * @see     Core::getIp()
+     *
      * @return bool Whether rule has matched
      *
      * @access  public
-     *
-     * @see     Core::getIp()
      */
     public function allow()
     {
-        return $this->allowDeny("allow");
+        return $this->allowDeny('allow');
     }
 
     /**
      * Runs through IP Deny rules the use of it below for more information
      *
+     * @see     Core::getIp()
+     *
      * @return bool Whether rule has matched
      *
      * @access  public
-     *
-     * @see     Core::getIp()
      */
     public function deny()
     {
-        return $this->allowDeny("deny");
+        return $this->allowDeny('deny');
     }
 
     /**
      * Runs through IP Allow/Deny rules the use of it below for more information
+     *
+     * @see     Core::getIp()
      *
      * @param string $type 'allow' | 'deny' type of rule to match
      *
      * @return bool   Whether rule has matched
      *
      * @access  public
-     *
-     * @see     Core::getIp()
      */
     private function allowDeny($type)
     {
@@ -285,7 +284,7 @@ class IpAllowDeny
         // lookup table for some name shortcuts
         $shortcuts = [
             'all'       => '0.0.0.0/0',
-            'localhost' => '127.0.0.1/8'
+            'localhost' => '127.0.0.1/8',
         ];
 
         // Provide some useful shortcuts if server gives us address:

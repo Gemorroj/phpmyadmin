@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * General functions.
  *
@@ -12,9 +11,6 @@ namespace PhpMyAdmin\Rte;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Rte\Events;
-use PhpMyAdmin\Rte\Triggers;
-use PhpMyAdmin\Rte\Words;
 use PhpMyAdmin\Util;
 
 /**
@@ -30,8 +26,6 @@ class General
     private $dbi;
 
     /**
-     * General constructor.
-     *
      * @param DatabaseInterface $dbi DatabaseInterface object
      */
     public function __construct(DatabaseInterface $dbi)
@@ -60,9 +54,9 @@ class General
         // and now even the backup query does not execute!
         // This should not happen, but we better handle
         // this just in case.
-        $errors[] = $error . '<br />'
+        $errors[] = $error . '<br>'
             . __('The backed up query was:')
-            . "\"" . htmlspecialchars($createStatement) . "\"" . '<br />'
+            . '"' . htmlspecialchars($createStatement) . '"' . '<br>'
             . __('MySQL said: ') . $this->dbi->getError();
 
         return $errors;
@@ -97,7 +91,7 @@ class General
                 $response->addJSON('message', $editor);
                 $response->addJSON('title', $title);
             } else {
-                echo "\n\n<h2>$title</h2>\n\n$editor";
+                echo "\n\n<h2>" . $title . "</h2>\n\n" . $editor;
                 unset($_POST);
             }
             exit;

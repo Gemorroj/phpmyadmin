@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Responsible for retrieving version information and notifiying about latest version
  *
@@ -9,25 +8,24 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Util;
 use PhpMyAdmin\Utils\HttpRequest;
+use stdClass;
 
 /**
  * Responsible for retrieving version information and notifiying about latest version
  *
  * @package PhpMyAdmin
- *
  */
 class VersionInformation
 {
     /**
      * Returns information with latest version from phpmyadmin.net
      *
-     * @return object JSON decoded object with the data
+     * @return stdClass|null JSON decoded object with the data
      */
-    public function getLatestVersion()
+    public function getLatestVersion(): ?stdClass
     {
-        if (!$GLOBALS['cfg']['VersionCheck']) {
+        if (! $GLOBALS['cfg']['VersionCheck']) {
             return null;
         }
 
@@ -44,7 +42,7 @@ class VersionInformation
             $httpRequest = new HttpRequest();
             $response = $httpRequest->create($file, 'GET');
         }
-        $response = $response ? $response : '{}';
+        $response = $response ?: '{}';
         /* Parse response */
         $data = json_decode($response);
 
@@ -60,7 +58,7 @@ class VersionInformation
         if ($save) {
             $_SESSION['cache']['version_check'] = [
                 'response' => $response,
-                'timestamp' => time()
+                'timestamp' => time(),
             ];
         }
         return $data;
@@ -86,22 +84,22 @@ class VersionInformation
         $result = 0;
 
         if (count($parts) >= 1 && is_numeric($parts[0])) {
-            $result += 1000000 * $parts[0];
+            $result += 1000000 * (int) $parts[0];
         }
 
         if (count($parts) >= 2 && is_numeric($parts[1])) {
-            $result += 10000 * $parts[1];
+            $result += 10000 * (int) $parts[1];
         }
 
         if (count($parts) >= 3 && is_numeric($parts[2])) {
-            $result += 100 * $parts[2];
+            $result += 100 * (int) $parts[2];
         }
 
         if (count($parts) >= 4 && is_numeric($parts[3])) {
-            $result += 1 * $parts[3];
+            $result += 1 * (int) $parts[3];
         }
 
-        if (!empty($suffix)) {
+        if (! empty($suffix)) {
             $matches = [];
             if (preg_match('/^(\D+)(\d+)$/', $suffix, $matches)) {
                 $suffix = $matches[1];
@@ -137,26 +135,26 @@ class VersionInformation
      *
      * @param array $releases array of information related to each version
      *
-     * @return array containing the version and date of latest compatible version
+     * @return array|null containing the version and date of latest compatible version
      */
     public function getLatestCompatibleVersion(array $releases)
     {
         foreach ($releases as $release) {
             $phpVersions = $release->php_versions;
-            $phpConditions = explode(",", $phpVersions);
+            $phpConditions = explode(',', $phpVersions);
             foreach ($phpConditions as $phpCondition) {
-                if (! $this->evaluateVersionCondition("PHP", $phpCondition)) {
+                if (! $this->evaluateVersionCondition('PHP', $phpCondition)) {
                     continue 2;
                 }
             }
 
             // We evalute MySQL version constraint if there are only
             // one server configured.
-            if (count($GLOBALS['cfg']['Servers']) == 1) {
+            if (count($GLOBALS['cfg']['Servers']) === 1) {
                 $mysqlVersions = $release->mysql_versions;
-                $mysqlConditions = explode(",", $mysqlVersions);
+                $mysqlConditions = explode(',', $mysqlVersions);
                 foreach ($mysqlConditions as $mysqlCondition) {
-                    if (!$this->evaluateVersionCondition('MySQL', $mysqlCondition)) {
+                    if (! $this->evaluateVersionCondition('MySQL', $mysqlCondition)) {
                         continue 2;
                     }
                 }
@@ -180,11 +178,19 @@ class VersionInformation
      *
      * @return boolean whether the condition is met
      */
-    public function evaluateVersionCondition($type, $condition)
+    public function evaluateVersionCondition(string $type, string $condition)
     {
         $operator = null;
         $version = null;
-        $operators = ["<=", ">=", "!=", "<>", "<", ">", "="]; // preserve order
+        $operators = [
+            '<=',
+            '>=',
+            '!=',
+            '<>',
+            '<',
+            '>',
+            '=',
+        ]; // preserve order
         foreach ($operators as $oneOperator) {
             if (strpos($condition, $oneOperator) === 0) {
                 $operator = $oneOperator;
@@ -200,7 +206,7 @@ class VersionInformation
             $myVersion = $this->getMySQLVersion();
         }
 
-        if ($myVersion != null && $operator != null) {
+        if ($myVersion !== null && $operator !== null) {
             return version_compare($myVersion, $version, $operator);
         }
         return false;
@@ -219,7 +225,7 @@ class VersionInformation
     /**
      * Returns the MySQL version if connected to a database
      *
-     * @return string MySQL version
+     * @return string|null MySQL version
      */
     protected function getMySQLVersion()
     {

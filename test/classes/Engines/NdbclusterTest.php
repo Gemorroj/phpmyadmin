@@ -27,10 +27,11 @@ class NdbclusterTest extends PmaTestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $this->object = new Ndbcluster('nbdcluster');
@@ -40,10 +41,11 @@ class NdbclusterTest extends PmaTestCase
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }
@@ -58,8 +60,7 @@ class NdbclusterTest extends PmaTestCase
         $this->assertEquals(
             $this->object->getVariables(),
             [
-                'ndb_connectstring' => [
-                ],
+                'ndb_connectstring' => [],
             ]
         );
     }

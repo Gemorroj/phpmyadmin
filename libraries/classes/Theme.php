@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * hold Theme class
  *
@@ -11,7 +10,6 @@ namespace PhpMyAdmin;
 
 use PhpMyAdmin\Template;
 use PhpMyAdmin\ThemeManager;
-use PhpMyAdmin\Url;
 
 /**
  * handles theme
@@ -19,7 +17,6 @@ use PhpMyAdmin\Url;
  * @todo add the possibility to make a theme depend on another theme
  * and by default on original
  * @todo make all components optional - get missing components from 'parent' theme
- *
  * @package PhpMyAdmin
  */
 class Theme
@@ -63,6 +60,7 @@ class Theme
     /**
      * needed because sometimes, the mtime for different themes
      * is identical
+     *
      * @var integer filesize for info file
      * @access  protected
      */
@@ -102,6 +100,7 @@ class Theme
      * Loads theme information
      *
      * @return boolean whether loading them info was successful or not
+     *
      * @access  public
      */
     public function loadInfo()
@@ -125,7 +124,11 @@ class Theme
             return false;
         }
         // Check that all required data are there
-        $members = ['name', 'version', 'supports'];
+        $members = [
+            'name',
+            'version',
+            'supports',
+        ];
         foreach ($members as $member) {
             if (! isset($data[$member])) {
                 return false;
@@ -156,6 +159,7 @@ class Theme
      * @param string $folder path to theme
      *
      * @return Theme|false
+     *
      * @static
      * @access public
      */
@@ -177,8 +181,9 @@ class Theme
     /**
      * checks image path for existence - if not found use img from fallback theme
      *
-     * @access public
      * @return bool
+     *
+     * @access public
      */
     public function checkImgPath()
     {
@@ -209,23 +214,13 @@ class Theme
     /**
      * returns path to theme
      *
-     * @access public
      * @return string path to theme
+     *
+     * @access public
      */
     public function getPath()
     {
         return $this->path;
-    }
-
-    /**
-     * returns layout file
-     *
-     * @access public
-     * @return string layout file
-     */
-    public function getLayoutFile()
-    {
-        return $this->getPath() . '/layout.inc.php';
     }
 
     /**
@@ -234,6 +229,7 @@ class Theme
      * @param string $path path to theme
      *
      * @return void
+     *
      * @access public
      */
     public function setPath($path)
@@ -247,6 +243,7 @@ class Theme
      * @param string $version version to set
      *
      * @return void
+     *
      * @access public
      */
     public function setVersion($version)
@@ -258,6 +255,7 @@ class Theme
      * returns version
      *
      * @return string version
+     *
      * @access public
      */
     public function getVersion()
@@ -272,6 +270,7 @@ class Theme
      * @param string $version version to compare to
      *
      * @return boolean true if theme version is equal or higher to $version
+     *
      * @access public
      */
     public function checkVersion($version)
@@ -285,6 +284,7 @@ class Theme
      * @param string $name name to set
      *
      * @return void
+     *
      * @access public
      */
     public function setName($name)
@@ -295,8 +295,9 @@ class Theme
     /**
      * returns name
      *
-     * @access  public
      * @return string name
+     *
+     * @access  public
      */
     public function getName()
     {
@@ -309,6 +310,7 @@ class Theme
      * @param string $id new id
      *
      * @return void
+     *
      * @access public
      */
     public function setId($id)
@@ -320,6 +322,7 @@ class Theme
      * returns id
      *
      * @return string id
+     *
      * @access public
      */
     public function getId()
@@ -333,6 +336,7 @@ class Theme
      * @param string $path path to images for this theme
      *
      * @return void
+     *
      * @access public
      */
     public function setImgPath($path)
@@ -348,12 +352,13 @@ class Theme
      * @param string $file     file name for image
      * @param string $fallback fallback image
      *
-     * @access public
      * @return string image path for this theme
+     *
+     * @access public
      */
     public function getImgPath($file = null, $fallback = null)
     {
-        if (is_null($file)) {
+        if ($file === null) {
             return $this->img_path;
         }
 
@@ -361,7 +366,7 @@ class Theme
             return $this->img_path . $file;
         }
 
-        if (! is_null($fallback)) {
+        if ($fallback !== null) {
             return $this->getImgPath($fallback);
         }
 
@@ -369,47 +374,10 @@ class Theme
     }
 
     /**
-     * load css (send to stdout, normally the browser)
-     *
-     * @return bool
-     * @access  public
-     */
-    public function loadCss()
-    {
-        $success = true;
-
-        /* Variables to be used by the themes: */
-        $theme = $this;
-        if ($GLOBALS['text_dir'] === 'ltr') {
-            $right = 'right';
-            $left = 'left';
-        } else {
-            $right = 'left';
-            $left = 'right';
-        }
-
-        foreach ($this->_cssFiles as $file) {
-            $path = $this->getPath() . "/css/$file.css.php";
-            $fallback = "./themes/"
-                . ThemeManager::FALLBACK_THEME . "/css/$file.css.php";
-
-            if (is_readable($path)) {
-                echo "\n/* FILE: " , $file , ".css.php */\n";
-                include $path;
-            } elseif (is_readable($fallback)) {
-                echo "\n/* FILE: " , $file , ".css.php */\n";
-                include $fallback;
-            } else {
-                $success = false;
-            }
-        }
-        return $success;
-    }
-
-    /**
      * Renders the preview for this theme
      *
      * @return string
+     *
      * @access public
      */
     public function getPrintPreview()
@@ -428,39 +396,5 @@ class Theme
             'id' => $this->getId(),
             'screen' => $screen,
         ]);
-    }
-
-    /**
-     * Generates code for CSS gradient using various browser extensions.
-     *
-     * @param string $start_color Color of gradient start, hex value without #
-     * @param string $end_color   Color of gradient end, hex value without #
-     *
-     * @return string CSS code.
-     */
-    public function getCssGradient($start_color, $end_color)
-    {
-        $result = [];
-        // Opera 9.5+, IE 9
-        $result[] = 'background-image: url(./themes/svg_gradient.php?from='
-            . $start_color . '&to=' . $end_color . ');';
-        $result[] = 'background-size: 100% 100%;';
-        // Safari 4-5, Chrome 1-9
-        $result[] = 'background: '
-            . '-webkit-gradient(linear, left top, left bottom, from(#'
-            . $start_color . '), to(#' . $end_color . '));';
-        // Safari 5.1, Chrome 10+
-        $result[] = 'background: -webkit-linear-gradient(top, #'
-            . $start_color . ', #' . $end_color . ');';
-        // Firefox 3.6+
-        $result[] = 'background: -moz-linear-gradient(top, #'
-            . $start_color . ', #' . $end_color . ');';
-        // IE 10
-        $result[] = 'background: -ms-linear-gradient(top, #'
-            . $start_color . ', #' . $end_color . ');';
-        // Opera 11.10
-        $result[] = 'background: -o-linear-gradient(top, #'
-            . $start_color . ', #' . $end_color . ');';
-        return implode("\n", $result);
     }
 }

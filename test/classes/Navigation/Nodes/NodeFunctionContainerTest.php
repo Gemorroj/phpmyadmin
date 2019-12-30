@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeFunctionContainer class
  *
@@ -11,7 +10,6 @@ namespace PhpMyAdmin\Tests\Navigation\Nodes;
 
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeFunctionContainer class
@@ -25,7 +23,7 @@ class NodeFunctionContainerTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
     }
@@ -42,10 +40,10 @@ class NodeFunctionContainerTest extends PmaTestCase
             'text',
             $parent->links
         );
-        $this->assertContains(
-            'db_routines.php',
+        $this->assertStringContainsString(
+            'index.php?route=/database/routines',
             $parent->links['text']
         );
-        $this->assertEquals('functions', $parent->real_name);
+        $this->assertEquals('functions', $parent->realName);
     }
 }

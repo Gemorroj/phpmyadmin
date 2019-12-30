@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Selenium TestCase for login related tests
  *
@@ -22,7 +21,7 @@ class LoginTest extends TestBase
     /**
      * @return void
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->logOutIfLoggedIn();
@@ -37,7 +36,7 @@ class LoginTest extends TestBase
     public function testSuccessfulLogin()
     {
         $this->login();
-        $this->waitForElement('xpath', "//*[@id=\"serverinfo\"]");
+        $this->waitForElement('xpath', '//*[@id="server-breadcrumb"]');
         $this->assertTrue($this->isSuccessLogin());
         $this->logOutIfLoggedIn();
     }
@@ -51,8 +50,8 @@ class LoginTest extends TestBase
      */
     public function testLoginWithWrongPassword()
     {
-        $this->login("Admin", "Admin");
-        $this->waitForElement('cssSelector', "div.error");
+        $this->login('Admin', 'Admin');
+        $this->waitForElement('cssSelector', 'alert-danger');
         $this->assertTrue($this->isUnsuccessLogin());
     }
 }

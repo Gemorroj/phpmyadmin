@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeDatabase class
  *
@@ -11,7 +10,6 @@ namespace PhpMyAdmin\Tests\Navigation\Nodes;
 
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeDatabase class
@@ -25,7 +23,7 @@ class NodeDatabaseTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['DefaultTabDatabase'] = 'structure';
@@ -46,11 +44,11 @@ class NodeDatabaseTest extends PmaTestCase
             'text',
             $parent->links
         );
-        $this->assertContains(
-            'db_structure.php',
+        $this->assertStringContainsString(
+            'index.php?route=/database/structure',
             $parent->links['text']
         );
-        $this->assertContains('database', $parent->classes);
+        $this->assertStringContainsString('database', $parent->classes);
     }
 
     /**
@@ -123,6 +121,7 @@ class NodeDatabaseTest extends PmaTestCase
      */
     public function testHiddenCount()
     {
+        /** @var \PhpMyAdmin\Navigation\Nodes\NodeDatabase $parent */
         $parent = NodeFactory::getInstance('NodeDatabase');
 
         $parent->setHiddenCount(3);

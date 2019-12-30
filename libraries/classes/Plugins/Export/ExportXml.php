@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Set of functions used to build XML dumps of tables
  *
@@ -11,17 +10,16 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Export;
 use PhpMyAdmin\Plugins\ExportPlugin;
-use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
 use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\HiddenPropertyItem;
+use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Util;
 
 /* Can't do server export */
-if (!isset($GLOBALS['db']) || strlen($GLOBALS['db']) === 0) {
+if (! isset($GLOBALS['db']) || strlen($GLOBALS['db']) === 0) {
     $GLOBALS['skip_import'] = true;
     return;
 }
@@ -88,51 +86,51 @@ class ExportXml extends ExportPlugin
         // $exportPluginProperties
         // this will be shown as "Format specific options"
         $exportSpecificOptions = new OptionsPropertyRootGroup(
-            "Format Specific Options"
+            'Format Specific Options'
         );
 
         // general options main group
-        $generalOptions = new OptionsPropertyMainGroup("general_opts");
+        $generalOptions = new OptionsPropertyMainGroup('general_opts');
         // create primary items and add them to the group
-        $leaf = new HiddenPropertyItem("structure_or_data");
+        $leaf = new HiddenPropertyItem('structure_or_data');
         $generalOptions->addProperty($leaf);
         // add the main group to the root group
         $exportSpecificOptions->addProperty($generalOptions);
 
         // export structure main group
         $structure = new OptionsPropertyMainGroup(
-            "structure",
+            'structure',
             __('Object creation options (all are recommended)')
         );
 
         // create primary items and add them to the group
         $leaf = new BoolPropertyItem(
-            "export_events",
+            'export_events',
             __('Events')
         );
         $structure->addProperty($leaf);
         $leaf = new BoolPropertyItem(
-            "export_functions",
+            'export_functions',
             __('Functions')
         );
         $structure->addProperty($leaf);
         $leaf = new BoolPropertyItem(
-            "export_procedures",
+            'export_procedures',
             __('Procedures')
         );
         $structure->addProperty($leaf);
         $leaf = new BoolPropertyItem(
-            "export_tables",
+            'export_tables',
             __('Tables')
         );
         $structure->addProperty($leaf);
         $leaf = new BoolPropertyItem(
-            "export_triggers",
+            'export_triggers',
             __('Triggers')
         );
         $structure->addProperty($leaf);
         $leaf = new BoolPropertyItem(
-            "export_views",
+            'export_views',
             __('Views')
         );
         $structure->addProperty($leaf);
@@ -140,12 +138,12 @@ class ExportXml extends ExportPlugin
 
         // data main group
         $data = new OptionsPropertyMainGroup(
-            "data",
+            'data',
             __('Data dump options')
         );
         // create primary items and add them to the group
         $leaf = new BoolPropertyItem(
-            "export_contents",
+            'export_contents',
             __('Export contents')
         );
         $data->addProperty($leaf);
@@ -201,7 +199,7 @@ class ExportXml extends ExportPlugin
                 $sql = htmlspecialchars(rtrim($sql));
                 $sql = str_replace("\n", "\n                ", $sql);
 
-                $head .= "                " . $sql . $crlf;
+                $head .= '                ' . $sql . $crlf;
                 $head .= '            </pma:' . $type . '>' . $crlf;
             }
         }
@@ -242,18 +240,18 @@ class ExportXml extends ExportPlugin
             . '- https://www.phpmyadmin.net' . $crlf
             . '-' . $crlf
             . '- ' . __('Host:') . ' ' . htmlspecialchars($cfg['Server']['host']);
-        if (!empty($cfg['Server']['port'])) {
+        if (! empty($cfg['Server']['port'])) {
             $head .= ':' . $cfg['Server']['port'];
         }
         $head .= $crlf
             . '- ' . __('Generation Time:') . ' '
             . Util::localisedDate() . $crlf
             . '- ' . __('Server version:') . ' ' . $GLOBALS['dbi']->getVersionString() . $crlf
-            . '- ' . __('PHP Version:') . ' ' . phpversion() . $crlf
+            . '- ' . __('PHP Version:') . ' ' . PHP_VERSION . $crlf
             . '-->' . $crlf . $crlf;
 
         $head .= '<pma_xml_export version="1.0"'
-            . (($export_struct)
+            . ($export_struct
                 ? ' xmlns:pma="https://www.phpmyadmin.net/some_doc_url/"'
                 : '')
             . '>' . $crlf;
@@ -275,7 +273,11 @@ class ExportXml extends ExportPlugin
                 . '" collation="' . htmlspecialchars($db_collation) . '" charset="' . htmlspecialchars($db_charset)
                 . '">' . $crlf;
 
-            if (count($tables) == 0) {
+            if ($tables === null) {
+                $tables = [];
+            }
+
+            if (count($tables) === 0) {
                 $tables[] = $table;
             }
 
@@ -297,18 +299,18 @@ class ExportXml extends ExportPlugin
                     $type = 'table';
                 }
 
-                if ($is_view && !isset($GLOBALS['xml_export_views'])) {
+                if ($is_view && ! isset($GLOBALS['xml_export_views'])) {
                     continue;
                 }
 
-                if (!$is_view && !isset($GLOBALS['xml_export_tables'])) {
+                if (! $is_view && ! isset($GLOBALS['xml_export_tables'])) {
                     continue;
                 }
 
                 $head .= '            <pma:' . $type . ' name="' . htmlspecialchars($table) . '">'
                     . $crlf;
 
-                $tbl = "                " . htmlspecialchars($tbl);
+                $tbl = '                ' . htmlspecialchars($tbl);
                 $tbl = str_replace("\n", "\n                ", $tbl);
 
                 $head .= $tbl . ';' . $crlf;
@@ -327,15 +329,14 @@ class ExportXml extends ExportPlugin
 
                             // Do some formatting
                             $code = mb_substr(rtrim($code), 0, -3);
-                            $code = "                " . htmlspecialchars($code);
+                            $code = '                ' . htmlspecialchars($code);
                             $code = str_replace("\n", "\n                ", $code);
 
                             $head .= $code . $crlf;
                             $head .= '            </pma:trigger>' . $crlf;
                         }
 
-                        unset($trigger);
-                        unset($triggers);
+                        unset($trigger, $triggers);
                     }
                 }
             }
@@ -357,7 +358,7 @@ class ExportXml extends ExportPlugin
             ) {
                 // Export events
                 $events = $GLOBALS['dbi']->fetchResult(
-                    "SELECT EVENT_NAME FROM information_schema.EVENTS "
+                    'SELECT EVENT_NAME FROM information_schema.EVENTS '
                     . "WHERE EVENT_SCHEMA='" . $GLOBALS['dbi']->escapeString($db)
                     . "'"
                 );
@@ -413,7 +414,7 @@ class ExportXml extends ExportPlugin
             && $GLOBALS['xml_export_contents']
         ) {
             $head = '    <!--' . $crlf
-                . '    - ' . __('Database:') . ' ' . '\''
+                . '    - ' . __('Database:') . ' \''
                 . htmlspecialchars($db_alias) . '\'' . $crlf
                 . '    -->' . $crlf . '    <database name="'
                 . htmlspecialchars($db_alias) . '">' . $crlf;
@@ -504,7 +505,7 @@ class ExportXml extends ExportPlugin
 
             $buffer = '        <!-- ' . __('Table') . ' '
                 . htmlspecialchars($table_alias) . ' -->' . $crlf;
-            if (!$this->export->outputHandler($buffer)) {
+            if (! $this->export->outputHandler($buffer)) {
                 return false;
             }
 
@@ -513,24 +514,24 @@ class ExportXml extends ExportPlugin
                     . htmlspecialchars($table_alias) . '">' . $crlf;
                 for ($i = 0; $i < $columns_cnt; $i++) {
                     $col_as = $columns[$i];
-                    if (!empty($aliases[$db]['tables'][$table]['columns'][$col_as])
+                    if (! empty($aliases[$db]['tables'][$table]['columns'][$col_as])
                     ) {
                         $col_as
                             = $aliases[$db]['tables'][$table]['columns'][$col_as];
                     }
                     // If a cell is NULL, still export it to preserve
                     // the XML structure
-                    if (!isset($record[$i]) || is_null($record[$i])) {
+                    if (! isset($record[$i]) || $record[$i] === null) {
                         $record[$i] = 'NULL';
                     }
                     $buffer .= '            <column name="'
                         . htmlspecialchars($col_as) . '">'
-                        . htmlspecialchars((string)$record[$i])
+                        . htmlspecialchars((string) $record[$i])
                         . '</column>' . $crlf;
                 }
                 $buffer .= '        </table>' . $crlf;
 
-                if (!$this->export->outputHandler($buffer)) {
+                if (! $this->export->outputHandler($buffer)) {
                     return false;
                 }
             }

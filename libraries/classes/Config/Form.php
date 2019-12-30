@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Form handling code.
  *
@@ -21,36 +20,42 @@ class Form
 {
     /**
      * Form name
+     *
      * @var string
      */
     public $name;
 
     /**
      * Arbitrary index, doesn't affect class' behavior
+     *
      * @var int
      */
     public $index;
 
     /**
      * Form fields (paths), filled by {@link readFormPaths()}, indexed by field name
+     *
      * @var array
      */
     public $fields;
 
     /**
      * Stores default values for some fields (eg. pmadb tables)
+     *
      * @var array
      */
     public $default;
 
     /**
      * Caches field types, indexed by field names
+     *
      * @var array
      */
     private $_fieldsTypes;
 
     /**
      * ConfigFile instance
+     *
      * @var ConfigFile
      */
     private $_configFile;
@@ -90,9 +95,7 @@ class Form
             ),
             '/'
         );
-        return isset($this->_fieldsTypes[$key])
-            ? $this->_fieldsTypes[$key]
-            : null;
+        return $this->_fieldsTypes[$key] ?? null;
     }
 
     /**
@@ -106,11 +109,11 @@ class Form
     {
         $value = $this->_configFile->getDbEntry($optionPath);
         if ($value === null) {
-            trigger_error("$optionPath - select options not defined", E_USER_ERROR);
+            trigger_error($optionPath . ' - select options not defined', E_USER_ERROR);
             return [];
         }
-        if (!is_array($value)) {
-            trigger_error("$optionPath - not a static value list", E_USER_ERROR);
+        if (! is_array($value)) {
+            trigger_error($optionPath . ' - not a static value list', E_USER_ERROR);
             return [];
         }
         // convert array('#', 'a', 'b') to array('a', 'b')
@@ -125,11 +128,11 @@ class Form
         $hasStringKeys = false;
         $keys = [];
         for ($i = 0, $nb = count($value); $i < $nb; $i++) {
-            if (!isset($value[$i])) {
+            if (! isset($value[$i])) {
                 $hasStringKeys = true;
                 break;
             }
-            $keys[] = is_bool($value[$i]) ? (int)$value[$i] : $value[$i];
+            $keys[] = is_bool($value[$i]) ? (int) $value[$i] : $value[$i];
         }
         if (! $hasStringKeys) {
             $value = array_combine($keys, $value);
@@ -159,7 +162,7 @@ class Form
             return;
         }
 
-        if (!is_int($key)) {
+        if (! is_int($key)) {
             $this->default[$prefix . $key] = $value;
             $value = $key;
         }

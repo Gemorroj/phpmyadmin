@@ -27,10 +27,11 @@ class BdbTest extends PmaTestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $this->object = new Bdb('bdb');
@@ -40,10 +41,11 @@ class BdbTest extends PmaTestCase
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }
@@ -64,34 +66,23 @@ class BdbTest extends PmaTestCase
                 'bdb_cache_size' => [
                     'type'  => 1,
                 ],
-                'bdb_home' => [
-                ],
+                'bdb_home' => [],
                 'bdb_log_buffer_size' => [
                     'type'  => 1,
                 ],
-                'bdb_logdir' => [
-                ],
+                'bdb_logdir' => [],
                 'bdb_max_lock' => [
                     'type'  => 2,
                 ],
-                'bdb_shared_data' => [
-                ],
-                'bdb_tmpdir' => [
-                ],
-                'bdb_data_direct' => [
-                ],
-                'bdb_lock_detect' => [
-                ],
-                'bdb_log_direct' => [
-                ],
-                'bdb_no_recover' => [
-                ],
-                'bdb_no_sync' => [
-                ],
-                'skip_sync_bdb_logs' => [
-                ],
-                'sync_bdb_logs' => [
-                ],
+                'bdb_shared_data' => [],
+                'bdb_tmpdir' => [],
+                'bdb_data_direct' => [],
+                'bdb_lock_detect' => [],
+                'bdb_log_direct' => [],
+                'bdb_no_recover' => [],
+                'bdb_no_sync' => [],
+                'skip_sync_bdb_logs' => [],
+                'sync_bdb_logs' => [],
             ]
         );
     }

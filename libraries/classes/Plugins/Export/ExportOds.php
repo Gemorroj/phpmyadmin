@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Set of functions used to build OpenDocument Spreadsheet dumps of tables
  *
@@ -11,15 +10,14 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Export;
 use PhpMyAdmin\OpenDocument;
 use PhpMyAdmin\Plugins\ExportPlugin;
-use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
 use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\HiddenPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\TextPropertyItem;
+use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 
 /**
  * Handles the export for the ODS class
@@ -59,23 +57,23 @@ class ExportOds extends ExportPlugin
         // $exportPluginProperties
         // this will be shown as "Format specific options"
         $exportSpecificOptions = new OptionsPropertyRootGroup(
-            "Format Specific Options"
+            'Format Specific Options'
         );
 
         // general options main group
-        $generalOptions = new OptionsPropertyMainGroup("general_opts");
+        $generalOptions = new OptionsPropertyMainGroup('general_opts');
         // create primary items and add them to the group
         $leaf = new TextPropertyItem(
-            "null",
+            'null',
             __('Replace NULL with:')
         );
         $generalOptions->addProperty($leaf);
         $leaf = new BoolPropertyItem(
-            "columns",
+            'columns',
             __('Put columns names in the first row')
         );
         $generalOptions->addProperty($leaf);
-        $leaf = new HiddenPropertyItem("structure_or_data");
+        $leaf = new HiddenPropertyItem('structure_or_data');
         $generalOptions->addProperty($leaf);
         // add the main group to the root group
         $exportSpecificOptions->addProperty($generalOptions);
@@ -245,7 +243,7 @@ class ExportOds extends ExportPlugin
             $GLOBALS['ods_buffer'] .= '<table:table-row>';
             for ($i = 0; $i < $fields_cnt; $i++) {
                 $col_as = $GLOBALS['dbi']->fieldName($result, $i);
-                if (!empty($aliases[$db]['tables'][$table]['columns'][$col_as])) {
+                if (! empty($aliases[$db]['tables'][$table]['columns'][$col_as])) {
                     $col_as = $aliases[$db]['tables'][$table]['columns'][$col_as];
                 }
                 $GLOBALS['ods_buffer']
@@ -264,14 +262,18 @@ class ExportOds extends ExportPlugin
         while ($row = $GLOBALS['dbi']->fetchRow($result)) {
             $GLOBALS['ods_buffer'] .= '<table:table-row>';
             for ($j = 0; $j < $fields_cnt; $j++) {
-                if (!isset($row[$j]) || is_null($row[$j])) {
+                if ($fields_meta[$j]->type === 'geometry') {
+                    // export GIS types as hex
+                    $row[$j] = '0x' . bin2hex($row[$j]);
+                }
+                if (! isset($row[$j]) || $row[$j] === null) {
                     $GLOBALS['ods_buffer']
                         .= '<table:table-cell office:value-type="string">'
                         . '<text:p>'
                         . htmlspecialchars($GLOBALS[$what . '_null'])
                         . '</text:p>'
                         . '</table:table-cell>';
-                } elseif (stristr($field_flags[$j], 'BINARY')
+                } elseif (false !== stripos($field_flags[$j], 'BINARY')
                     && $fields_meta[$j]->blob
                 ) {
                     // ignore BLOB
@@ -279,31 +281,31 @@ class ExportOds extends ExportPlugin
                         .= '<table:table-cell office:value-type="string">'
                         . '<text:p></text:p>'
                         . '</table:table-cell>';
-                } elseif ($fields_meta[$j]->type == "date") {
+                } elseif ($fields_meta[$j]->type == 'date') {
                     $GLOBALS['ods_buffer']
                         .= '<table:table-cell office:value-type="date"'
                         . ' office:date-value="'
-                        . date("Y-m-d", strtotime($row[$j]))
+                        . date('Y-m-d', strtotime($row[$j]))
                         . '" table:style-name="DateCell">'
                         . '<text:p>'
                         . htmlspecialchars($row[$j])
                         . '</text:p>'
                         . '</table:table-cell>';
-                } elseif ($fields_meta[$j]->type == "time") {
+                } elseif ($fields_meta[$j]->type == 'time') {
                     $GLOBALS['ods_buffer']
                         .= '<table:table-cell office:value-type="time"'
                         . ' office:time-value="'
-                        . date("\P\TH\Hi\Ms\S", strtotime($row[$j]))
+                        . date('\P\TH\Hi\Ms\S', strtotime($row[$j]))
                         . '" table:style-name="TimeCell">'
                         . '<text:p>'
                         . htmlspecialchars($row[$j])
                         . '</text:p>'
                         . '</table:table-cell>';
-                } elseif ($fields_meta[$j]->type == "datetime") {
+                } elseif ($fields_meta[$j]->type == 'datetime') {
                     $GLOBALS['ods_buffer']
                         .= '<table:table-cell office:value-type="date"'
                         . ' office:date-value="'
-                        . date("Y-m-d\TH:i:s", strtotime($row[$j]))
+                        . date('Y-m-d\TH:i:s', strtotime($row[$j]))
                         . '" table:style-name="DateTimeCell">'
                         . '<text:p>'
                         . htmlspecialchars($row[$j])
@@ -311,7 +313,7 @@ class ExportOds extends ExportPlugin
                         . '</table:table-cell>';
                 } elseif (($fields_meta[$j]->numeric
                     && $fields_meta[$j]->type != 'timestamp'
-                    && !$fields_meta[$j]->blob)
+                    && ! $fields_meta[$j]->blob)
                     || $fields_meta[$j]->type == 'real'
                 ) {
                     $GLOBALS['ods_buffer']

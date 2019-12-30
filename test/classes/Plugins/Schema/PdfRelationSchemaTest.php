@@ -28,10 +28,11 @@ class PdfRelationSchemaTest extends PmaTestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $_REQUEST['page_number'] = 33;
         $_REQUEST['pdf_show_grid'] = true;
@@ -45,29 +46,31 @@ class PdfRelationSchemaTest extends PmaTestCase
         $_REQUEST['t_h'] = ['information_schema.files' => 1];
         $_REQUEST['t_x'] = ['information_schema.files' => 0];
         $_REQUEST['t_y'] = ['information_schema.files' => 0];
+        $_POST['t_db'] = ['information_schema'];
+        $_POST['t_tbl'] = ['files'];
 
         $GLOBALS['server'] = 1;
         $GLOBALS['db'] = 'information_schema';
-        $GLOBALS['cfg']['Server']['pmadb'] = "pmadb";
-        $GLOBALS['cfg']['Server']['user'] = "user";
-        $GLOBALS['cfg']['Server']['table_coords'] = "table_name";
-        $GLOBALS['cfg']['Server']['bookmarktable'] = "bookmarktable";
-        $GLOBALS['cfg']['Server']['relation'] = "relation";
-        $GLOBALS['cfg']['Server']['table_info'] = "table_info";
+        $GLOBALS['cfg']['Server']['pmadb'] = 'pmadb';
+        $GLOBALS['cfg']['Server']['user'] = 'user';
+        $GLOBALS['cfg']['Server']['table_coords'] = 'table_name';
+        $GLOBALS['cfg']['Server']['bookmarktable'] = 'bookmarktable';
+        $GLOBALS['cfg']['Server']['relation'] = 'relation';
+        $GLOBALS['cfg']['Server']['table_info'] = 'table_info';
 
         //_SESSION
         $_SESSION['relation'][$GLOBALS['server']] = [
             'PMA_VERSION' => PMA_VERSION,
-            'table_coords' => "table_name",
+            'table_coords' => 'table_name',
             'displaywork' => 'displaywork',
-            'db' => "information_schema",
+            'db' => 'information_schema',
             'table_info' => 'table_info',
             'relwork' => false,
             'relation' => 'relation',
             'mimework' => 'mimework',
             'commwork' => 'commwork',
             'column_info' => 'column_info',
-            'pdf_pages' => 'pdf_pages'
+            'pdf_pages' => 'pdf_pages',
         ];
         $relation = new Relation($GLOBALS['dbi']);
         $relation->getRelationsParam();
@@ -82,20 +85,20 @@ class PdfRelationSchemaTest extends PmaTestCase
 
         $dbi->expects($this->any())
             ->method('query')
-            ->will($this->returnValue("executed_1"));
+            ->will($this->returnValue('executed_1'));
 
         $dbi->expects($this->any())
             ->method('tryQuery')
-            ->will($this->returnValue("executed_1"));
+            ->will($this->returnValue('executed_1'));
 
         $fetchArrayReturn = [
             //table name in information_schema_relations
-            'table_name' => 'CHARACTER_SETS'
+            'table_name' => 'CHARACTER_SETS',
         ];
 
         $fetchArrayReturn2 = [
             //table name in information_schema_relations
-            'table_name' => 'COLLATIONS'
+            'table_name' => 'COLLATIONS',
         ];
 
         $dbi->expects($this->at(2))
@@ -110,7 +113,7 @@ class PdfRelationSchemaTest extends PmaTestCase
 
         $fetchRowReturn = [
             'table_name',
-            'table_name'
+            'table_name',
         ];
 
         //let fetchRow have more results
@@ -121,12 +124,12 @@ class PdfRelationSchemaTest extends PmaTestCase
         }
 
         $fields_info = [
-            "Host" => [
-                "Field" => "host",
-                "Type" => "char(60)",
-                "Null" => "NO",
-                'Extra' => "Extra",
-            ]
+            'Host' => [
+                'Field' => 'host',
+                'Type' => 'char(60)',
+                'Null' => 'NO',
+                'Extra' => 'Extra',
+            ],
         ];
         $dbi->expects($this->any())->method('getColumns')
             ->will($this->returnValue($fields_info));
@@ -139,9 +142,9 @@ class PdfRelationSchemaTest extends PmaTestCase
                 'Table' => 'pma_tbl',
                 'Field' => 'field1',
                 'Key' => 'PRIMARY',
-                'Key_name' => "Key_name",
-                'Column_name' => "Column_name"
-            ]
+                'Key_name' => 'Key_name',
+                'Column_name' => 'Column_name',
+            ],
         ];
         $dbi->expects($this->any())->method('getTableIndexes')
             ->will($this->returnValue($getIndexesResult));
@@ -161,8 +164,14 @@ class PdfRelationSchemaTest extends PmaTestCase
             ->will($this->returnValue($fetchValue));
 
         $fetchResult = [
-            'column1' => ['mimetype' => 'value1', 'transformation' => 'pdf'],
-            'column2' => ['mimetype' => 'value2', 'transformation' => 'xml'],
+            'column1' => [
+                'mimetype' => 'value1',
+                'transformation' => 'pdf',
+            ],
+            'column2' => [
+                'mimetype' => 'value2',
+                'transformation' => 'xml',
+            ],
         ];
 
         $dbi->expects($this->any())->method('fetchResult')
@@ -177,10 +186,11 @@ class PdfRelationSchemaTest extends PmaTestCase
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }

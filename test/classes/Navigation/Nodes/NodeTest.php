@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for Node class
  *
@@ -12,7 +11,6 @@ namespace PhpMyAdmin\Tests\Navigation\Nodes;
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Navigation\Nodes\Node;
 use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 use ReflectionMethod;
 
 /**
@@ -27,7 +25,7 @@ class NodeTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
@@ -48,7 +46,7 @@ class NodeTest extends PmaTestCase
             $child
         );
         $this->assertEquals(
-            $parent->getChild($child->real_name, true),
+            $parent->getChild($child->realName, true),
             $child
         );
     }
@@ -62,11 +60,11 @@ class NodeTest extends PmaTestCase
     {
         $parent = NodeFactory::getInstance('Node', 'parent');
         $this->assertEquals(
-            $parent->getChild("foo"),
+            $parent->getChild('foo'),
             false
         );
         $this->assertEquals(
-            $parent->getChild("foo", true),
+            $parent->getChild('foo', true),
             false
         );
     }
@@ -100,7 +98,7 @@ class NodeTest extends PmaTestCase
     public function testNodeHasChildren()
     {
         $parent = NodeFactory::getInstance();
-        $empty_container = NodeFactory::getInstance(
+        $emptyContainer = NodeFactory::getInstance(
             'Node',
             'empty',
             Node::CONTAINER
@@ -116,7 +114,7 @@ class NodeTest extends PmaTestCase
             false
         );
         // test with an empty container
-        $parent->addChild($empty_container);
+        $parent->addChild($emptyContainer);
         $this->assertEquals(
             $parent->hasChildren(true),
             true
@@ -188,7 +186,10 @@ class NodeTest extends PmaTestCase
         $this->assertEquals($child->parents(), [$parent]); // exclude self
         $this->assertEquals(
             $child->parents(true),
-            [$child, $parent]
+            [
+                $child,
+                $parent,
+            ]
         ); // include self
     }
 
@@ -212,6 +213,7 @@ class NodeTest extends PmaTestCase
      * when the node does not have any siblings.
      *
      * @return void
+     *
      * @test
      */
     public function testHasSiblingsWithNoSiblings()
@@ -227,6 +229,7 @@ class NodeTest extends PmaTestCase
      * when it actually has siblings.
      *
      * @return void
+     *
      * @test
      */
     public function testHasSiblingsWithSiblings()
@@ -262,6 +265,7 @@ class NodeTest extends PmaTestCase
      * for Nodes that are 3 levels deep (columns and indexes).
      *
      * @return void
+     *
      * @test
      */
     public function testHasSiblingsForNodesAtLevelThree()
@@ -284,20 +288,21 @@ class NodeTest extends PmaTestCase
      * Tests private method _getWhereClause()
      *
      * @return void
+     *
      * @test
      */
     public function testGetWhereClause()
     {
         $method = new ReflectionMethod(
             'PhpMyAdmin\Navigation\Nodes\Node',
-            '_getWhereClause'
+            'getWhereClause'
         );
         $method->setAccessible(true);
 
         // Vanilla case
         $node = NodeFactory::getInstance();
         $this->assertEquals(
-            "WHERE TRUE ",
+            'WHERE TRUE ',
             $method->invoke($node, 'SCHEMA_NAME')
         );
 
@@ -328,7 +333,10 @@ class NodeTest extends PmaTestCase
         unset($GLOBALS['cfg']['Server']['only_db']);
 
         // When only_db directive is present and it's an array of dbs
-        $GLOBALS['cfg']['Server']['only_db'] = ['onlyDbOne', 'onlyDbTwo'];
+        $GLOBALS['cfg']['Server']['only_db'] = [
+            'onlyDbOne',
+            'onlyDbTwo',
+        ];
         $this->assertEquals(
             "WHERE TRUE AND ( `SCHEMA_NAME` LIKE 'onlyDbOne' "
             . "OR `SCHEMA_NAME` LIKE 'onlyDbTwo' ) ",
@@ -342,6 +350,7 @@ class NodeTest extends PmaTestCase
      * grouping enabled.
      *
      * @return void
+     *
      * @test
      */
     public function testGetDataWithEnabledISAndGroupingEnabled()
@@ -353,23 +362,23 @@ class NodeTest extends PmaTestCase
         $GLOBALS['cfg']['FirstLevelNavigationItems'] = $limit;
         $GLOBALS['cfg']['NavigationTreeDbSeparator'] = '_';
 
-        $expectedSql  = "SELECT `SCHEMA_NAME` ";
-        $expectedSql .= "FROM `INFORMATION_SCHEMA`.`SCHEMATA`, ";
-        $expectedSql .= "(";
-        $expectedSql .= "SELECT DB_first_level ";
-        $expectedSql .= "FROM ( ";
-        $expectedSql .= "SELECT DISTINCT SUBSTRING_INDEX(SCHEMA_NAME, ";
+        $expectedSql  = 'SELECT `SCHEMA_NAME` ';
+        $expectedSql .= 'FROM `INFORMATION_SCHEMA`.`SCHEMATA`, ';
+        $expectedSql .= '(';
+        $expectedSql .= 'SELECT DB_first_level ';
+        $expectedSql .= 'FROM ( ';
+        $expectedSql .= 'SELECT DISTINCT SUBSTRING_INDEX(SCHEMA_NAME, ';
         $expectedSql .= "'_', 1) ";
-        $expectedSql .= "DB_first_level ";
-        $expectedSql .= "FROM INFORMATION_SCHEMA.SCHEMATA ";
-        $expectedSql .= "WHERE TRUE ";
-        $expectedSql .= ") t ";
-        $expectedSql .= "ORDER BY DB_first_level ASC ";
-        $expectedSql .= "LIMIT $pos, $limit";
-        $expectedSql .= ") t2 ";
+        $expectedSql .= 'DB_first_level ';
+        $expectedSql .= 'FROM INFORMATION_SCHEMA.SCHEMATA ';
+        $expectedSql .= 'WHERE TRUE ';
+        $expectedSql .= ') t ';
+        $expectedSql .= 'ORDER BY DB_first_level ASC ';
+        $expectedSql .= 'LIMIT ' . $pos . ', ' . $limit;
+        $expectedSql .= ') t2 ';
         $expectedSql .= "WHERE TRUE AND 1 = LOCATE(CONCAT(DB_first_level, '_'), ";
         $expectedSql .= "CONCAT(SCHEMA_NAME, '_')) ";
-        $expectedSql .= "ORDER BY SCHEMA_NAME ASC";
+        $expectedSql .= 'ORDER BY SCHEMA_NAME ASC';
 
         // It would have been better to mock _getWhereClause method
         // but strangely, mocking private methods is not supported in PHPUnit
@@ -392,6 +401,7 @@ class NodeTest extends PmaTestCase
      * grouping disabled.
      *
      * @return void
+     *
      * @test
      */
     public function testGetDataWithEnabledISAndGroupingDisabled()
@@ -402,11 +412,11 @@ class NodeTest extends PmaTestCase
         $GLOBALS['cfg']['NavigationTreeEnableGrouping'] = false;
         $GLOBALS['cfg']['FirstLevelNavigationItems'] = $limit;
 
-        $expectedSql  = "SELECT `SCHEMA_NAME` ";
-        $expectedSql .= "FROM `INFORMATION_SCHEMA`.`SCHEMATA` ";
-        $expectedSql .= "WHERE TRUE ";
-        $expectedSql .= "ORDER BY `SCHEMA_NAME` ";
-        $expectedSql .= "LIMIT $pos, $limit";
+        $expectedSql  = 'SELECT `SCHEMA_NAME` ';
+        $expectedSql .= 'FROM `INFORMATION_SCHEMA`.`SCHEMATA` ';
+        $expectedSql .= 'WHERE TRUE ';
+        $expectedSql .= 'ORDER BY `SCHEMA_NAME` ';
+        $expectedSql .= 'LIMIT ' . $pos . ', ' . $limit;
 
         // It would have been better to mock _getWhereClause method
         // but strangely, mocking private methods is not supported in PHPUnit
@@ -430,6 +440,7 @@ class NodeTest extends PmaTestCase
      * grouping enabled.
      *
      * @return void
+     *
      * @test
      */
     public function testGetDataWithDisabledISAndGroupingEnabled()
@@ -455,10 +466,10 @@ class NodeTest extends PmaTestCase
             ->method('fetchArray')
             ->willReturnOnConsecutiveCalls(
                 [
-                    '0' => 'db'
+                    '0' => 'db',
                 ],
                 [
-                    '0' => 'aa_db'
+                    '0' => 'aa_db',
                 ],
                 false
             );
@@ -482,6 +493,7 @@ class NodeTest extends PmaTestCase
      * grouping enabled.
      *
      * @return void
+     *
      * @test
      */
     public function testGetPresenceWithEnabledISAndGroupingEnabled()
@@ -490,13 +502,13 @@ class NodeTest extends PmaTestCase
         $GLOBALS['cfg']['NavigationTreeEnableGrouping'] = true;
         $GLOBALS['cfg']['NavigationTreeDbSeparator'] = '_';
 
-        $query = "SELECT COUNT(*) ";
-        $query .= "FROM ( ";
+        $query = 'SELECT COUNT(*) ';
+        $query .= 'FROM ( ';
         $query .= "SELECT DISTINCT SUBSTRING_INDEX(SCHEMA_NAME, '_', 1) ";
-        $query .= "DB_first_level ";
-        $query .= "FROM INFORMATION_SCHEMA.SCHEMATA ";
-        $query .= "WHERE TRUE ";
-        $query .= ") t ";
+        $query .= 'DB_first_level ';
+        $query .= 'FROM INFORMATION_SCHEMA.SCHEMATA ';
+        $query .= 'WHERE TRUE ';
+        $query .= ') t ';
 
         // It would have been better to mock _getWhereClause method
         // but strangely, mocking private methods is not supported in PHPUnit
@@ -517,6 +529,7 @@ class NodeTest extends PmaTestCase
      * grouping disabled.
      *
      * @return void
+     *
      * @test
      */
     public function testGetPresenceWithEnabledISAndGroupingDisabled()
@@ -524,9 +537,9 @@ class NodeTest extends PmaTestCase
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['NavigationTreeEnableGrouping'] = false;
 
-        $query = "SELECT COUNT(*) ";
-        $query .= "FROM INFORMATION_SCHEMA.SCHEMATA ";
-        $query .= "WHERE TRUE ";
+        $query = 'SELECT COUNT(*) ';
+        $query .= 'FROM INFORMATION_SCHEMA.SCHEMATA ';
+        $query .= 'WHERE TRUE ';
 
         $node = NodeFactory::getInstance();
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
@@ -543,6 +556,7 @@ class NodeTest extends PmaTestCase
      * Tests the getPresence method when DisableIS is true
      *
      * @return void
+     *
      * @test
      */
     public function testGetPresenceWithDisabledIS()
@@ -559,7 +573,7 @@ class NodeTest extends PmaTestCase
             ->getMock();
         $dbi->expects($this->once())
             ->method('tryQuery')
-            ->with("SHOW DATABASES WHERE TRUE ");
+            ->with('SHOW DATABASES WHERE TRUE ');
         $dbi->expects($this->any())->method('escapeString')
             ->will($this->returnArgument(0));
 

@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Server config checks management
  *
@@ -33,8 +32,6 @@ class ServerConfigChecks
     protected $cfg;
 
     /**
-     * Constructor.
-     *
      * @param ConfigFile $cfg Configuration
      */
     public function __construct(ConfigFile $cfg)
@@ -91,7 +88,7 @@ class ServerConfigChecks
                 'notice',
                 'AllowArbitraryServer',
                 Descriptions::get('AllowArbitraryServer'),
-                Sanitize::sanitize($sAllowArbitraryServerWarn)
+                Sanitize::sanitizeMessage($sAllowArbitraryServerWarn)
             );
         }
 
@@ -112,7 +109,7 @@ class ServerConfigChecks
                 'notice',
                 'SaveDir',
                 Descriptions::get('SaveDir'),
-                Sanitize::sanitize($sDirectoryNotice)
+                Sanitize::sanitizeMessage($sDirectoryNotice)
             );
         }
 
@@ -125,7 +122,7 @@ class ServerConfigChecks
                 'notice',
                 'TempDir',
                 Descriptions::get('TempDir'),
-                Sanitize::sanitize($sDirectoryNotice)
+                Sanitize::sanitizeMessage($sDirectoryNotice)
             );
         }
 
@@ -149,7 +146,7 @@ class ServerConfigChecks
         $serverCnt = $this->cfg->getServerCount();
         for ($i = 1; $i <= $serverCnt; $i++) {
             $cookieAuthServer
-                = ($this->cfg->getValue("Servers/$i/auth_type") == 'cookie');
+                = ($this->cfg->getValue('Servers/' . $i . '/auth_type') == 'cookie');
             $cookieAuthUsed |= $cookieAuthServer;
             $serverName = $this->performConfigChecksServersGetServerName(
                 $this->cfg->getServerName($i),
@@ -168,11 +165,11 @@ class ServerConfigChecks
             // $cfg['Servers'][$i]['ssl']
             // should be enabled if possible
             //
-            if (!$this->cfg->getValue("Servers/$i/ssl")) {
-                $title = Descriptions::get('Servers/1/ssl') . " ($serverName)";
+            if (! $this->cfg->getValue('Servers/' . $i . '/ssl')) {
+                $title = Descriptions::get('Servers/1/ssl') . ' (' . $serverName . ')';
                 SetupIndex::messagesSet(
                     'notice',
-                    "Servers/$i/ssl",
+                    'Servers/' . $i . '/ssl',
                     $title,
                     __(
                         'You should use SSL connections if your database server '
@@ -180,7 +177,7 @@ class ServerConfigChecks
                     )
                 );
             }
-            $sSecurityInfoMsg = Sanitize::sanitize(sprintf(
+            $sSecurityInfoMsg = Sanitize::sanitizeMessage(sprintf(
                 __(
                     'If you feel this is necessary, use additional protection settings - '
                     . '%1$shost authentication%2$s settings and %3$strusted proxies list%4%s. '
@@ -197,17 +194,17 @@ class ServerConfigChecks
             // $cfg['Servers'][$i]['auth_type']
             // warn about full user credentials if 'auth_type' is 'config'
             //
-            if ($this->cfg->getValue("Servers/$i/auth_type") == 'config'
-                && $this->cfg->getValue("Servers/$i/user") != ''
-                && $this->cfg->getValue("Servers/$i/password") != ''
+            if ($this->cfg->getValue('Servers/' . $i . '/auth_type') == 'config'
+                && $this->cfg->getValue('Servers/' . $i . '/user') != ''
+                && $this->cfg->getValue('Servers/' . $i . '/password') != ''
             ) {
                 $title = Descriptions::get('Servers/1/auth_type')
-                    . " ($serverName)";
+                    . ' (' . $serverName . ')';
                 SetupIndex::messagesSet(
                     'notice',
-                    "Servers/$i/auth_type",
+                    'Servers/' . $i . '/auth_type',
                     $title,
-                    Sanitize::sanitize(sprintf(
+                    Sanitize::sanitizeMessage(sprintf(
                         __(
                             'You set the [kbd]config[/kbd] authentication type and included '
                             . 'username and password for auto-login, which is not a desirable '
@@ -227,21 +224,25 @@ class ServerConfigChecks
             // $cfg['Servers'][$i]['AllowNoPassword']
             // serious security flaw
             //
-            if ($this->cfg->getValue("Servers/$i/AllowRoot")
-                && $this->cfg->getValue("Servers/$i/AllowNoPassword")
+            if ($this->cfg->getValue('Servers/' . $i . '/AllowRoot')
+                && $this->cfg->getValue('Servers/' . $i . '/AllowNoPassword')
             ) {
                 $title = Descriptions::get('Servers/1/AllowNoPassword')
-                    . " ($serverName)";
+                    . ' (' . $serverName . ')';
                 SetupIndex::messagesSet(
                     'notice',
-                    "Servers/$i/AllowNoPassword",
+                    'Servers/' . $i . '/AllowNoPassword',
                     $title,
                     __('You allow for connecting to the server without a password.')
                     . ' ' . $sSecurityInfoMsg
                 );
             }
         }
-        return [$cookieAuthUsed, $blowfishSecret, $blowfishSecretSet];
+        return [
+            $cookieAuthUsed,
+            $blowfishSecret,
+            $blowfishSecretSet,
+        ];
     }
 
     /**
@@ -262,7 +263,10 @@ class ServerConfigChecks
             $blowfishSecretSet = true;
             $this->cfg->set('blowfish_secret', Util::generateRandom(32));
         }
-        return [$blowfishSecret, $blowfishSecretSet];
+        return [
+            $blowfishSecret,
+            $blowfishSecretSet,
+        ];
     }
 
     /**
@@ -278,7 +282,7 @@ class ServerConfigChecks
         $serverId
     ) {
         if ($serverName == 'localhost') {
-            $serverName .= " [$serverId]";
+            $serverName .= ' [' . $serverId . ']';
             return $serverName;
         }
         return $serverName;
@@ -307,12 +311,12 @@ class ServerConfigChecks
         // $cfg['ZipDump']
         // requires zip_open in import
         //
-        if ($this->cfg->getValue('ZipDump') && !$this->functionExists('zip_open')) {
+        if ($this->cfg->getValue('ZipDump') && ! $this->functionExists('zip_open')) {
             SetupIndex::messagesSet(
                 'error',
                 'ZipDump_import',
                 Descriptions::get('ZipDump'),
-                Sanitize::sanitize(sprintf(
+                Sanitize::sanitizeMessage(sprintf(
                     __(
                         '%sZip decompression%s requires functions (%s) which are unavailable '
                         . 'on this system.'
@@ -328,12 +332,12 @@ class ServerConfigChecks
         // $cfg['ZipDump']
         // requires gzcompress in export
         //
-        if ($this->cfg->getValue('ZipDump') && !$this->functionExists('gzcompress')) {
+        if ($this->cfg->getValue('ZipDump') && ! $this->functionExists('gzcompress')) {
             SetupIndex::messagesSet(
                 'error',
                 'ZipDump_export',
                 Descriptions::get('ZipDump'),
-                Sanitize::sanitize(sprintf(
+                Sanitize::sanitizeMessage(sprintf(
                     __(
                         '%sZip compression%s requires functions (%s) which are unavailable on '
                         . 'this system.'
@@ -353,7 +357,7 @@ class ServerConfigChecks
      * @param boolean $blowfishSecretSet Blowfish secret set
      * @param string  $blowfishSecret    Blowfish secret
      *
-     * @return array
+     * @return void
      */
     protected function performConfigChecksCookieAuthUsed(
         $cookieAuthUsed,
@@ -371,7 +375,7 @@ class ServerConfigChecks
                     'notice',
                     'blowfish_secret_created',
                     Descriptions::get('blowfish_secret'),
-                    Sanitize::sanitize(__(
+                    Sanitize::sanitizeMessage(__(
                         'You didn\'t have blowfish secret set and have enabled '
                         . '[kbd]cookie[/kbd] authentication, so a key was automatically '
                         . 'generated for you. It is used to encrypt cookies; you don\'t need to '
@@ -388,23 +392,23 @@ class ServerConfigChecks
                     );
                 }
                 // check used characters
-                $hasDigits = (bool)preg_match('/\d/', $blowfishSecret);
-                $hasChars = (bool)preg_match('/\S/', $blowfishSecret);
-                $hasNonword = (bool)preg_match('/\W/', $blowfishSecret);
-                if (!$hasDigits || !$hasChars || !$hasNonword) {
-                    $blowfishWarnings[] = Sanitize::sanitize(
+                $hasDigits = (bool) preg_match('/\d/', $blowfishSecret);
+                $hasChars = (bool) preg_match('/\S/', $blowfishSecret);
+                $hasNonword = (bool) preg_match('/\W/', $blowfishSecret);
+                if (! $hasDigits || ! $hasChars || ! $hasNonword) {
+                    $blowfishWarnings[] = Sanitize::sanitizeMessage(
                         __(
                             'Key should contain letters, numbers [em]and[/em] '
                             . 'special characters.'
                         )
                     );
                 }
-                if (!empty($blowfishWarnings)) {
+                if (! empty($blowfishWarnings)) {
                     SetupIndex::messagesSet(
                         'error',
                         'blowfish_warnings' . count($blowfishWarnings),
                         Descriptions::get('blowfish_secret'),
-                        implode('<br />', $blowfishWarnings)
+                        implode('<br>', $blowfishWarnings)
                     );
                 }
             }
@@ -429,7 +433,7 @@ class ServerConfigChecks
                 'error',
                 'LoginCookieValidity',
                 Descriptions::get('LoginCookieValidity'),
-                Sanitize::sanitize(sprintf(
+                Sanitize::sanitizeMessage(sprintf(
                     __(
                         '%1$sLogin cookie validity%2$s greater than %3$ssession.gc_maxlifetime%4$s may '
                         . 'cause random session invalidation (currently session.gc_maxlifetime '
@@ -453,7 +457,7 @@ class ServerConfigChecks
                 'notice',
                 'LoginCookieValidity',
                 Descriptions::get('LoginCookieValidity'),
-                Sanitize::sanitize(sprintf(
+                Sanitize::sanitizeMessage(sprintf(
                     __(
                         '%sLogin cookie validity%s should be set to 1800 seconds (30 minutes) '
                         . 'at most. Values larger than 1800 may pose a security risk such as '
@@ -477,7 +481,7 @@ class ServerConfigChecks
                 'error',
                 'LoginCookieValidity',
                 Descriptions::get('LoginCookieValidity'),
-                Sanitize::sanitize(sprintf(
+                Sanitize::sanitizeMessage(sprintf(
                     __(
                         'If using [kbd]cookie[/kbd] authentication and %sLogin cookie store%s '
                         . 'is not 0, %sLogin cookie validity%s must be set to a value less or '
@@ -504,7 +508,7 @@ class ServerConfigChecks
         // requires bzip2 functions
         //
         if ($this->cfg->getValue('BZipDump')
-            && (!$this->functionExists('bzopen') || !$this->functionExists('bzcompress'))
+            && (! $this->functionExists('bzopen') || ! $this->functionExists('bzcompress'))
         ) {
             $functions = $this->functionExists('bzopen')
                 ? '' :
@@ -516,7 +520,7 @@ class ServerConfigChecks
                 'error',
                 'BZipDump',
                 Descriptions::get('BZipDump'),
-                Sanitize::sanitize(
+                Sanitize::sanitizeMessage(
                     sprintf(
                         __(
                             '%1$sBzip2 compression and decompression%2$s requires functions (%3$s) which '
@@ -543,13 +547,13 @@ class ServerConfigChecks
         // requires zlib functions
         //
         if ($this->cfg->getValue('GZipDump')
-            && (!$this->functionExists('gzopen') || !$this->functionExists('gzencode'))
+            && (! $this->functionExists('gzopen') || ! $this->functionExists('gzencode'))
         ) {
             SetupIndex::messagesSet(
                 'error',
                 'GZipDump',
                 Descriptions::get('GZipDump'),
-                Sanitize::sanitize(sprintf(
+                Sanitize::sanitizeMessage(sprintf(
                     __(
                         '%1$sGZip compression and decompression%2$s requires functions (%3$s) which '
                         . 'are unavailable on this system.'

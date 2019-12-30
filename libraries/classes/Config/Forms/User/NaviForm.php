@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * User preferences form
  *
@@ -12,7 +11,6 @@ namespace PhpMyAdmin\Config\Forms\User;
 use PhpMyAdmin\Config\Forms\BaseForm;
 
 /**
- * Class NaviForm
  * @package PhpMyAdmin\Config\Forms\User
  */
 class NaviForm extends BaseForm
@@ -45,7 +43,7 @@ class NaviForm extends BaseForm
                 'NavigationTreeShowFunctions',
                 'NavigationTreeShowProcedures',
                 'NavigationTreeShowEvents',
-                'NavigationTreeAutoexpandSingleDb'
+                'NavigationTreeAutoexpandSingleDb',
             ],
             'Navi_servers' => [
                 'NavigationDisplayServers',
@@ -53,7 +51,7 @@ class NaviForm extends BaseForm
             ],
             'Navi_databases' => [
                 'NavigationTreeDisplayDbFilterMinimum',
-                'NavigationTreeDbSeparator'
+                'NavigationTreeDbSeparator',
             ],
             'Navi_tables' => [
                 'NavigationTreeDefaultTabTable',

@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Get user's global privileges and some db-specific privileges
  *
@@ -48,13 +47,13 @@ class CheckUserPrivileges
         $tblname_end_offset = mb_strpos($row, ' TO ');
         $tblname_start_offset = false;
 
-        if ($__tblname_start_offset = mb_strpos($row, '`.', $db_name_offset)) {
-            if ($__tblname_start_offset < $tblname_end_offset) {
+        if (($__tblname_start_offset = mb_strpos($row, '`.', $db_name_offset))
+            && $__tblname_start_offset
+            < $tblname_end_offset) {
                 $tblname_start_offset = $__tblname_start_offset + 1;
-            }
         }
 
-        if (!$tblname_start_offset) {
+        if (! $tblname_start_offset) {
             $tblname_start_offset = mb_strpos($row, '.', $db_name_offset);
         }
 
@@ -69,7 +68,7 @@ class CheckUserPrivileges
         $show_grants_str = mb_substr(
             $row,
             6,
-            (mb_strpos($row, ' ON ') - 6)
+            mb_strpos($row, ' ON ') - 6
         );
 
         $show_grants_tblname = mb_substr(
@@ -82,7 +81,7 @@ class CheckUserPrivileges
         return [
             $show_grants_str,
             $show_grants_dbname,
-            $show_grants_tblname
+            $show_grants_tblname,
         ];
     }
 
@@ -130,19 +129,19 @@ class CheckUserPrivileges
             // Ex. '... ALL PRIVILEGES on `mysql`.`columns_priv` .. '
             if ($show_grants_dbname == 'mysql') {
                 switch ($show_grants_tblname) {
-                    case "columns_priv":
+                    case 'columns_priv':
                         $GLOBALS['col_priv'] = true;
                         break;
-                    case "db":
+                    case 'db':
                         $GLOBALS['db_priv'] = true;
                         break;
-                    case "procs_priv":
+                    case 'procs_priv':
                         $GLOBALS['proc_priv'] = true;
                         break;
-                    case "tables_priv":
+                    case 'tables_priv':
                         $GLOBALS['table_priv'] = true;
                         break;
-                    case "*":
+                    case '*':
                         $GLOBALS['col_priv'] = true;
                         $GLOBALS['db_priv'] = true;
                         $GLOBALS['proc_priv'] = true;
@@ -163,16 +162,16 @@ class CheckUserPrivileges
      * (no control user needed) and we don't have to try any other method for
      * detection
      *
+     * @return void
+     *
      * @todo fix to get really all privileges, not only explicitly defined for this user
      * from MySQL manual: (https://dev.mysql.com/doc/refman/5.0/en/show-grants.html)
      * SHOW GRANTS displays only the privileges granted explicitly to the named
      * account. Other privileges might be available to the account, but they are not
      * displayed. For example, if an anonymous account exists, the named account
      * might be able to use its privileges, but SHOW GRANTS will not display them.
-     *
-     * @return void
      */
-    public function analyseShowGrant(): void
+    private function analyseShowGrant(): void
     {
         if (Util::cacheExists('is_create_db_priv')) {
             $GLOBALS['is_create_db_priv'] = Util::cacheGet(
@@ -338,5 +337,35 @@ class CheckUserPrivileges
         Util::cacheSet('table_priv', $GLOBALS['table_priv']);
         Util::cacheSet('col_priv', $GLOBALS['col_priv']);
         Util::cacheSet('db_priv', $GLOBALS['db_priv']);
-    } // end function
+    }
+
+    /**
+     * Get user's global privileges and some db-specific privileges
+     *
+     * @return void
+     */
+    public function getPrivileges(): void
+    {
+        $username = '';
+
+        $current = $this->dbi->getCurrentUserAndHost();
+        if (! empty($current)) {
+            list($username, ) = $current;
+        }
+
+        // If MySQL is started with --skip-grant-tables
+        if ($username === '') {
+            $GLOBALS['is_create_db_priv'] = true;
+            $GLOBALS['is_reload_priv'] = true;
+            $GLOBALS['db_to_create'] = '';
+            $GLOBALS['dbs_where_create_table_allowed'] = ['*'];
+            $GLOBALS['dbs_to_test'] = false;
+            $GLOBALS['db_priv'] = true;
+            $GLOBALS['col_priv'] = true;
+            $GLOBALS['table_priv'] = true;
+            $GLOBALS['proc_priv'] = true;
+        } else {
+            $this->analyseShowGrant();
+        }
+    }
 }

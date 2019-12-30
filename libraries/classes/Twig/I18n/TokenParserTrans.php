@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * hold PhpMyAdmin\Twig\I18n\TokenParserTrans class
  *
@@ -9,12 +8,12 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Twig\I18n;
 
+use Twig\Extensions\Node\TransNode;
 use Twig\Extensions\TokenParser\TransTokenParser;
 use Twig\Token;
+use Twig_Error_Syntax;
 
 /**
- * Class TokenParserTrans
- *
  * @package PhpMyAdmin\Twig\I18n
  */
 class TokenParserTrans extends TransTokenParser
@@ -24,9 +23,9 @@ class TokenParserTrans extends TransTokenParser
      *
      * @param Token $token Twig token to parse
      *
-     * @return \Twig\Extensions\Node\TransNode
+     * @return TransNode
      *
-     * @throws \Twig\Error\SyntaxError
+     * @throws Twig_Error_Syntax
      */
     public function parse(Token $token)
     {
@@ -37,7 +36,7 @@ class TokenParserTrans extends TransTokenParser
         $notes = null;
         $context = null;
 
-        if (!$stream->test(Token::BLOCK_END_TYPE)) {
+        if (! $stream->test(Token::BLOCK_END_TYPE)) {
             $body = $this->parser->getExpressionParser()->parseExpression();
         } else {
             $stream->expect(Token::BLOCK_END_TYPE);

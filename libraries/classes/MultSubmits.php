@@ -1,23 +1,15 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Holds the PhpMyAdmin\MultSubmits class
  *
  * @usedby  mult_submits.inc.php
- *
  * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Operations;
-use PhpMyAdmin\RelationCleanup;
-use PhpMyAdmin\Sql;
-use PhpMyAdmin\Table;
-use PhpMyAdmin\Transformations;
-use PhpMyAdmin\Url;
-use PhpMyAdmin\Util;
+use PhpMyAdmin\Html\Forms\Fields\FKCheckbox;
 
 /**
  * Functions for multi submit forms
@@ -37,7 +29,7 @@ class MultSubmits
     private $relationCleanup;
 
     /**
-     * @var Operations $operations
+     * @var Operations
      */
     private $operations;
 
@@ -80,11 +72,11 @@ class MultSubmits
     ) {
         $urlParams = [
             'query_type' => $what,
-            'reload' => (! empty($reload) ? 1 : 0),
+            'reload' => ! empty($reload) ? 1 : 0,
         ];
-        if (mb_strpos(' ' . $action, 'db_') == 1) {
+        if (mb_strpos(' ' . $action, 'db_') === 1 || mb_strpos($action, '?route=/database/') !== false) {
             $urlParams['db'] = $db;
-        } elseif (mb_strpos(' ' . $action, 'tbl_') == 1
+        } elseif (mb_strpos(' ' . $action, 'tbl_') === 1 || mb_strpos($action, '?route=/table/') !== false
             || $what == 'row_delete'
         ) {
             $urlParams['db'] = $db;
@@ -99,7 +91,7 @@ class MultSubmits
                 $urlParams['selected'][] = $selectedValue;
             }
         }
-        if ($what == 'drop_tbl' && !empty($views)) {
+        if ($what == 'drop_tbl' && ! empty($views)) {
             foreach ($views as $current) {
                 $urlParams['views'][] = $current;
             }
@@ -177,7 +169,7 @@ class MultSubmits
                 case 'drop_tbl':
                     $this->relationCleanup->table($db, $selected[$i]);
                     $current = $selected[$i];
-                    if (!empty($views) && in_array($current, $views)) {
+                    if (! empty($views) && in_array($current, $views)) {
                         $sqlQueryViews .= (empty($sqlQueryViews) ? 'DROP VIEW ' : ', ')
                             . Util::backquote($current);
                     } else {
@@ -230,7 +222,7 @@ class MultSubmits
                         ? 'ALTER TABLE ' . Util::backquote($table)
                         : ',')
                         . ' DROP ' . Util::backquote($selected[$i])
-                        . (($i == $selectedCount - 1) ? ';' : '');
+                        . ($i == $selectedCount - 1 ? ';' : '');
                     break;
 
                 case 'primary_fld':
@@ -241,7 +233,7 @@ class MultSubmits
                         : ' DROP PRIMARY KEY,') . ' ADD PRIMARY KEY( '
                     : ', ')
                         . Util::backquote($selected[$i])
-                        . (($i == $selectedCount - 1) ? ');' : '');
+                        . ($i == $selectedCount - 1 ? ');' : '');
                     break;
 
                 case 'index_fld':
@@ -250,7 +242,7 @@ class MultSubmits
                         . ' ADD INDEX( '
                     : ', ')
                         . Util::backquote($selected[$i])
-                        . (($i == $selectedCount - 1) ? ');' : '');
+                        . ($i == $selectedCount - 1 ? ');' : '');
                     break;
 
                 case 'unique_fld':
@@ -259,7 +251,7 @@ class MultSubmits
                         . ' ADD UNIQUE( '
                     : ', ')
                         . Util::backquote($selected[$i])
-                        . (($i == $selectedCount - 1) ? ');' : '');
+                        . ($i == $selectedCount - 1 ? ');' : '');
                     break;
 
                 case 'spatial_fld':
@@ -268,7 +260,7 @@ class MultSubmits
                         . ' ADD SPATIAL( '
                     : ', ')
                         . Util::backquote($selected[$i])
-                        . (($i == $selectedCount - 1) ? ');' : '');
+                        . ($i == $selectedCount - 1 ? ');' : '');
                     break;
 
                 case 'fulltext_fld':
@@ -277,7 +269,7 @@ class MultSubmits
                         . ' ADD FULLTEXT( '
                     : ', ')
                         . Util::backquote($selected[$i])
-                        . (($i == $selectedCount - 1) ? ');' : '');
+                        . ($i == $selectedCount - 1 ? ');' : '');
                     break;
 
                 case 'add_prefix_tbl':
@@ -346,7 +338,7 @@ class MultSubmits
                         false,
                         'one_table'
                     );
-                    if (isset($_POST['adjust_privileges']) && !empty($_POST['adjust_privileges'])) {
+                    if (isset($_POST['adjust_privileges']) && ! empty($_POST['adjust_privileges'])) {
                         $this->operations->adjustPrivilegesCopyTable(
                             $db,
                             $selected[$i],
@@ -359,7 +351,7 @@ class MultSubmits
 
             // All "DROP TABLE", "DROP FIELD", "OPTIMIZE TABLE" and "REPAIR TABLE"
             // statements will be run at once below
-            if ($runParts && !$copyTable) {
+            if ($runParts && ! $copyTable) {
                 $sqlQuery .= $aQuery . ';' . "\n";
                 if ($queryType != 'drop_db') {
                     $GLOBALS['dbi']->selectDb($db);
@@ -381,7 +373,7 @@ class MultSubmits
             $_REQUEST['pos'] = $sql->calculatePosForLastPage(
                 $db,
                 $table,
-                isset($_REQUEST['pos']) ? $_REQUEST['pos'] : null
+                $_REQUEST['pos'] ?? null
             );
         }
 
@@ -392,7 +384,7 @@ class MultSubmits
             $runParts,
             $executeQueryLater,
             $sqlQuery,
-            $sqlQueryViews
+            $sqlQueryViews,
         ];
     }
 
@@ -422,22 +414,22 @@ class MultSubmits
             . '</select>';
         $html .= '<br><br>';
         $html .= '<strong><label>' . __('Options') . ':</label></strong><br>';
-        $html .= '<input type="radio" id ="what_structure" value="structure" name="what"/>';
+        $html .= '<input type="radio" id ="what_structure" value="structure" name="what">';
         $html .= '<label for="what_structure">' . __('Structure only') . '</label><br>';
-        $html .= '<input type="radio" id ="what_data" value="data" name="what" checked="checked"/>';
+        $html .= '<input type="radio" id ="what_data" value="data" name="what" checked="checked">';
         $html .= '<label for="what_data">' . __('Structure and data') . '</label><br>';
-        $html .= '<input type="radio" id ="what_dataonly" value="dataonly" name="what"/>';
+        $html .= '<input type="radio" id ="what_dataonly" value="dataonly" name="what">';
         $html .= '<label for="what_dataonly">' . __('Data only') . '</label><br><br>';
-        $html .= '<input type="checkbox" id="checkbox_drop" value="true" name="drop_if_exists"/>';
+        $html .= '<input type="checkbox" id="checkbox_drop" value="true" name="drop_if_exists">';
         $html .= '<label for="checkbox_drop">' . __('Add DROP TABLE') . '</label><br>';
-        $html .= '<input type="checkbox" id="checkbox_auto_increment_cp" value="1" name="sql_auto_increment"/>';
+        $html .= '<input type="checkbox" id="checkbox_auto_increment_cp" value="1" name="sql_auto_increment">';
         $html .= '<label for="checkbox_auto_increment_cp">' . __('Add AUTO INCREMENT value') . '</label><br>';
-        $html .= '<input type="checkbox" id="checkbox_constraints" value="1" name="sql_auto_increment" checked="checked"/>';
+        $html .= '<input type="checkbox" id="checkbox_constraints" value="1" name="sql_auto_increment" checked="checked">';
         $html .= '<label for="checkbox_constraints">' . __('Add constraints') . '</label><br><br>';
-        $html .= '<input name="adjust_privileges" value="1" id="checkbox_adjust_privileges" checked="checked" type="checkbox"/>';
+        $html .= '<input name="adjust_privileges" value="1" id="checkbox_adjust_privileges" checked="checked" type="checkbox">';
         $html .= '<label for="checkbox_adjust_privileges">' . __('Adjust privileges') . '<a href="./doc/html/faq.html#faq6-39" target="documentation"><img src="themes/dot.gif" title="Documentation" alt="Documentation" class="icon ic_b_help"></a></label>';
         $html .= '</fieldset>';
-        $html .= '<input type="hidden" name="mult_btn" value="' . __('Yes') . '" />';
+        $html .= '<input type="hidden" name="mult_btn" value="' . __('Yes') . '">';
         $html .= '</form>';
         return $html;
     }
@@ -459,18 +451,18 @@ class MultSubmits
         $html .= '<tr>';
         $html .= '<td>' . __('From') . '</td>';
         $html .= '<td>';
-        $html .= '<input type="text" name="from_prefix" id="initialPrefix" />';
+        $html .= '<input type="text" name="from_prefix" id="initialPrefix">';
         $html .= '</td>';
         $html .= '</tr>';
         $html .= '<tr>';
         $html .= '<td>' . __('To') . '</td>';
         $html .= '<td>';
-        $html .= '<input type="text" name="to_prefix" id="newPrefix" />';
+        $html .= '<input type="text" name="to_prefix" id="newPrefix">';
         $html .= '</td>';
         $html .= '</tr>';
         $html .= '</table>';
         $html .= '</fieldset>';
-        $html .= '<input type="hidden" name="mult_btn" value="' . __('Yes') . '" />';
+        $html .= '<input type="hidden" name="mult_btn" value="' . __('Yes') . '">';
         $html .= '</form>';
 
         return $html;
@@ -493,13 +485,13 @@ class MultSubmits
         $html .= '<tr>';
         $html .= '<td>' . __('Add prefix') . '</td>';
         $html .= '<td>';
-        $html .= '<input type="text" name="add_prefix" id="txtPrefix" />';
+        $html .= '<input type="text" name="add_prefix" id="txtPrefix">';
         $html .= '</td>';
         $html .= '</tr>';
         $html .= '<tr>';
         $html .= '</table>';
         $html .= '</fieldset>';
-        $html .= '<input type="hidden" name="mult_btn" value="' . __('Yes') . '" />';
+        $html .= '<input type="hidden" name="mult_btn" value="' . __('Yes') . '">';
         $html .= '</form>';
 
         return $html;
@@ -532,13 +524,13 @@ class MultSubmits
         // Display option to disable foreign key checks while dropping tables
         if ($what === 'drop_tbl' || $what === 'empty_tbl' || $what === 'row_delete') {
             $html .= '<div id="foreignkeychk">';
-            $html .= Util::getFKCheckbox();
+            $html .= FKCheckbox::generate();
             $html .= '</div>';
         }
-        $html .= '<input id="buttonYes" type="submit" name="mult_btn" value="'
-            . __('Yes') . '" />';
-        $html .= '<input id="buttonNo" type="submit" name="mult_btn" value="'
-            . __('No') . '" />';
+        $html .= '<input id="buttonYes" class="btn btn-secondary" type="submit" name="mult_btn" value="'
+            . __('Yes') . '">';
+        $html .= '<input id="buttonNo" class="btn btn-secondary" type="submit" name="mult_btn" value="'
+            . __('No') . '">';
         $html .= '</fieldset>';
         $html .= '</form>';
 
@@ -577,18 +569,18 @@ class MultSubmits
                     // We don't need the clause because the calling panel permits
                     // this feature only when there is a unique index.
                     . ' WHERE ' . htmlspecialchars($selectedValue)
-                    . ';<br />';
+                    . ';<br>';
                     break;
                 case 'drop_db':
                     $fullQuery .= 'DROP DATABASE '
                     . Util::backquote(htmlspecialchars($selectedValue))
-                    . ';<br />';
+                    . ';<br>';
                     $reload = true;
                     break;
 
                 case 'drop_tbl':
                     $current = $selectedValue;
-                    if (!empty($views) && in_array($current, $views)) {
+                    if (! empty($views) && in_array($current, $views)) {
                         $fullQueryViews .= (empty($fullQueryViews) ? 'DROP VIEW ' : ', ')
                         . Util::backquote(htmlspecialchars($current));
                     } else {
@@ -600,25 +592,25 @@ class MultSubmits
                 case 'empty_tbl':
                     $fullQuery .= 'TRUNCATE ';
                     $fullQuery .= Util::backquote(htmlspecialchars($selectedValue))
-                            . ';<br />';
+                            . ';<br>';
                     break;
 
                 case 'primary_fld':
                     if ($fullQuery == '') {
                         $fullQuery .= 'ALTER TABLE '
                         . Util::backquote(htmlspecialchars($table))
-                        . '<br />&nbsp;&nbsp;DROP PRIMARY KEY,'
-                        . '<br />&nbsp;&nbsp; ADD PRIMARY KEY('
-                        . '<br />&nbsp;&nbsp;&nbsp;&nbsp; '
+                        . '<br>&nbsp;&nbsp;DROP PRIMARY KEY,'
+                        . '<br>&nbsp;&nbsp; ADD PRIMARY KEY('
+                        . '<br>&nbsp;&nbsp;&nbsp;&nbsp; '
                         . Util::backquote(htmlspecialchars($selectedValue))
                         . ',';
                     } else {
-                        $fullQuery .= '<br />&nbsp;&nbsp;&nbsp;&nbsp; '
+                        $fullQuery .= '<br>&nbsp;&nbsp;&nbsp;&nbsp; '
                         . Util::backquote(htmlspecialchars($selectedValue))
                         . ',';
                     }
                     if ($i == $selectedCount - 1) {
-                        $fullQuery = preg_replace('@,$@', ');<br />', $fullQuery);
+                        $fullQuery = preg_replace('@,$@', ');<br>', $fullQuery);
                     }
                     break;
 
@@ -627,11 +619,11 @@ class MultSubmits
                         $fullQuery .= 'ALTER TABLE '
                         . Util::backquote(htmlspecialchars($table));
                     }
-                    $fullQuery .= '<br />&nbsp;&nbsp;DROP '
+                    $fullQuery .= '<br>&nbsp;&nbsp;DROP '
                     . Util::backquote(htmlspecialchars($selectedValue))
                     . ',';
                     if ($i == $selectedCount - 1) {
-                        $fullQuery = preg_replace('@,$@', ';<br />', $fullQuery);
+                        $fullQuery = preg_replace('@,$@', ';<br>', $fullQuery);
                     }
                     break;
             } // end switch
@@ -639,17 +631,21 @@ class MultSubmits
         }
 
         if ($what == 'drop_tbl') {
-            if (!empty($fullQuery)) {
-                $fullQuery .= ';<br />' . "\n";
+            if (! empty($fullQuery)) {
+                $fullQuery .= ';<br>' . "\n";
             }
-            if (!empty($fullQueryViews)) {
-                $fullQuery .= $fullQueryViews . ';<br />' . "\n";
+            if (! empty($fullQueryViews)) {
+                $fullQuery .= $fullQueryViews . ';<br>' . "\n";
             }
             unset($fullQueryViews);
         }
 
-        $fullQueryViews = isset($fullQueryViews) ? $fullQueryViews : null;
+        $fullQueryViews = $fullQueryViews ?? null;
 
-        return [$fullQuery, $reload, $fullQueryViews];
+        return [
+            $fullQuery,
+            $reload,
+            $fullQueryViews,
+        ];
     }
 }

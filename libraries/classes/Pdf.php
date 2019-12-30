@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * TCPDF wrapper class.
  *
@@ -9,6 +8,7 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use Exception;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
@@ -42,6 +42,8 @@ class Pdf extends TCPDF
      * @param boolean $diskcache   if true reduce the RAM memory usage by caching
      *                             temporary data on filesystem (slower).
      * @param boolean $pdfa        If TRUE set the document to PDF/A mode.
+     *
+     * @throws Exception
      *
      * @access public
      */
@@ -79,7 +81,7 @@ class Pdf extends TCPDF
     public function Footer()
     {
         // Check if footer for this page already exists
-        if (!isset($this->footerset[$this->page])) {
+        if (! isset($this->footerset[$this->page])) {
             $this->SetY(-15);
             $this->SetFont(Pdf::PMA_PDF_FONT, '', 14);
             $this->Cell(

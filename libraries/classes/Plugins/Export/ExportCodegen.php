@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Set of functions used to build NHibernate dumps of tables
  *
@@ -10,14 +9,13 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Export;
 
-use PhpMyAdmin\Export;
-use PhpMyAdmin\Plugins\ExportPlugin;
 use PhpMyAdmin\Plugins\Export\Helpers\TableProperty;
-use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
+use PhpMyAdmin\Plugins\ExportPlugin;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
 use PhpMyAdmin\Properties\Options\Items\HiddenPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\SelectPropertyItem;
+use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Util;
 
 /**
@@ -61,15 +59,15 @@ class ExportCodegen extends ExportPlugin
     {
         $this->_setCgFormats(
             [
-                "NHibernate C# DO",
-                "NHibernate XML",
+                'NHibernate C# DO',
+                'NHibernate XML',
             ]
         );
 
         $this->_setCgHandlers(
             [
-                "_handleNHibernateCSBody",
-                "_handleNHibernateXMLBody",
+                '_handleNHibernateCSBody',
+                '_handleNHibernateXMLBody',
             ]
         );
     }
@@ -91,16 +89,16 @@ class ExportCodegen extends ExportPlugin
         // $exportPluginProperties
         // this will be shown as "Format specific options"
         $exportSpecificOptions = new OptionsPropertyRootGroup(
-            "Format Specific Options"
+            'Format Specific Options'
         );
 
         // general options main group
-        $generalOptions = new OptionsPropertyMainGroup("general_opts");
+        $generalOptions = new OptionsPropertyMainGroup('general_opts');
         // create primary items and add them to the group
-        $leaf = new HiddenPropertyItem("structure_or_data");
+        $leaf = new HiddenPropertyItem('structure_or_data');
         $generalOptions->addProperty($leaf);
         $leaf = new SelectPropertyItem(
-            "format",
+            'format',
             __('Format:')
         );
         $leaf->setValues($this->_getCgFormats());
@@ -204,7 +202,7 @@ class ExportCodegen extends ExportPlugin
             );
         }
 
-        return $this->export->outputHandler(sprintf("%s is not supported.", $format));
+        return $this->export->outputHandler(sprintf('%s is not supported.', $format));
     }
 
     /**
@@ -220,7 +218,7 @@ class ExportCodegen extends ExportPlugin
         // remove unsafe characters
         $str = preg_replace('/[^\p{L}\p{Nl}_]/u', '', $str);
         // make sure first character is a letter or _
-        if (!preg_match('/^\pL/u', $str)) {
+        if (! preg_match('/^\pL/u', $str)) {
             $str = '_' . $str;
         }
         if ($ucfirst) {
@@ -259,7 +257,7 @@ class ExportCodegen extends ExportPlugin
             $tableProperties = [];
             while ($row = $GLOBALS['dbi']->fetchRow($result)) {
                 $col_as = $this->getAlias($aliases, $row[0], 'col', $db, $table);
-                if (!empty($col_as)) {
+                if (! empty($col_as)) {
                     $row[0] = $col_as;
                 }
                 $tableProperties[] = new TableProperty($row);
@@ -288,7 +286,7 @@ class ExportCodegen extends ExportPlugin
                 . ExportCodegen::cgMakeIdentifier($table_alias) . '() { }';
             $temp = [];
             foreach ($tableProperties as $tableProperty) {
-                if (!$tableProperty->isPK()) {
+                if (! $tableProperty->isPK()) {
                     $temp[] = $tableProperty->formatCs(
                         '#dotNetPrimitiveType# #name#'
                     );
@@ -301,7 +299,7 @@ class ExportCodegen extends ExportPlugin
                 . ')';
             $lines[] = '        {';
             foreach ($tableProperties as $tableProperty) {
-                if (!$tableProperty->isPK()) {
+                if (! $tableProperty->isPK()) {
                     $lines[] = $tableProperty->formatCs(
                         '            this._#name#=#name#;'
                     );
@@ -358,7 +356,7 @@ class ExportCodegen extends ExportPlugin
             . 'table="' . ExportCodegen::cgMakeIdentifier($table_alias) . '">';
         $result = $GLOBALS['dbi']->query(
             sprintf(
-                "DESC %s.%s",
+                'DESC %s.%s',
                 Util::backquote($db),
                 Util::backquote($table)
             )
@@ -366,7 +364,7 @@ class ExportCodegen extends ExportPlugin
         if ($result) {
             while ($row = $GLOBALS['dbi']->fetchRow($result)) {
                 $col_as = $this->getAlias($aliases, $row[0], 'col', $db, $table);
-                if (!empty($col_as)) {
+                if (! empty($col_as)) {
                     $row[0] = $col_as;
                 }
                 $tableProperty = new TableProperty($row);

@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Test for PhpMyAdmin\Navigation\Nodes\NodeDatabaseChild
  *
@@ -12,6 +11,8 @@ namespace PhpMyAdmin\Tests\Navigation\Nodes;
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Navigation\Nodes\NodeDatabaseChild;
 use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Url;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeDatabaseChild class
@@ -21,17 +22,20 @@ use PhpMyAdmin\Tests\PmaTestCase;
 class NodeDatabaseChildTest extends PmaTestCase
 {
     /**
-     * @var NodeDatabaseChild
+     * Mock of NodeDatabaseChild
+     *
+     * @var NodeDatabaseChild|MockObject
      */
     protected $object;
 
     /**
      * Sets up the fixture.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['pmaThemePath'] = $GLOBALS['PMA_Theme']->getPath();
         $GLOBALS['cfg']['DefaultTabDatabase'] = 'structure';
@@ -41,7 +45,7 @@ class NodeDatabaseChildTest extends PmaTestCase
         $_SESSION['relation'][1]['PMA_VERSION'] = PMA_VERSION;
         $_SESSION['relation'][1]['navwork'] = true;
         $this->object = $this->getMockForAbstractClass(
-            'PhpMyAdmin\Navigation\Nodes\NodeDatabaseChild',
+            NodeDatabaseChild::class,
             ['child']
         );
     }
@@ -49,10 +53,11 @@ class NodeDatabaseChildTest extends PmaTestCase
     /**
      * Tears down the fixture.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }
@@ -61,6 +66,7 @@ class NodeDatabaseChildTest extends PmaTestCase
      * Tests getHtmlForControlButtons() method
      *
      * @return void
+     *
      * @test
      */
     public function testGetHtmlForControlButtons()
@@ -80,8 +86,8 @@ class NodeDatabaseChildTest extends PmaTestCase
             '</span>',
             $html
         );
-        $this->assertContains(
-            '<a href="navigation.php?'
+        $this->assertStringContainsString(
+            '<a href="' . Url::getFromRoute('/navigation') . '" data-post="'
             . 'hideNavItem=1&amp;itemType=itemType&amp;itemName=child'
             . '&amp;dbName=parent&amp;lang=en" class="hideNavItem ajax">',
             $html

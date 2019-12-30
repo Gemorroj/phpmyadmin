@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for PhpMyAdmin\Server\Select
  *
@@ -10,7 +9,6 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Tests\Server;
 
 use PhpMyAdmin\Server\Select;
-use PhpMyAdmin\Theme;
 use PhpMyAdmin\Util;
 use PHPUnit\Framework\TestCase;
 
@@ -28,16 +26,16 @@ class SelectTest extends TestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         //$_REQUEST
-        $_REQUEST['log'] = "index1";
+        $_REQUEST['log'] = 'index1';
         $_REQUEST['pos'] = 3;
 
         //$GLOBALS
         $GLOBALS['cfg']['MaxRows'] = 10;
         $GLOBALS['server'] = 1;
-        $GLOBALS['cfg']['ServerDefault'] = "server";
+        $GLOBALS['cfg']['ServerDefault'] = 'server';
         $GLOBALS['cfg']['RememberSorting'] = true;
         $GLOBALS['cfg']['SQP'] = [];
         $GLOBALS['cfg']['MaxCharactersInDisplayedSQL'] = 1000;
@@ -45,7 +43,7 @@ class SelectTest extends TestCase
         $GLOBALS['cfg']['TableNavigationLinksMode'] = 'icons';
         $GLOBALS['cfg']['LimitChars'] = 100;
 
-        $GLOBALS['table'] = "table";
+        $GLOBALS['table'] = 'table';
 
         //$_SESSION
     }
@@ -60,7 +58,7 @@ class SelectTest extends TestCase
         $not_only_options = false;
         $omit_fieldset = false;
 
-        $GLOBALS['cfg']['DefaultTabServer'] = "welcome";
+        $GLOBALS['cfg']['DefaultTabServer'] = 'welcome';
 
         $GLOBALS['cfg']['Servers'] = [
             '0' => [
@@ -84,19 +82,19 @@ class SelectTest extends TestCase
         $server = $GLOBALS['cfg']['Servers']['0'];
 
         //server items
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['host'],
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['port'],
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['only_db'],
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['user'],
             $html
         );
@@ -109,7 +107,7 @@ class SelectTest extends TestCase
         $html = Select::render($not_only_options, $omit_fieldset);
 
         //$GLOBALS['cfg']['DefaultTabServer']
-        $this->assertContains(
+        $this->assertStringContainsString(
             Util::getScriptNameForOption(
                 $GLOBALS['cfg']['DefaultTabServer'],
                 'server'
@@ -118,30 +116,30 @@ class SelectTest extends TestCase
         );
 
         //labels
-        $this->assertContains(
+        $this->assertStringContainsString(
             __('Current server:'),
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             '(' . __('Servers') . ')',
             $html
         );
 
         //server items
         $server = $GLOBALS['cfg']['Servers']['0'];
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['host'],
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['port'],
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['only_db'],
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             $server['user'],
             $html
         );

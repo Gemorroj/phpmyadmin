@@ -1,4 +1,4 @@
-<?php /* vim: set expandtab sw=4 ts=4 sts=4: */
+<?php
 /**
  * Output buffering wrapper
  *
@@ -18,6 +18,10 @@ class OutputBuffering
     private static $_instance;
     private $_mode;
     private $_content;
+
+    /**
+     * @var bool
+     */
     private $_on;
 
     /**
@@ -90,7 +94,10 @@ class OutputBuffering
                 header('X-ob_mode: ' . $this->_mode);
             }
             register_shutdown_function(
-                [OutputBuffering::class, 'stop']
+                [
+                    OutputBuffering::class,
+                    'stop',
+                ]
             );
             $this->_on = true;
         }
@@ -109,7 +116,9 @@ class OutputBuffering
         if ($buffer->_on) {
             $buffer->_on = false;
             $buffer->_content = ob_get_contents();
-            ob_end_clean();
+            if (ob_get_length() > 0) {
+                ob_end_clean();
+            }
         }
     }
 

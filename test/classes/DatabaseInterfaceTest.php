@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Test for faked database access
  *
@@ -10,9 +9,10 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Dbi\DbiDummy;
 use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\Stubs\DbiDummy;
 use PhpMyAdmin\Util;
+use stdClass;
 
 /**
  * Tests basic functionality of dummy dbi driver
@@ -31,7 +31,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $extension = new DbiDummy();
@@ -46,10 +46,11 @@ class DatabaseInterfaceTest extends PmaTestCase
      * @param array  $expected expected result
      *
      * @return void
+     *
      * @test
      * @dataProvider currentUserData
      */
-    public function testGetCurrentUser($value, $string, $expected)
+    public function testGetCurrentUser($value, $string, $expected): void
     {
         Util::cacheUnset('mysql_cur_user');
 
@@ -77,9 +78,30 @@ class DatabaseInterfaceTest extends PmaTestCase
     public function currentUserData()
     {
         return [
-            [[['pma@localhost']], 'pma@localhost', ['pma', 'localhost']],
-            [[['@localhost']], '@localhost', ['', 'localhost']],
-            [false, '@', ['', '']],
+            [
+                [['pma@localhost']],
+                'pma@localhost',
+                [
+                    'pma',
+                    'localhost',
+                ],
+            ],
+            [
+                [['@localhost']],
+                '@localhost',
+                [
+                    '',
+                    'localhost',
+                ],
+            ],
+            [
+                false,
+                '@',
+                [
+                    '',
+                    '',
+                ],
+            ],
         ];
     }
 
@@ -87,11 +109,12 @@ class DatabaseInterfaceTest extends PmaTestCase
      * Tests for DBI::getColumnMapFromSql() method.
      *
      * @return void
+     *
      * @test
      */
     public function testPMAGetColumnMap()
     {
-        $extension = $this->getMockBuilder('PhpMyAdmin\Dbi\DbiDummy')
+        $extension = $this->getMockBuilder(DbiDummy::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -99,29 +122,31 @@ class DatabaseInterfaceTest extends PmaTestCase
             ->method('realQuery')
             ->will($this->returnValue(true));
 
-        $meta1 = new \stdClass();
-        $meta1->table = "meta1_table";
-        $meta1->name = "meta1_name";
+        $meta1 = new stdClass();
+        $meta1->table = 'meta1_table';
+        $meta1->name = 'meta1_name';
 
-        $meta2 = new \stdClass();
-        $meta2->table = "meta2_table";
-        $meta2->name = "meta2_name";
+        $meta2 = new stdClass();
+        $meta2->table = 'meta2_table';
+        $meta2->name = 'meta2_name';
 
         $extension->expects($this->any())
             ->method('getFieldsMeta')
             ->will(
                 $this->returnValue(
                     [
-                        $meta1, $meta2
+                        $meta1,
+                        $meta2,
                     ]
                 )
             );
 
         $dbi = new DatabaseInterface($extension);
 
-        $sql_query = "PMA_sql_query";
+        $sql_query = 'PMA_sql_query';
         $view_columns = [
-            "view_columns1", "view_columns2"
+            'view_columns1',
+            'view_columns2',
         ];
 
         $column_map = $dbi->getColumnMapFromSql(
@@ -133,7 +158,7 @@ class DatabaseInterfaceTest extends PmaTestCase
             [
                 'table_name' => 'meta1_table',
                 'refering_column' => 'meta1_name',
-                'real_column' => 'view_columns1'
+                'real_column' => 'view_columns1',
             ],
             $column_map[0]
         );
@@ -141,7 +166,7 @@ class DatabaseInterfaceTest extends PmaTestCase
             [
                 'table_name' => 'meta2_table',
                 'refering_column' => 'meta2_name',
-                'real_column' => 'view_columns2'
+                'real_column' => 'view_columns2',
             ],
             $column_map[1]
         );
@@ -151,6 +176,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      * Tests for DBI::getSystemDatabase() method.
      *
      * @return void
+     *
      * @test
      */
     public function testGetSystemDatabase()
@@ -163,6 +189,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      * Tests for DBI::postConnectControl() method.
      *
      * @return void
+     *
      * @test
      */
     public function testPostConnectControl()
@@ -177,6 +204,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      * Test for getDbCollation
      *
      * @return void
+     *
      * @test
      */
     public function testGetDbCollation()
@@ -185,7 +213,7 @@ class DatabaseInterfaceTest extends PmaTestCase
         // test case for system schema
         $this->assertEquals(
             'utf8_general_ci',
-            $this->_dbi->getDbCollation("information_schema")
+            $this->_dbi->getDbCollation('information_schema')
         );
 
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
@@ -201,6 +229,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      * Test for getServerCollation
      *
      * @return void
+     *
      * @test
      */
     public function testGetServerCollation()
@@ -222,7 +251,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      *
      * @dataProvider connectionParams
      */
-    public function testGetConnectionParams($server_cfg, $mode, $server, $expected)
+    public function testGetConnectionParams($server_cfg, $mode, $server, $expected): void
     {
         $GLOBALS['cfg']['Server'] = $server_cfg;
         $result = $this->_dbi->getConnectionParams($mode, $server);
@@ -277,7 +306,7 @@ class DatabaseInterfaceTest extends PmaTestCase
                         'compress' => false,
                         'controluser' => 'u2',
                         'controlpass' => 'p2',
-                    ]
+                    ],
                 ],
             ],
             [
@@ -293,7 +322,7 @@ class DatabaseInterfaceTest extends PmaTestCase
                         'port' => 0,
                         'ssl' => false,
                         'compress' => false,
-                    ]
+                    ],
                 ],
             ],
             [
@@ -313,7 +342,7 @@ class DatabaseInterfaceTest extends PmaTestCase
                         'compress' => false,
                         'controluser' => 'u2',
                         'controlpass' => 'p2',
-                    ]
+                    ],
                 ],
             ],
             [
@@ -329,7 +358,7 @@ class DatabaseInterfaceTest extends PmaTestCase
                         'port' => 0,
                         'ssl' => true,
                         'compress' => false,
-                    ]
+                    ],
                 ],
             ],
             [
@@ -350,7 +379,7 @@ class DatabaseInterfaceTest extends PmaTestCase
                         'controluser' => 'u2',
                         'controlpass' => 'p2',
                         'control_ssl' => true,
-                    ]
+                    ],
                 ],
             ],
             [
@@ -366,7 +395,7 @@ class DatabaseInterfaceTest extends PmaTestCase
                         'port' => 0,
                         'ssl' => true,
                         'compress' => false,
-                    ]
+                    ],
                 ],
             ],
         ];
@@ -383,9 +412,9 @@ class DatabaseInterfaceTest extends PmaTestCase
      *
      * @dataProvider errorData
      */
-    public function testFormatError($error_number, $error_message, $match)
+    public function testFormatError($error_number, $error_message, $match): void
     {
-        $this->assertContains(
+        $this->assertStringContainsString(
             $match,
             DatabaseInterface::formatError($error_number, $error_message)
         );
@@ -397,12 +426,36 @@ class DatabaseInterfaceTest extends PmaTestCase
     public function errorData()
     {
         return [
-            [2002, 'msg', 'The server is not responding'],
-            [2003, 'msg', 'The server is not responding'],
-            [1698, 'msg', 'logout.php'],
-            [1005, 'msg', 'server_engines.php'],
-            [1005, 'errno: 13', 'Please check privileges'],
-            [-1, 'error message', 'error message'],
+            [
+                2002,
+                'msg',
+                'The server is not responding',
+            ],
+            [
+                2003,
+                'msg',
+                'The server is not responding',
+            ],
+            [
+                1698,
+                'msg',
+                'index.php?route=/logout',
+            ],
+            [
+                1005,
+                'msg',
+                'index.php?route=/server/engines',
+            ],
+            [
+                1005,
+                'errno: 13',
+                'Please check privileges',
+            ],
+            [
+                -1,
+                'error message',
+                'error message',
+            ],
         ];
     }
 
@@ -413,6 +466,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      * @param mixed $expected expected result
      *
      * @return void
+     *
      * @test
      * @dataProvider isAmazonRdsData
      */
@@ -439,10 +493,22 @@ class DatabaseInterfaceTest extends PmaTestCase
     public function isAmazonRdsData()
     {
         return [
-            [[['/usr']], false],
-            [[['E:/mysql']], false],
-            [[['/rdsdbbin/mysql/']], true],
-            [[['/rdsdbbin/mysql-5.7.18/']], true],
+            [
+                [['/usr']],
+                false,
+            ],
+            [
+                [['E:/mysql']],
+                false,
+            ],
+            [
+                [['/rdsdbbin/mysql/']],
+                true,
+            ],
+            [
+                [['/rdsdbbin/mysql-5.7.18/']],
+                true,
+            ],
         ];
     }
 
@@ -458,11 +524,11 @@ class DatabaseInterfaceTest extends PmaTestCase
      *
      * @dataProvider versionData
      */
-    public function testVersion($version, $expected, $major, $upgrade)
+    public function testVersion($version, $expected, $major, $upgrade): void
     {
         $ver_int = DatabaseInterface::versionToInt($version);
         $this->assertEquals($expected, $ver_int);
-        $this->assertEquals($major, (int)($ver_int / 10000));
+        $this->assertEquals($major, (int) ($ver_int / 10000));
         $this->assertEquals($upgrade, $ver_int < $GLOBALS['cfg']['MysqlMinVersion']['internal']);
     }
 
@@ -472,10 +538,30 @@ class DatabaseInterfaceTest extends PmaTestCase
     public function versionData()
     {
         return [
-            ['5.0.5', 50005, 5, true],
-            ['5.05.01', 50501, 5, false],
-            ['5.6.35', 50635, 5, false],
-            ['10.1.22-MariaDB-', 100122, 10, false],
+            [
+                '5.0.5',
+                50005,
+                5,
+                true,
+            ],
+            [
+                '5.05.01',
+                50501,
+                5,
+                false,
+            ],
+            [
+                '5.6.35',
+                50635,
+                5,
+                false,
+            ],
+            [
+                '10.1.22-MariaDB-',
+                100122,
+                10,
+                false,
+            ],
         ];
     }
 
@@ -483,11 +569,12 @@ class DatabaseInterfaceTest extends PmaTestCase
      * Tests for DBI::setCollationl() method.
      *
      * @return void
+     *
      * @test
      */
     public function testSetCollation()
     {
-        $extension = $this->getMockBuilder('PhpMyAdmin\Dbi\DbiDummy')
+        $extension = $this->getMockBuilder(DbiDummy::class)
             ->disableOriginalConstructor()
             ->getMock();
         $extension->expects($this->any())->method('escapeString')
@@ -516,5 +603,24 @@ class DatabaseInterfaceTest extends PmaTestCase
         $GLOBALS['charset_connection'] = 'utf8';
         $dbi->setCollation('utf8_czech_ci');
         $dbi->setCollation('utf8mb4_bin_ci');
+    }
+
+    /**
+     * Tests for DBI::getForeignKeyConstrains() method.
+     *
+     * @return void
+     *
+     * @test
+     */
+    public function testGetForeignKeyConstrains()
+    {
+        $this->assertEquals([
+            [
+                'TABLE_NAME' => 'table2',
+                'COLUMN_NAME' => 'idtable2',
+                'REFERENCED_TABLE_NAME' => 'table1',
+                'REFERENCED_COLUMN_NAME' => 'idtable1',
+            ],
+        ], $this->_dbi->getForeignKeyConstrains('test', ['table1', 'table2']));
     }
 }

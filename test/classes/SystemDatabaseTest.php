@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for libraries/SystemDatabase.php
  *
@@ -29,10 +28,11 @@ class SystemDatabaseTest extends PmaTestCase
     /**
      * Setup function for test cases
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         /**
          * SET these to avoid undefine d index error
@@ -51,9 +51,9 @@ class SystemDatabaseTest extends PmaTestCase
         //_SESSION
         $_SESSION['relation'][$GLOBALS['server']] = [
             'PMA_VERSION' => PMA_VERSION,
-            'table_coords' => "table_name",
+            'table_coords' => 'table_name',
             'displaywork' => 'displaywork',
-            'db' => "information_schema",
+            'db' => 'information_schema',
             'table_info' => 'table_info',
             'relwork' => 'relwork',
             'commwork' => 'commwork',
@@ -67,12 +67,12 @@ class SystemDatabaseTest extends PmaTestCase
             ->will(
                 $this->returnValue(
                     [
-                        'table_name' => "table_name",
-                        'column_name' => "column_name",
-                        'comment' => "comment",
-                        'mimetype' => "mimetype",
-                        'transformation' => "transformation",
-                        'transformation_options' => "transformation_options",
+                        'table_name' => 'table_name',
+                        'column_name' => 'column_name',
+                        'comment' => 'comment',
+                        'mimetype' => 'mimetype',
+                        'transformation' => 'transformation',
+                        'transformation_options' => 'transformation_options',
                     ]
                 )
             );
@@ -84,11 +84,12 @@ class SystemDatabaseTest extends PmaTestCase
      * Tests for PMA_getExistingTransformationData() method.
      *
      * @return void
+     *
      * @test
      */
     public function testPMAGetExistingTransformationData()
     {
-        $db = "PMA_db";
+        $db = 'PMA_db';
         $ret = $this->sysDb->getExistingTransformationData($db);
 
         //validate that is the same as $GLOBALS['dbi']->tryQuery
@@ -102,19 +103,20 @@ class SystemDatabaseTest extends PmaTestCase
      * Tests for PMA_getNewTransformationDataSql() method.
      *
      * @return void
+     *
      * @test
      */
     public function testPMAGetNewTransformationDataSql()
     {
-        $db = "PMA_db";
+        $db = 'PMA_db';
         $pma_transformation_data = [];
         $column_map = [
             [
-                "table_name" => "table_name",
-                "refering_column" => "column_name"
-            ]
+                'table_name' => 'table_name',
+                'refering_column' => 'column_name',
+            ],
         ];
-        $view_name = "view_name";
+        $view_name = 'view_name';
 
         $ret = $this->sysDb->getNewTransformationDataSql(
             $pma_transformation_data,
@@ -123,9 +125,9 @@ class SystemDatabaseTest extends PmaTestCase
             $db
         );
 
-        $sql = "INSERT INTO `information_schema`.`column_info` "
-            . "(`db_name`, `table_name`, `column_name`, `comment`, `mimetype`, "
-            . "`transformation`, `transformation_options`) VALUES "
+        $sql = 'INSERT INTO `information_schema`.`column_info` '
+            . '(`db_name`, `table_name`, `column_name`, `comment`, `mimetype`, '
+            . '`transformation`, `transformation_options`) VALUES '
             . "('PMA_db', 'view_name', 'column_name', 'comment', 'mimetype', "
             . "'transformation', 'transformation_options')";
 

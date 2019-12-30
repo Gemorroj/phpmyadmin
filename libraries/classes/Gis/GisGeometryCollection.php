@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Handles actions related to GIS GEOMETRYCOLLECTION objects
  *
@@ -34,13 +33,13 @@ class GisGeometryCollection extends GisGeometry
      * Returns the singleton.
      *
      * @return GisGeometryCollection the singleton
+     *
      * @access public
      */
     public static function singleton()
     {
-        if (!isset(self::$_instance)) {
-            $class = __CLASS__;
-            self::$_instance = new $class;
+        if (! isset(self::$_instance)) {
+            self::$_instance = new GisGeometryCollection();
         }
 
         return self::$_instance;
@@ -52,6 +51,7 @@ class GisGeometryCollection extends GisGeometry
      * @param string $spatial spatial data of a row
      *
      * @return array array containing the min, max values for x and y coordinates
+     *
      * @access public
      */
     public function scaleRow($spatial)
@@ -77,29 +77,29 @@ class GisGeometryCollection extends GisGeometry
             $type = mb_substr($sub_part, 0, $type_pos);
 
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $scale_data = $gis_obj->scaleRow($sub_part);
 
             // Update minimum/maximum values for x and y coordinates.
-            $c_maxX = (float)$scale_data['maxX'];
-            if (!isset($min_max['maxX']) || $c_maxX > $min_max['maxX']) {
+            $c_maxX = (float) $scale_data['maxX'];
+            if (! isset($min_max['maxX']) || $c_maxX > $min_max['maxX']) {
                 $min_max['maxX'] = $c_maxX;
             }
 
-            $c_minX = (float)$scale_data['minX'];
-            if (!isset($min_max['minX']) || $c_minX < $min_max['minX']) {
+            $c_minX = (float) $scale_data['minX'];
+            if (! isset($min_max['minX']) || $c_minX < $min_max['minX']) {
                 $min_max['minX'] = $c_minX;
             }
 
-            $c_maxY = (float)$scale_data['maxY'];
-            if (!isset($min_max['maxY']) || $c_maxY > $min_max['maxY']) {
+            $c_maxY = (float) $scale_data['maxY'];
+            if (! isset($min_max['maxY']) || $c_maxY > $min_max['maxY']) {
                 $min_max['maxY'] = $c_maxY;
             }
 
-            $c_minY = (float)$scale_data['minY'];
-            if (!isset($min_max['minY']) || $c_minY < $min_max['minY']) {
+            $c_minY = (float) $scale_data['minY'];
+            if (! isset($min_max['minY']) || $c_minY < $min_max['minY']) {
                 $min_max['minY'] = $c_minY;
             }
         }
@@ -117,6 +117,7 @@ class GisGeometryCollection extends GisGeometry
      * @param resource    $image      Image object
      *
      * @return resource the modified image object
+     *
      * @access public
      */
     public function prepareRowAsPng($spatial, ?string $label, $color, array $scale_data, $image)
@@ -139,7 +140,7 @@ class GisGeometryCollection extends GisGeometry
             $type = mb_substr($sub_part, 0, $type_pos);
 
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $image = $gis_obj->prepareRowAsPng(
@@ -164,6 +165,7 @@ class GisGeometryCollection extends GisGeometry
      * @param TCPDF       $pdf        TCPDF instance
      *
      * @return TCPDF the modified TCPDF instance
+     *
      * @access public
      */
     public function prepareRowAsPdf($spatial, ?string $label, $color, array $scale_data, $pdf)
@@ -186,7 +188,7 @@ class GisGeometryCollection extends GisGeometry
             $type = mb_substr($sub_part, 0, $type_pos);
 
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $pdf = $gis_obj->prepareRowAsPdf(
@@ -210,6 +212,7 @@ class GisGeometryCollection extends GisGeometry
      * @param array  $scale_data array containing data related to scaling
      *
      * @return string the code related to a row in the GIS dataset
+     *
      * @access public
      */
     public function prepareRowAsSvg($spatial, $label, $color, array $scale_data)
@@ -234,7 +237,7 @@ class GisGeometryCollection extends GisGeometry
             $type = mb_substr($sub_part, 0, $type_pos);
 
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $row .= $gis_obj->prepareRowAsSvg(
@@ -259,6 +262,7 @@ class GisGeometryCollection extends GisGeometry
      * @param array  $scale_data array containing data related to scaling
      *
      * @return string JavaScript related to a row in the GIS dataset
+     *
      * @access public
      */
     public function prepareRowAsOl($spatial, $srid, $label, $color, array $scale_data)
@@ -283,7 +287,7 @@ class GisGeometryCollection extends GisGeometry
             $type = mb_substr($sub_part, 0, $type_pos);
 
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $row .= $gis_obj->prepareRowAsOl(
@@ -304,6 +308,7 @@ class GisGeometryCollection extends GisGeometry
      * @param string $geom_col geometry collection string
      *
      * @return array the constituents of the geometry collection object
+     *
      * @access private
      */
     private function _explodeGeomCol($geom_col)
@@ -322,7 +327,7 @@ class GisGeometryCollection extends GisGeometry
                         = mb_substr(
                             $geom_col,
                             $start,
-                            ($count + 1 - $start)
+                            $count + 1 - $start
                         );
                     $start = $count + 2;
                 }
@@ -341,18 +346,18 @@ class GisGeometryCollection extends GisGeometry
      * @param string $empty    value for empty points
      *
      * @return string WKT with the set of parameters passed by the GIS editor
+     *
      * @access public
      */
     public function generateWkt(array $gis_data, $index, $empty = '')
     {
-        $geom_count = (isset($gis_data['GEOMETRYCOLLECTION']['geom_count']))
-            ? $gis_data['GEOMETRYCOLLECTION']['geom_count'] : 1;
+        $geom_count = $gis_data['GEOMETRYCOLLECTION']['geom_count'] ?? 1;
         $wkt = 'GEOMETRYCOLLECTION(';
         for ($i = 0; $i < $geom_count; $i++) {
             if (isset($gis_data[$i]['gis_type'])) {
                 $type = $gis_data[$i]['gis_type'];
                 $gis_obj = GisFactory::factory($type);
-                if (!$gis_obj) {
+                if (! $gis_obj) {
                     continue;
                 }
                 $wkt .= $gis_obj->generateWkt($gis_data, $i, $empty) . ',';
@@ -377,6 +382,7 @@ class GisGeometryCollection extends GisGeometry
      * @param string $value of the GIS column
      *
      * @return array parameters for the GIS editor from the value of the GIS column
+     *
      * @access public
      */
     public function generateParams($value)
@@ -404,8 +410,11 @@ class GisGeometryCollection extends GisGeometry
                 continue;
             }
             $type = mb_substr($sub_part, 0, $type_pos);
+            /**
+             * @var GisMultiPolygon|GisPolygon|GisMultiPoint|GisPoint|GisMultiLineString|GisLineString $gis_obj
+             */
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $params = array_merge($params, $gis_obj->generateParams($sub_part, $i));

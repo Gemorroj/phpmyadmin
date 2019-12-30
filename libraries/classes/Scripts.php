@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * JavaScript management
  *
@@ -8,10 +7,6 @@
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
-
-use PhpMyAdmin\Header;
-use PhpMyAdmin\Sanitize;
-use PhpMyAdmin\Url;
 
 /**
  * Collects information about which JavaScript
@@ -30,43 +25,24 @@ class Scripts
      */
     private $_files;
     /**
-     * An array of discrete javascript code snippets
+     * A string of discrete javascript code snippets
      *
      * @access private
-     * @var array of strings
+     * @var string
      */
     private $_code;
 
     /**
-     * Returns HTML code to include javascript file.
-     *
-     * @param array $files The list of js file to include
-     *
-     * @return string HTML code for javascript inclusion.
+     * @var Template
      */
-    private function _includeFiles(array $files)
-    {
-        $result = '';
-        foreach ($files as $value) {
-            if (strpos($value['filename'], ".php") !== false) {
-                $file_name = $value['filename'] . Url::getCommon($value['params'] + ['v' => PMA_VERSION]);
-                $result .= "<script data-cfasync='false' "
-                    . "type='text/javascript' src='js/" . $file_name
-                    . "'></script>\n";
-            } else {
-                $result .= '<script data-cfasync="false" type="text/javascript" src="js/'
-                    . $value['filename'] . '?' . Header::getVersionParameter() . '"></script>' . "\n";
-            }
-        }
-        return $result;
-    }
+    private $template;
 
     /**
      * Generates new Scripts objects
-     *
      */
     public function __construct()
     {
+        $this->template = new Template();
         $this->_files  = [];
         $this->_code   = '';
     }
@@ -84,7 +60,7 @@ class Scripts
         array $params = []
     ) {
         $hash = md5($filename);
-        if (!empty($this->_files[$hash])) {
+        if (! empty($this->_files[$hash])) {
             return;
         }
 
@@ -141,7 +117,7 @@ class Scripts
      */
     public function addCode($code)
     {
-        $this->_code .= "$code\n";
+        $this->_code .= $code . "\n";
     }
 
     /**
@@ -155,12 +131,12 @@ class Scripts
         $retval = [];
         foreach ($this->_files as $file) {
             //If filename contains a "?", continue.
-            if (strpos($file['filename'], "?") !== false) {
+            if (strpos($file['filename'], '?') !== false) {
                 continue;
             }
             $retval[] = [
                 'name' => $file['filename'],
-                'fire' => $file['has_onload']
+                'fire' => $file['has_onload'],
             ];
         }
         return $retval;
@@ -173,42 +149,10 @@ class Scripts
      */
     public function getDisplay()
     {
-        $retval = '';
-
-        if (count($this->_files) > 0) {
-            $retval .= $this->_includeFiles(
-                $this->_files
-            );
-        }
-
-        $code = 'AJAX.scriptHandler';
-        foreach ($this->_files as $file) {
-            $code .= sprintf(
-                '.add("%s",%d)',
-                Sanitize::escapeJsString($file['filename']),
-                $file['has_onload'] ? 1 : 0
-            );
-        }
-        $code .= ';';
-        $this->addCode($code);
-
-        $code = '$(function() {';
-        foreach ($this->_files as $file) {
-            if ($file['has_onload']) {
-                $code .= 'AJAX.fireOnload("';
-                $code .= Sanitize::escapeJsString($file['filename']);
-                $code .= '");';
-            }
-        }
-        $code .= '});';
-        $this->addCode($code);
-
-        $retval .= '<script data-cfasync="false" type="text/javascript">';
-        $retval .= "// <![CDATA[\n";
-        $retval .= $this->_code;
-        $retval .= '// ]]>';
-        $retval .= '</script>';
-
-        return $retval;
+        return $this->template->render('scripts', [
+            'files' => $this->_files,
+            'version' => PMA_VERSION,
+            'code' => $this->_code,
+        ]);
     }
 }

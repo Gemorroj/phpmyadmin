@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Hold the PhpMyAdmin\Encoding class
  *
@@ -9,7 +8,6 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Config\ConfigFile;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Template;
 
@@ -67,10 +65,26 @@ class Encoding
      * @var array
      */
     private static $_enginemap = [
-        'iconv' => ['iconv', self::ENGINE_ICONV, 'iconv'],
-        'recode' => ['recode_string', self::ENGINE_RECODE, 'recode'],
-        'mb' => ['mb_convert_encoding', self::ENGINE_MB, 'mbstring'],
-        'none' => ['isset', self::ENGINE_NONE, ''],
+        'iconv' => [
+            'iconv',
+            self::ENGINE_ICONV,
+            'iconv',
+        ],
+        'recode' => [
+            'recode_string',
+            self::ENGINE_RECODE,
+            'recode',
+        ],
+        'mb' => [
+            'mb_convert_encoding',
+            self::ENGINE_MB,
+            'mbstring',
+        ],
+        'none' => [
+            'isset',
+            self::ENGINE_NONE,
+            '',
+        ],
     ];
 
     /**
@@ -79,7 +93,9 @@ class Encoding
      * @var array
      */
     private static $_engineorder = [
-        'iconv', 'mb', 'recode',
+        'iconv',
+        'mb',
+        'recode',
     ];
 
     /**
@@ -142,7 +158,7 @@ class Encoding
      */
     public static function isSupported(): bool
     {
-        if (is_null(self::$_engine)) {
+        if (self::$_engine === null) {
             self::initEngine();
         }
         return self::$_engine != self::ENGINE_NONE;
@@ -168,7 +184,7 @@ class Encoding
         if ($src_charset == $dest_charset) {
             return $what;
         }
-        if (is_null(self::$_engine)) {
+        if (self::$_engine === null) {
             self::initEngine();
         }
         switch (self::$_engine) {
@@ -181,7 +197,7 @@ class Encoding
                 return iconv(
                     $src_charset,
                     $dest_charset .
-                    (isset($GLOBALS['cfg']['IconvExtraParams']) ? $GLOBALS['cfg']['IconvExtraParams'] : ''),
+                    ($GLOBALS['cfg']['IconvExtraParams'] ?? ''),
                     $what
                 );
             case self::ENGINE_MB:
@@ -293,10 +309,10 @@ class Encoding
         $fpd      = fopen($tmpfname, 'wb');
         $fps      = fopen($file, 'r');
         self::kanjiChangeOrder();
-        while (!feof($fps)) {
+        while (! feof($fps)) {
             $line = fgets($fps, 4096);
             $dist = self::kanjiStrConv($line, $enc, $kana);
-            fputs($fpd, $dist);
+            fwrite($fpd, $dist);
         } // end while
         self::kanjiChangeOrder();
         fclose($fps);
@@ -324,7 +340,7 @@ class Encoding
      */
     public static function listEncodings(): array
     {
-        if (is_null(self::$_engine)) {
+        if (self::$_engine === null) {
             self::initEngine();
         }
         /* Most engines do not support listing */

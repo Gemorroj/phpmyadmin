@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Selenium TestCase for creating and deleting databases
  *
@@ -24,12 +23,11 @@ class CreateDropDatabaseTest extends TestBase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         /* TODO: For now this tests needs superuser for deleting database */
         $this->skipIfNotSuperUser();
-        $this->maximize();
         $this->login();
     }
 
@@ -54,7 +52,7 @@ class CreateDropDatabaseTest extends TestBase
         $element->clear();
         $element->sendKeys($this->database_name);
 
-        $this->byId("buttonGo")->click();
+        $this->byId('buttonGo')->click();
 
         $element = $this->waitForElement('linkText', 'Database: ' . $this->database_name);
 
@@ -83,8 +81,8 @@ class CreateDropDatabaseTest extends TestBase
             "input[name='selected_dbs[]'][value='" . $this->database_name . "']"
         )->click();
 
-        $this->byCssSelector("button.mult_submit")->click();
-        $this->byCssSelector("button.submitOK")->click();
+        $this->byCssSelector('button.mult_submit')->click();
+        $this->byCssSelector('button.submitOK')->click();
 
         $this->waitForElementNotPresent(
             'cssSelector',
@@ -93,7 +91,7 @@ class CreateDropDatabaseTest extends TestBase
 
         $this->waitForElement(
             'cssSelector',
-            "span.ajax_notification div.success"
+            'span.ajax_notification .alert-success'
         );
 
         $result = $this->dbQuery(

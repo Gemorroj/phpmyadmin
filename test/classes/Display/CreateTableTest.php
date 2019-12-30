@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for PhpMyAdmin\Display\CreateTable
  *
@@ -10,9 +9,8 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Tests\Display;
 
 use PhpMyAdmin\Display\CreateTable;
-use PhpMyAdmin\Theme;
+use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Url;
-use PhpMyAdmin\Util;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,25 +27,25 @@ class CreateTableTest extends TestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         //$GLOBALS
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['DBG']['sql'] = false;
         $GLOBALS['cfg']['MaxRows'] = 10;
-        $GLOBALS['cfg']['ServerDefault'] = "PMA_server";
+        $GLOBALS['cfg']['ServerDefault'] = 'PMA_server';
         $GLOBALS['cfg']['TableNavigationLinksMode'] = 'icons';
         $GLOBALS['cfg']['LimitChars'] = 100;
         $GLOBALS['cfg']['ActionLinksMode'] = 'icons';
-        $GLOBALS['cfg']['Server']['host'] = "localhost";
-        $GLOBALS['cfg']['Server']['user'] = "pma_user";
+        $GLOBALS['cfg']['Server']['host'] = 'localhost';
+        $GLOBALS['cfg']['Server']['user'] = 'pma_user';
         $GLOBALS['cfg']['ShowHint'] = true;
         $GLOBALS['cfg']['ActionLinksMode'] = 'icons';
-        $GLOBALS['PMA_PHP_SELF'] = "server_privileges.php";
+        $GLOBALS['PMA_PHP_SELF'] = Url::getFromRoute('/server/privileges');
 
         //$_SESSION
-        $_SESSION['relation'][$GLOBALS['server']] = "relation";
+        $_SESSION['relation'][$GLOBALS['server']] = 'relation';
     }
 
     /**
@@ -57,40 +55,40 @@ class CreateTableTest extends TestCase
      */
     public function testPMAGetHtmlForCreateTable()
     {
-        $db = "pma_db";
+        $db = 'pma_db';
 
         //Call the test function
         $html = CreateTable::getHtml($db);
 
         //getImage
-        $this->assertContains(
-            Util::getImage('b_table_add'),
+        $this->assertStringContainsString(
+            Generator::getImage('b_table_add'),
             $html
         );
 
         //__('Create table')
-        $this->assertContains(
+        $this->assertStringContainsString(
             __('Create table'),
             $html
         );
 
         //Url::getHiddenInputs
-        $this->assertContains(
+        $this->assertStringContainsString(
             Url::getHiddenInputs($db),
             $html
         );
         //label
-        $this->assertContains(
+        $this->assertStringContainsString(
             __('Name'),
             $html
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             __('Number of columns'),
             $html
         );
 
         //button
-        $this->assertContains(
+        $this->assertStringContainsString(
             __('Go'),
             $html
         );

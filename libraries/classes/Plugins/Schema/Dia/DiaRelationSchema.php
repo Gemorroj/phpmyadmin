@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Classes to create relation schema in Dia format.
  *
@@ -9,12 +8,11 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Dia;
 
+use PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia;
 use PhpMyAdmin\Plugins\Schema\Eps\TableStatsEps;
 use PhpMyAdmin\Plugins\Schema\ExportRelationSchema;
 use PhpMyAdmin\Plugins\Schema\Pdf\TableStatsPdf;
 use PhpMyAdmin\Plugins\Schema\Svg\TableStatsSvg;
-use PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia;
-use PhpMyAdmin\Relation;
 
 /**
  * Dia Relation Schema Class
@@ -51,9 +49,9 @@ class DiaRelationSchema extends ExportRelationSchema
      * Upon instantiation This outputs the Dia XML document
      * that user can download
      *
-     * @param string $db database name
-     *
      * @see Dia,TableStatsDia,RelationStatsDia
+     *
+     * @param string $db database name
      */
     public function __construct($db)
     {
@@ -76,7 +74,7 @@ class DiaRelationSchema extends ExportRelationSchema
         $alltables = $this->getTablesFromRequest();
 
         foreach ($alltables as $table) {
-            if (!isset($this->_tables[$table])) {
+            if (! isset($this->_tables[$table])) {
                 $this->_tables[$table] = new TableStatsDia(
                     $this->diagram,
                     $this->db,
@@ -91,7 +89,7 @@ class DiaRelationSchema extends ExportRelationSchema
         $seen_a_relation = false;
         foreach ($alltables as $one_table) {
             $exist_rel = $this->relation->getForeigners($this->db, $one_table, '', 'both');
-            if (!$exist_rel) {
+            if (! $exist_rel) {
                 continue;
             }
 
@@ -116,7 +114,7 @@ class DiaRelationSchema extends ExportRelationSchema
                 }
 
                 foreach ($rel as $one_key) {
-                    if (!in_array($one_key['ref_table_name'], $alltables)) {
+                    if (! in_array($one_key['ref_table_name'], $alltables)) {
                         continue;
                     }
 
@@ -144,6 +142,7 @@ class DiaRelationSchema extends ExportRelationSchema
      * Output Dia Document for download
      *
      * @return void
+     *
      * @access public
      */
     public function showOutput()
@@ -154,6 +153,8 @@ class DiaRelationSchema extends ExportRelationSchema
     /**
      * Defines relation objects
      *
+     * @see    TableStatsDia::__construct(),RelationStatsDia::__construct()
+     *
      * @param string $masterTable  The master table name
      * @param string $masterField  The relation field in the master table
      * @param string $foreignTable The foreign table name
@@ -163,7 +164,6 @@ class DiaRelationSchema extends ExportRelationSchema
      * @return void
      *
      * @access private
-     * @see    TableStatsDia::__construct(),RelationStatsDia::__construct()
      */
     private function _addRelation(
         $masterTable,
@@ -172,7 +172,7 @@ class DiaRelationSchema extends ExportRelationSchema
         $foreignField,
         $showKeys
     ) {
-        if (!isset($this->_tables[$masterTable])) {
+        if (! isset($this->_tables[$masterTable])) {
             $this->_tables[$masterTable] = new TableStatsDia(
                 $this->diagram,
                 $this->db,
@@ -181,7 +181,7 @@ class DiaRelationSchema extends ExportRelationSchema
                 $showKeys
             );
         }
-        if (!isset($this->_tables[$foreignTable])) {
+        if (! isset($this->_tables[$foreignTable])) {
             $this->_tables[$foreignTable] = new TableStatsDia(
                 $this->diagram,
                 $this->db,
@@ -206,10 +206,11 @@ class DiaRelationSchema extends ExportRelationSchema
      * foreign table's foreign field using Dia object
      * type Database - Reference
      *
+     * @see    RelationStatsDia::relationDraw()
+     *
      * @return void
      *
      * @access private
-     * @see    RelationStatsDia::relationDraw()
      */
     private function _drawRelations()
     {
@@ -224,10 +225,11 @@ class DiaRelationSchema extends ExportRelationSchema
      * Tables are generated using Dia object type Database - Table
      * primary fields are underlined and bold in tables
      *
+     * @see    TableStatsDia::tableDraw()
+     *
      * @return void
      *
      * @access private
-     * @see    TableStatsDia::tableDraw()
      */
     private function _drawTables()
     {

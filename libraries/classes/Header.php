@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Used to render the header of PMA's pages
  *
@@ -9,18 +8,9 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Config;
-use PhpMyAdmin\Console;
-use PhpMyAdmin\Core;
-use PhpMyAdmin\Menu;
-use PhpMyAdmin\Message;
+use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Navigation\Navigation;
-use PhpMyAdmin\RecentFavoriteTable;
-use PhpMyAdmin\Sanitize;
-use PhpMyAdmin\Scripts;
-use PhpMyAdmin\Url;
-use PhpMyAdmin\UserPreferences;
-use PhpMyAdmin\Util;
+use function ini_get;
 
 /**
  * Class used to output the HTTP and HTML headers
@@ -121,15 +111,22 @@ class Header
     private $userPreferences;
 
     /**
-     * @var Template $template
+     * @var Template
      */
     private $template;
+
+    /**
+     * @var Navigation
+     */
+    private $navigation;
 
     /**
      * Creates a new class instance
      */
     public function __construct()
     {
+        global $db, $table;
+
         $this->template = new Template();
 
         $this->_isEnabled = true;
@@ -137,12 +134,9 @@ class Header
         $this->_bodyId = '';
         $this->_title = '';
         $this->_console = new Console();
-        $db = strlen($GLOBALS['db']) ? $GLOBALS['db'] : '';
-        $table = strlen($GLOBALS['table']) ? $GLOBALS['table'] : '';
         $this->_menu = new Menu(
-            $GLOBALS['server'],
-            $db,
-            $table
+            $db ?? '',
+            $table ?? ''
         );
         $this->_menuEnabled = true;
         $this->_warningsEnabled = true;
@@ -161,6 +155,11 @@ class Header
         }
 
         $this->userPreferences = new UserPreferences();
+        $this->navigation = new Navigation(
+            $this->template,
+            new Relation($GLOBALS['dbi']),
+            $GLOBALS['dbi']
+        );
     }
 
     /**
@@ -173,10 +172,10 @@ class Header
         // Localised strings
         $this->_scripts->addFile('vendor/jquery/jquery.min.js');
         $this->_scripts->addFile('vendor/jquery/jquery-migrate.js');
-        $this->_scripts->addFile('whitelist.php');
         $this->_scripts->addFile('vendor/sprintf.js');
         $this->_scripts->addFile('ajax.js');
         $this->_scripts->addFile('keyhandler.js');
+        $this->_scripts->addFile('vendor/bootstrap/bootstrap.bundle.min.js');
         $this->_scripts->addFile('vendor/jquery/jquery-ui.min.js');
         $this->_scripts->addFile('vendor/js.cookie.js');
         $this->_scripts->addFile('vendor/jquery/jquery.mousewheel.js');
@@ -185,7 +184,7 @@ class Header
         $this->_scripts->addFile('vendor/jquery/jquery-ui-timepicker-addon.js');
         $this->_scripts->addFile('vendor/jquery/jquery.ba-hashchange-1.3.js');
         $this->_scripts->addFile('vendor/jquery/jquery.debounce-1.0.5.js');
-        $this->_scripts->addFile('menu-resizer.js');
+        $this->_scripts->addFile('menu_resizer.js');
 
         // Cross-framing protection
         if ($GLOBALS['cfg']['AllowThirdPartyFraming'] === false) {
@@ -202,14 +201,7 @@ class Header
         // the user preferences have not been merged at this point
 
         $this->_scripts->addFile('messages.php', ['l' => $GLOBALS['lang']]);
-        // Append the theme id to this url to invalidate
-        // the cache on a theme change. Though this might be
-        // unavailable for fatal errors.
-        if (isset($GLOBALS['PMA_Theme'])) {
-            $theme_id = urlencode($GLOBALS['PMA_Theme']->getId());
-        } else {
-            $theme_id = 'default';
-        }
+        $this->_scripts->addCode($this->getVariablesForJavaScript());
         $this->_scripts->addFile('config.js');
         $this->_scripts->addFile('doclinks.js');
         $this->_scripts->addFile('functions.js');
@@ -234,10 +226,9 @@ class Header
      */
     public function getJsParams(): array
     {
-        $db = strlen($GLOBALS['db']) ? $GLOBALS['db'] : '';
-        $table = strlen($GLOBALS['table']) ? $GLOBALS['table'] : '';
-        $pftext = isset($_SESSION['tmpval']['pftext'])
-            ? $_SESSION['tmpval']['pftext'] : '';
+        global $db, $table;
+
+        $pftext = $_SESSION['tmpval']['pftext'] ?? '';
 
         $params = [
             'common_query' => Url::getCommonRaw(),
@@ -247,8 +238,8 @@ class Header
             ),
             'lang' => $GLOBALS['lang'],
             'server' => $GLOBALS['server'],
-            'table' => $table,
-            'db' => $db,
+            'table' => $table ?? '',
+            'db' => $db ?? '',
             'token' => $_SESSION[' PMA_token '],
             'text_dir' => $GLOBALS['text_dir'],
             'show_databases_navigation_as_tree' => $GLOBALS['cfg']['ShowDatabasesNavigationAsTree'],
@@ -265,16 +256,14 @@ class Header
             'pftext' => $pftext,
             'confirm' => $GLOBALS['cfg']['Confirm'],
             'LoginCookieValidity' => $GLOBALS['cfg']['LoginCookieValidity'],
-            'session_gc_maxlifetime' => (int)ini_get('session.gc_maxlifetime'),
-            'logged_in' => (isset($GLOBALS['dbi']) ? $GLOBALS['dbi']->isUserType('logged') : false),
+            'session_gc_maxlifetime' => (int) ini_get('session.gc_maxlifetime'),
+            'logged_in' => isset($GLOBALS['dbi']) ? $GLOBALS['dbi']->isUserType('logged') : false,
             'is_https' => $GLOBALS['PMA_Config']->isHttps(),
             'rootPath' => $GLOBALS['PMA_Config']->getRootPath(),
-            'arg_separator' => URL::getArgSeparator(),
-            'PMA_VERSION' => PMA_VERSION
+            'arg_separator' => Url::getArgSeparator(),
+            'PMA_VERSION' => PMA_VERSION,
         ];
-        if (isset($GLOBALS['cfg']['Server'])
-            && isset($GLOBALS['cfg']['Server']['auth_type'])
-        ) {
+        if (isset($GLOBALS['cfg']['Server'], $GLOBALS['cfg']['Server']['auth_type'])) {
             $params['auth_type'] = $GLOBALS['cfg']['Server']['auth_type'];
             if (isset($GLOBALS['cfg']['Server']['user'])) {
                 $params['user'] = $GLOBALS['cfg']['Server']['user'];
@@ -300,7 +289,7 @@ class Header
                 $params[$key] = $key . ':"' . Sanitize::escapeJsString($value) . '"';
             }
         }
-        return 'PMA_commonParams.setAll({' . implode(',', $params) . '});';
+        return 'CommonParams.setAll({' . implode(',', $params) . '});';
     }
 
     /**
@@ -411,7 +400,8 @@ class Header
      */
     public function getDisplay(): string
     {
-        $retval = '';
+        global $db, $table;
+
         if (! $this->_headerIsSent) {
             if (! $this->_isAjax && $this->_isEnabled) {
                 $this->sendHttpHeaders();
@@ -445,68 +435,55 @@ class Header
                     $this->_scripts->addFile('config.js');
                 }
 
-                $retval .= $this->template->render('header/header', [
-                    'lang' => $GLOBALS['lang'],
-                    'allow_third_party_framing' => $GLOBALS['cfg']['AllowThirdPartyFraming'],
-                    'is_print_view' => $this->_isPrintView,
-                    'base_dir' => $baseDir,
-                    'unique_value' => $uniqueValue,
-                    'theme_path' => $themePath,
-                    'version' => $version,
-                    'text_dir' => $GLOBALS['text_dir'],
-                    'server' => $GLOBALS['server'] ?? null,
-                    'title' => $this->getTitleTag(),
-                    'scripts' => $this->_scripts->getDisplay(),
-                    'body_id' => $this->_bodyId,
-                ]);
-
                 if ($this->_menuEnabled && $GLOBALS['server'] > 0) {
-                    $nav = new Navigation();
-                    $retval .= $nav->getDisplay();
+                    $navigation = $this->navigation->getDisplay();
                 }
-                // Include possible custom headers
-                $retval .= Config::renderHeader();
+
+                $customHeader = Config::renderHeader();
+
                 // offer to load user preferences from localStorage
                 if ($this->_userprefsOfferImport) {
-                    $retval .= $this->userPreferences->autoloadGetHeader();
+                    $loadUserPreferences = $this->userPreferences->autoloadGetHeader();
                 }
-                // pass configuration for hint tooltip display
-                // (to be used by PMA_tooltip() in js/functions.js)
-                if (! $GLOBALS['cfg']['ShowHint']) {
-                    $retval .= '<span id="no_hint" class="hide"></span>';
-                }
-                $retval .= $this->_getWarnings();
+
                 if ($this->_menuEnabled && $GLOBALS['server'] > 0) {
-                    $retval .= $this->_menu->getDisplay();
-                    $retval .= '<span id="page_nav_icons">';
-                    $retval .= '<span id="lock_page_icon"></span>';
-                    $retval .= '<span id="page_settings_icon">'
-                        . Util::getImage(
-                            's_cog',
-                            __('Page-related settings')
-                        )
-                        . '</span>';
-                    $retval .= sprintf(
-                        '<a id="goto_pagetop" href="#">%s</a>',
-                        Util::getImage(
-                            's_top',
-                            __('Click on the bar to scroll to top of page')
-                        )
-                    );
-                    $retval .= '</span>';
+                    $menu = $this->_menu->getDisplay();
                 }
-                $retval .= $this->_console->getDisplay();
-                $retval .= '<div id="page_content">';
-                $retval .= $this->getMessage();
+                $console = $this->_console->getDisplay();
+                $messages = $this->getMessage();
             }
             if ($this->_isEnabled && empty($_REQUEST['recent_table'])) {
-                $retval .= $this->_addRecentTable(
-                    $GLOBALS['db'],
-                    $GLOBALS['table']
-                );
+                $recentTable = $this->_addRecentTable($db, $table);
             }
+            return $this->template->render('header', [
+                'is_ajax' => $this->_isAjax,
+                'is_enabled' => $this->_isEnabled,
+                'lang' => $GLOBALS['lang'],
+                'allow_third_party_framing' => $GLOBALS['cfg']['AllowThirdPartyFraming'],
+                'is_print_view' => $this->_isPrintView,
+                'base_dir' => $baseDir ?? '',
+                'unique_value' => $uniqueValue ?? '',
+                'theme_path' => $themePath ?? '',
+                'version' => $version ?? '',
+                'text_dir' => $GLOBALS['text_dir'],
+                'server' => $GLOBALS['server'] ?? null,
+                'title' => $this->getPageTitle(),
+                'scripts' => $this->_scripts->getDisplay(),
+                'body_id' => $this->_bodyId,
+                'navigation' => $navigation ?? '',
+                'custom_header' => $customHeader ?? '',
+                'load_user_preferences' => $loadUserPreferences ?? '',
+                'show_hint' => $GLOBALS['cfg']['ShowHint'],
+                'is_warnings_enabled' => $this->_warningsEnabled,
+                'is_menu_enabled' => $this->_menuEnabled,
+                'menu' => $menu ?? '',
+                'console' => $console ?? '',
+                'messages' => $messages ?? '',
+                'has_recent_table' => empty($_REQUEST['recent_table']),
+                'recent_table' => $recentTable ?? '',
+            ]);
         }
-        return $retval;
+        return '';
     }
 
     /**
@@ -529,7 +506,7 @@ class Header
             if (isset($GLOBALS['buffer_message'])) {
                 $buffer_message = $GLOBALS['buffer_message'];
             }
-            $retval .= Util::getMessage($message);
+            $retval .= Generator::getMessage($message);
             if (isset($buffer_message)) {
                 $GLOBALS['buffer_message'] = $buffer_message;
             }
@@ -553,8 +530,8 @@ class Header
          * Sends http headers
          */
         $GLOBALS['now'] = gmdate('D, d M Y H:i:s') . ' GMT';
-        if (!empty($GLOBALS['cfg']['CaptchaLoginPrivateKey'])
-            && !empty($GLOBALS['cfg']['CaptchaLoginPublicKey'])
+        if (! empty($GLOBALS['cfg']['CaptchaLoginPrivateKey'])
+            && ! empty($GLOBALS['cfg']['CaptchaLoginPublicKey'])
         ) {
             $captcha_url
                 = ' https://apis.google.com https://www.google.com/recaptcha/'
@@ -585,25 +562,25 @@ class Header
             . "style-src 'self' 'unsafe-inline' "
             . $captcha_url
             . $GLOBALS['cfg']['CSPAllow']
-            . ";"
+            . ';'
             . "img-src 'self' data: "
             . $GLOBALS['cfg']['CSPAllow']
             . $map_tile_urls
             . $captcha_url
-            . ";"
+            . ';'
             . "object-src 'none';"
         );
         header(
             "X-Content-Security-Policy: default-src 'self' "
             . $captcha_url
             . $GLOBALS['cfg']['CSPAllow'] . ';'
-            . "options inline-script eval-script;"
-            . "referrer no-referrer;"
+            . 'options inline-script eval-script;'
+            . 'referrer no-referrer;'
             . "img-src 'self' data: "
             . $GLOBALS['cfg']['CSPAllow']
             . $map_tile_urls
             . $captcha_url
-            . ";"
+            . ';'
             . "object-src 'none';"
         );
         header(
@@ -614,7 +591,7 @@ class Header
             . $captcha_url
             . $GLOBALS['cfg']['CSPAllow']
             . " 'unsafe-inline' 'unsafe-eval';"
-            . "referrer no-referrer;"
+            . 'referrer no-referrer;'
             . "style-src 'self' 'unsafe-inline' "
             . $captcha_url
             . ';'
@@ -622,7 +599,7 @@ class Header
             . $GLOBALS['cfg']['CSPAllow']
             . $map_tile_urls
             . $captcha_url
-            . ";"
+            . ';'
             . "object-src 'none';"
         );
         // Re-enable possible disabled XSS filters
@@ -655,24 +632,12 @@ class Header
     }
 
     /**
-     * Returns the TITLE tag
-     *
-     * @return string the TITLE tag
-     */
-    public function getTitleTag(): string
-    {
-        return $this->template->render('header/title_tag', [
-            'title' => $this->getPageTitle(),
-        ]);
-    }
-
-    /**
      * If the page is missing the title, this function
      * will set it to something reasonable
      *
      * @return string
      */
-    private function getPageTitle(): string
+    public function getPageTitle(): string
     {
         if (strlen($this->_title) == 0) {
             if ($GLOBALS['server'] > 0) {
@@ -693,24 +658,6 @@ class Header
             }
         }
         return $this->_title;
-    }
-
-    /**
-     * Returns some warnings to be displayed at the top of the page
-     *
-     * @return string The warnings
-     */
-    private function _getWarnings(): string
-    {
-        $retval = '';
-        if ($this->_warningsEnabled) {
-            $retval .= "<noscript>";
-            $retval .= Message::error(
-                __("Javascript must be enabled past this point!")
-            )->getDisplay();
-            $retval .= "</noscript>";
-        }
-        return $retval;
     }
 
     /**
@@ -750,6 +697,23 @@ class Header
      */
     public static function getVersionParameter(): string
     {
-        return "v=" . urlencode(PMA_VERSION);
+        return 'v=' . urlencode(PMA_VERSION);
+    }
+
+    /**
+     * @return string
+     */
+    private function getVariablesForJavaScript(): string
+    {
+        global $cfg, $pmaThemeImage;
+
+        $maxInputVars = ini_get('max_input_vars');
+        $maxInputVarsValue = $maxInputVars === false || $maxInputVars === '' ? 'false' : (int) $maxInputVars;
+
+        return $this->template->render('javascript/variables', [
+            'first_day_of_calendar' => $cfg['FirstDayOfCalendar'],
+            'pma_theme_image' => $pmaThemeImage,
+            'max_input_vars' => $maxInputVarsValue,
+        ]);
     }
 }

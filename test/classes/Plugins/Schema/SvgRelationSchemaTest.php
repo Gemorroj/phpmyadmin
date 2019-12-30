@@ -28,10 +28,11 @@ class SvgRelationSchemaTest extends PmaTestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $_REQUEST['page_number'] = 33;
         $_REQUEST['svg_show_color'] = true;
@@ -41,20 +42,22 @@ class SvgRelationSchemaTest extends PmaTestCase
         $_REQUEST['t_h'] = ['information_schema.files' => 1];
         $_REQUEST['t_x'] = ['information_schema.files' => 0];
         $_REQUEST['t_y'] = ['information_schema.files' => 0];
+        $_POST['t_db'] = ['information_schema'];
+        $_POST['t_tbl'] = ['files'];
 
         $GLOBALS['server'] = 1;
         $GLOBALS['db'] = 'information_schema';
-        $GLOBALS['cfg']['Server']['table_coords'] = "table_name";
+        $GLOBALS['cfg']['Server']['table_coords'] = 'table_name';
 
         //_SESSION
         $_SESSION['relation'][$GLOBALS['server']] = [
             'PMA_VERSION' => PMA_VERSION,
-            'table_coords' => "table_name",
+            'table_coords' => 'table_name',
             'displaywork' => 'displaywork',
-            'db' => "information_schema",
+            'db' => 'information_schema',
             'table_info' => 'table_info',
             'relwork' => 'relwork',
-            'relation' => 'relation'
+            'relation' => 'relation',
         ];
         $relation = new Relation($GLOBALS['dbi']);
         $relation->getRelationsParam();
@@ -69,20 +72,20 @@ class SvgRelationSchemaTest extends PmaTestCase
 
         $dbi->expects($this->any())
             ->method('query')
-            ->will($this->returnValue("executed_1"));
+            ->will($this->returnValue('executed_1'));
 
         $dbi->expects($this->any())
             ->method('tryQuery')
-            ->will($this->returnValue("executed_1"));
+            ->will($this->returnValue('executed_1'));
 
         $fetchArrayReturn = [
             //table name in information_schema_relations
-            'table_name' => 'CHARACTER_SETS'
+            'table_name' => 'CHARACTER_SETS',
         ];
 
         $fetchArrayReturn2 = [
             //table name in information_schema_relations
-            'table_name' => 'COLLATIONS'
+            'table_name' => 'COLLATIONS',
         ];
 
         $dbi->expects($this->at(2))
@@ -100,9 +103,9 @@ class SvgRelationSchemaTest extends PmaTestCase
                 'Table' => 'pma_tbl',
                 'Field' => 'field1',
                 'Key' => 'PRIMARY',
-                'Key_name' => "Key_name",
-                'Column_name' => "Column_name"
-            ]
+                'Key_name' => 'Key_name',
+                'Column_name' => 'Column_name',
+            ],
         ];
         $dbi->expects($this->any())->method('getTableIndexes')
             ->will($this->returnValue($getIndexesResult));
@@ -130,10 +133,11 @@ class SvgRelationSchemaTest extends PmaTestCase
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
      *
-     * @access protected
      * @return void
+     *
+     * @access protected
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }

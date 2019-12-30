@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Abstract parent class for all Gis<Geom_type> test classes
  *
@@ -18,6 +17,7 @@ use PHPUnit\Framework\TestCase;
  */
 abstract class GisGeomTestCase extends TestCase
 {
+    protected $object;
 
     /**
      * test generateParams method
@@ -26,10 +26,11 @@ abstract class GisGeomTestCase extends TestCase
      * @param int    $index  index
      * @param array  $params expected output array
      *
-     * @dataProvider providerForTestGenerateParams
      * @return void
+     *
+     * @dataProvider providerForTestGenerateParams
      */
-    public function testGenerateParams($wkt, $index, $params)
+    public function testGenerateParams($wkt, $index, $params): void
     {
         if ($index == null) {
             $this->assertEquals(
@@ -50,10 +51,11 @@ abstract class GisGeomTestCase extends TestCase
      * @param string $spatial spatial data of a row
      * @param array  $min_max expected results
      *
-     * @dataProvider providerForTestScaleRow
      * @return void
+     *
+     * @dataProvider providerForTestScaleRow
      */
-    public function testScaleRow($spatial, $min_max)
+    public function testScaleRow($spatial, $min_max): void
     {
         $this->assertEquals(
             $min_max,
@@ -64,7 +66,7 @@ abstract class GisGeomTestCase extends TestCase
     /**
      * Tests whether content is a valid image.
      *
-     * @param object $object Image
+     * @param resource $object Image
      *
      * @return void
      */

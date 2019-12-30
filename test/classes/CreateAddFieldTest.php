@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for PhpMyAdmin\CreateAddField
  *
@@ -29,7 +28,7 @@ class CreateAddFieldTest extends TestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->createAddField = new CreateAddField($GLOBALS['dbi']);
     }
@@ -40,13 +39,13 @@ class CreateAddFieldTest extends TestCase
      * @param string $expected Expected result
      * @param array  $request  $_REQUEST array
      *
-     * @dataProvider providerGetPartitionsDefinition
-     *
      * @return void
+     *
+     * @dataProvider providerGetPartitionsDefinition
      */
-    public function testGetPartitionsDefinition($expected, $request)
+    public function testGetPartitionsDefinition($expected, $request): void
     {
-        $_REQUEST = $request;
+        $_POST = $request;
         $actual = $this->createAddField->getPartitionsDefinition();
         $this->assertEquals($expected, $actual);
     }
@@ -59,12 +58,18 @@ class CreateAddFieldTest extends TestCase
     public function providerGetPartitionsDefinition()
     {
         return [
-            ['', []],
-            [' PARTITION BY HASH (EXPR()) PARTITIONS 2', [
-                'partition_by' => 'HASH',
-                'partition_expr' => 'EXPR()',
-                'partition_count' => '2',
-            ]],
+            [
+                '',
+                [],
+            ],
+            [
+                ' PARTITION BY HASH (EXPR()) PARTITIONS 2',
+                [
+                    'partition_by' => 'HASH',
+                    'partition_expr' => 'EXPR()',
+                    'partition_count' => '2',
+                ],
+            ],
         ];
     }
 
@@ -76,13 +81,13 @@ class CreateAddFieldTest extends TestCase
      * @param string $table    Table name
      * @param array  $request  $_REQUEST array
      *
-     * @dataProvider providerGetTableCreationQuery
-     *
      * @return void
+     *
+     * @dataProvider providerGetTableCreationQuery
      */
-    public function testGetTableCreationQuery($expected, $db, $table, $request)
+    public function testGetTableCreationQuery($expected, $db, $table, $request): void
     {
-        $_REQUEST = $request;
+        $_POST = $request;
         $actual = $this->createAddField->getTableCreationQuery($db, $table);
         $this->assertEquals($expected, $actual);
     }
@@ -95,14 +100,19 @@ class CreateAddFieldTest extends TestCase
     public function providerGetTableCreationQuery()
     {
         return [
-            ['CREATE TABLE `db`.`table` ();', 'db', 'table', [
-                'field_name' => [],
-                'primary_indexes' => '{}',
-                'indexes' => '{}',
-                'unique_indexes' => '{}',
-                'fulltext_indexes' => '{}',
-                'spatial_indexes' => '{}',
-            ]],
+            [
+                'CREATE TABLE `db`.`table` ();',
+                'db',
+                'table',
+                [
+                    'field_name' => [],
+                    'primary_indexes' => '{}',
+                    'indexes' => '{}',
+                    'unique_indexes' => '{}',
+                    'fulltext_indexes' => '{}',
+                    'spatial_indexes' => '{}',
+                ],
+            ],
         ];
     }
 
@@ -112,13 +122,13 @@ class CreateAddFieldTest extends TestCase
      * @param string $expected Expected result
      * @param array  $request  $_REQUEST array
      *
-     * @dataProvider providerGetNumberOfFieldsFromRequest
-     *
      * @return void
+     *
+     * @dataProvider providerGetNumberOfFieldsFromRequest
      */
-    public function testGetNumberOfFieldsFromRequest($expected, $request)
+    public function testGetNumberOfFieldsFromRequest($expected, $request): void
     {
-        $_REQUEST = $request;
+        $_POST = $request;
         $actual = $this->createAddField->getNumberOfFieldsFromRequest();
         $this->assertEquals($expected, $actual);
     }
@@ -131,7 +141,10 @@ class CreateAddFieldTest extends TestCase
     public function providerGetNumberOfFieldsFromRequest()
     {
         return [
-            [4, []],
+            [
+                4,
+                [],
+            ],
         ];
     }
 }

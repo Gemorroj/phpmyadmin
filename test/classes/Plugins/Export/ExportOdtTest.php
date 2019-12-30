@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportOdt class
  *
@@ -32,7 +31,7 @@ class ExportOdtTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
@@ -52,7 +51,7 @@ class ExportOdtTest extends PmaTestCase
      *
      * @return void
      */
-    public function tearDown()
+    protected function tearDown(): void
     {
         unset($this->object);
     }
@@ -132,7 +131,7 @@ class ExportOdtTest extends PmaTestCase
         );
 
         $this->assertEquals(
-            "Dump table",
+            'Dump table',
             $generalOptions->getText()
         );
 
@@ -154,7 +153,7 @@ class ExportOdtTest extends PmaTestCase
             [
                 'structure' => __('structure'),
                 'data' => __('data'),
-                'structure_and_data' => __('structure and data')
+                'structure_and_data' => __('structure and data'),
             ],
             $property->getValues()
         );
@@ -230,7 +229,7 @@ class ExportOdtTest extends PmaTestCase
         );
 
         $this->assertEquals(
-            'Display MIME types',
+            'Display media types',
             $property->getText()
         );
 
@@ -319,12 +318,12 @@ class ExportOdtTest extends PmaTestCase
             $this->object->exportHeader()
         );
 
-        $this->assertContains(
-            "<office:document-content",
+        $this->assertStringContainsString(
+            '<office:document-content',
             $GLOBALS['odt_buffer']
         );
-        $this->assertContains(
-            "office:version",
+        $this->assertStringContainsString(
+            'office:version',
             $GLOBALS['odt_buffer']
         );
     }
@@ -345,13 +344,13 @@ class ExportOdtTest extends PmaTestCase
             $this->object->exportFooter()
         );
 
-        $this->assertContains(
-            "header",
+        $this->assertStringContainsString(
+            'header',
             $GLOBALS['odt_buffer']
         );
 
-        $this->assertContains(
-            "</office:text></office:body></office:document-content>",
+        $this->assertStringContainsString(
+            '</office:text></office:body></office:document-content>',
             $GLOBALS['odt_buffer']
         );
     }
@@ -369,13 +368,13 @@ class ExportOdtTest extends PmaTestCase
             $this->object->exportDBHeader('d&b')
         );
 
-        $this->assertContains(
-            "header",
+        $this->assertStringContainsString(
+            'header',
             $GLOBALS['odt_buffer']
         );
 
-        $this->assertContains(
-            "Database d&amp;b</text:h>",
+        $this->assertStringContainsString(
+            'Database d&amp;b</text:h>',
             $GLOBALS['odt_buffer']
         );
     }
@@ -417,9 +416,11 @@ class ExportOdtTest extends PmaTestCase
 
         $flags = [];
         $a = new stdClass();
+        $a->type = '';
         $flags[] = $a;
 
         $a = new stdClass();
+        $a->type = '';
         $a->blob = true;
         $flags[] = $a;
 
@@ -430,7 +431,7 @@ class ExportOdtTest extends PmaTestCase
         $flags[] = $a;
 
         $a = new stdClass();
-        $a->type = "timestamp";
+        $a->type = 'timestamp';
         $a->blob = false;
         $a->numeric = false;
         $flags[] = $a;
@@ -464,7 +465,10 @@ class ExportOdtTest extends PmaTestCase
             ->will(
                 $this->returnValue(
                     [
-                        null, 'a<b', 'a>b', 'a&b'
+                        null,
+                        'a<b',
+                        'a>b',
+                        'a&b',
                     ]
                 )
             );
@@ -476,15 +480,15 @@ class ExportOdtTest extends PmaTestCase
 
         $GLOBALS['dbi'] = $dbi;
         $GLOBALS['what'] = 'foo';
-        $GLOBALS['foo_null'] = "&";
+        $GLOBALS['foo_null'] = '&';
 
         $this->assertTrue(
             $this->object->exportData(
                 'db',
                 'ta<ble',
                 "\n",
-                "example.com",
-                "SELECT"
+                'example.com',
+                'SELECT'
             )
         );
 
@@ -555,7 +559,7 @@ class ExportOdtTest extends PmaTestCase
 
         $GLOBALS['dbi'] = $dbi;
         $GLOBALS['what'] = 'foo';
-        $GLOBALS['foo_null'] = "&";
+        $GLOBALS['foo_null'] = '&';
         $GLOBALS['foo_columns'] = true;
 
         $this->assertTrue(
@@ -563,8 +567,8 @@ class ExportOdtTest extends PmaTestCase
                 'db',
                 'table',
                 "\n",
-                "example.com",
-                "SELECT"
+                'example.com',
+                'SELECT'
             )
         );
 
@@ -614,7 +618,7 @@ class ExportOdtTest extends PmaTestCase
         $GLOBALS['mediawiki_caption'] = true;
         $GLOBALS['mediawiki_headers'] = true;
         $GLOBALS['what'] = 'foo';
-        $GLOBALS['foo_null'] = "&";
+        $GLOBALS['foo_null'] = '&';
         $GLOBALS['odt_buffer'] = '';
 
         $this->assertTrue(
@@ -622,8 +626,8 @@ class ExportOdtTest extends PmaTestCase
                 'db',
                 'table',
                 "\n",
-                "example.com",
-                "SELECT"
+                'example.com',
+                'SELECT'
             )
         );
 
@@ -670,16 +674,17 @@ class ExportOdtTest extends PmaTestCase
             ->with(2)
             ->will($this->returnValue('c2'));
 
-        $this->assertTrue(
-            $this->object->getTableDefStandIn('db', 'v&w', '#')
+        $this->assertSame(
+            $this->object->getTableDefStandIn('db', 'v&w', '#'),
+            ''
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<table:table table:name="v&amp;w_data">',
             $GLOBALS['odt_buffer']
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '</table:table-row>c1</table:table-row>c2</table:table-row>' .
             '</table:table>',
             $GLOBALS['odt_buffer']
@@ -711,13 +716,13 @@ class ExportOdtTest extends PmaTestCase
                     'fieldname' => [
                         'values' => 'test-',
                         'transformation' => 'testfoo',
-                        'mimetype' => 'test<'
-                    ]
+                        'mimetype' => 'test<',
+                    ],
                 ]
             );
 
         $columns = [
-            'Field' => 'fieldname'
+            'Field' => 'fieldname',
         ];
         $dbi->expects($this->once())
             ->method('getColumns')
@@ -737,7 +742,7 @@ class ExportOdtTest extends PmaTestCase
             ->will(
                 $this->returnValue(
                     [
-                        'comment' => ['fieldname' => 'testComment']
+                        'comment' => ['fieldname' => 'testComment'],
                     ]
                 )
             );
@@ -758,39 +763,39 @@ class ExportOdtTest extends PmaTestCase
             'mimework' => true,
             'db' => 'database',
             'relation' => 'rel',
-            'column_info' => 'col'
+            'column_info' => 'col',
         ];
         $this->assertTrue(
             $this->object->getTableDef(
                 'database',
                 '',
                 "\n",
-                "example.com",
+                'example.com',
                 true,
                 true,
                 true
             )
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<table:table table:name="_structure"><table:table-column ' .
             'table:number-columns-repeated="6"/>',
             $GLOBALS['odt_buffer']
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<table:table-cell office:value-type="string"><text:p>Comments' .
             '</text:p></table:table-cell>',
             $GLOBALS['odt_buffer']
         );
 
-        $this->assertContains(
-            '<table:table-cell office:value-type="string"><text:p>MIME type' .
+        $this->assertStringContainsString(
+            '<table:table-cell office:value-type="string"><text:p>Media type' .
             '</text:p></table:table-cell>',
             $GLOBALS['odt_buffer']
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '</table:table-row>1<table:table-cell office:value-type="string">' .
             '<text:p></text:p></table:table-cell><table:table-cell office:value-' .
             'type="string"><text:p>Test&lt;</text:p></table:table-cell>' .
@@ -810,20 +815,20 @@ class ExportOdtTest extends PmaTestCase
                 [
                     'fieldname' => [
                         'foreign_table' => 'ftable',
-                        'foreign_field' => 'ffield'
-                    ]
+                        'foreign_field' => 'ffield',
+                    ],
                 ],
                 [
                     'field' => [
                         'values' => 'test-',
                         'transformation' => 'testfoo',
-                        'mimetype' => 'test<'
-                    ]
+                        'mimetype' => 'test<',
+                    ],
                 ]
             );
 
         $columns = [
-            'Field' => 'fieldname'
+            'Field' => 'fieldname',
         ];
 
         $dbi->expects($this->once())
@@ -844,7 +849,7 @@ class ExportOdtTest extends PmaTestCase
             ->will(
                 $this->returnValue(
                     [
-                        'comment' => ['field' => 'testComment']
+                        'comment' => ['field' => 'testComment'],
                     ]
                 )
             );
@@ -860,7 +865,7 @@ class ExportOdtTest extends PmaTestCase
             'mimework' => true,
             'db' => 'database',
             'relation' => 'rel',
-            'column_info' => 'col'
+            'column_info' => 'col',
         ];
 
         $this->assertTrue(
@@ -868,20 +873,20 @@ class ExportOdtTest extends PmaTestCase
                 'database',
                 '',
                 "\n",
-                "example.com",
+                'example.com',
                 true,
                 true,
                 true
             )
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<text:p>ftable (ffield)</text:p>',
             $GLOBALS['odt_buffer']
         );
     }
 
-     /**
+    /**
      * Test for PhpMyAdmin\Plugins\Export\ExportOdt::getTriggers
      *
      * @return void
@@ -897,8 +902,8 @@ class ExportOdtTest extends PmaTestCase
                 'name' => 'tna"me',
                 'action_timing' => 'ac>t',
                 'event_manipulation' => 'manip&',
-                'definition' => 'def'
-            ]
+                'definition' => 'def',
+            ],
         ];
 
         $dbi->expects($this->once())
@@ -912,33 +917,31 @@ class ExportOdtTest extends PmaTestCase
         $method->setAccessible(true);
         $result = $method->invoke($this->object, 'database', 'ta<ble');
 
-        $this->assertTrue(
+        $this->assertSame($result, $GLOBALS['odt_buffer']);
+
+        $this->assertStringContainsString(
+            '<table:table table:name="ta&lt;ble_triggers">',
             $result
         );
 
-        $this->assertContains(
-            '<table:table table:name="ta&lt;ble_triggers">',
-            $GLOBALS['odt_buffer']
-        );
-
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<text:p>tna&quot;me</text:p>',
-            $GLOBALS['odt_buffer']
+            $result
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<text:p>ac&gt;t</text:p>',
-            $GLOBALS['odt_buffer']
+            $result
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<text:p>manip&amp;</text:p>',
-            $GLOBALS['odt_buffer']
+            $result
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<text:p>def</text:p>',
-            $GLOBALS['odt_buffer']
+            $result
         );
     }
 
@@ -965,7 +968,7 @@ class ExportOdtTest extends PmaTestCase
 
         $this->object->expects($this->at(0))
             ->method('getTableDef')
-            ->with('db', 't&bl', "\n", "example.com", false, false, false, false)
+            ->with('db', 't&bl', "\n", 'example.com', false, false, false, false)
             ->will($this->returnValue('dumpText1'));
 
         $this->object->expects($this->once())
@@ -979,7 +982,7 @@ class ExportOdtTest extends PmaTestCase
                 'db',
                 't&bl',
                 "\n",
-                "example.com",
+                'example.com',
                 false,
                 false,
                 false,
@@ -1002,13 +1005,13 @@ class ExportOdtTest extends PmaTestCase
                 'db',
                 't&bl',
                 "\n",
-                "example.com",
-                "create_table",
-                "test"
+                'example.com',
+                'create_table',
+                'test'
             )
         );
 
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<text:h text:outline-level="2" text:style-name="Heading_2" ' .
             'text:is-list-header="true">Table structure for table t&amp;bl</text:h>',
             $GLOBALS['odt_buffer']
@@ -1022,9 +1025,9 @@ class ExportOdtTest extends PmaTestCase
                 'db',
                 't&bl',
                 "\n",
-                "example.com",
-                "triggers",
-                "test"
+                'example.com',
+                'triggers',
+                'test'
             )
         );
 
@@ -1042,9 +1045,9 @@ class ExportOdtTest extends PmaTestCase
                 'db',
                 't&bl',
                 "\n",
-                "example.com",
-                "create_view",
-                "test"
+                'example.com',
+                'create_view',
+                'test'
             )
         );
 
@@ -1061,9 +1064,9 @@ class ExportOdtTest extends PmaTestCase
                 'db',
                 't&bl',
                 "\n",
-                "example.com",
-                "stand_in",
-                "test"
+                'example.com',
+                'stand_in',
+                'test'
             )
         );
 
@@ -1091,7 +1094,7 @@ class ExportOdtTest extends PmaTestCase
             'Null' => 'Yes',
             'Field' => 'field',
             'Key' => 'PRI',
-            'Type' => 'set(abc)enum123'
+            'Type' => 'set(abc)enum123',
         ];
 
         $col_alias = 'alias';
@@ -1111,7 +1114,7 @@ class ExportOdtTest extends PmaTestCase
             'Field' => 'fields',
             'Key' => 'COMP',
             'Type' => '',
-            'Default' => 'def'
+            'Default' => 'def',
         ];
 
         $this->assertEquals(

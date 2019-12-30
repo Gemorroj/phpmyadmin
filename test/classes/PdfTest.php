@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for Pdf class
  *
@@ -25,7 +24,7 @@ class PdfTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
@@ -34,33 +33,36 @@ class PdfTest extends PmaTestCase
     /**
      * Test for Pdf::getPDFData
      *
-     * @group large
      * @return void
+     *
+     * @group large
      */
     public function testBasic()
     {
         $arr = new Pdf();
-        $this->assertContains('PDF', $arr->getPDFData());
+        $this->assertStringContainsString('PDF', $arr->getPDFData());
     }
 
     /**
      * Test for Pdf::getPDFData
      *
-     * @group large
      * @return void
+     *
+     * @group large
      */
     public function testAlias()
     {
         $arr = new Pdf();
         $arr->setAlias('{00}', '32');
-        $this->assertContains('PDF', $arr->getPDFData());
+        $this->assertStringContainsString('PDF', $arr->getPDFData());
     }
 
     /**
      * Test for Pdf::getPDFData
      *
-     * @group large
      * @return void
+     *
+     * @group large
      */
     public function testDocument()
     {
@@ -77,6 +79,6 @@ class PdfTest extends PmaTestCase
         $pdf->SetMargins(0, 0);
         $pdf->SetDrawColor(200, 200, 200);
         $pdf->line(0, 0, 100, 100);
-        $this->assertContains('PDF', $pdf->getPDFData());
+        $this->assertStringContainsString('PDF', $pdf->getPDFData());
     }
 }

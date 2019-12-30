@@ -27,7 +27,7 @@ class ZipExtensionTest extends PmaTestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->zipExtension = new ZipExtension();
     }
@@ -39,10 +39,11 @@ class ZipExtensionTest extends PmaTestCase
      * @param string $specific_entry regular expression to match a file
      * @param mixed  $output         expected output
      *
-     * @dataProvider provideTestGetContents
      * @return void
+     *
+     * @dataProvider provideTestGetContents
      */
-    public function testGetContents($file, $specific_entry, $output)
+    public function testGetContents($file, $specific_entry, $output): void
     {
         $this->assertEquals(
             $this->zipExtension->getContents($file, $specific_entry),
@@ -63,17 +64,17 @@ class ZipExtensionTest extends PmaTestCase
                 null,
                 [
                     'error' => '',
-                    'data' => 'TEST FILE' . "\n"
-                ]
+                    'data' => 'TEST FILE' . "\n",
+                ],
             ],
             [
                 './test/test_data/test.zip',
                 'test',
                 [
                     'error' => 'Error in ZIP archive: Could not find "test"',
-                    'data' => ''
-                ]
-            ]
+                    'data' => '',
+                ],
+            ],
         ];
     }
 
@@ -84,10 +85,11 @@ class ZipExtensionTest extends PmaTestCase
      * @param string $file_regexp regular expression for the file name to match
      * @param mixed  $output      expected output
      *
-     * @dataProvider provideTestFindFile
      * @return void
+     *
+     * @dataProvider provideTestFindFile
      */
-    public function testFindFile($file, $file_regexp, $output)
+    public function testFindFile($file, $file_regexp, $output): void
     {
         $this->assertEquals(
             $this->zipExtension->findFile($file, $file_regexp),
@@ -106,8 +108,8 @@ class ZipExtensionTest extends PmaTestCase
             [
                 './test/test_data/test.zip',
                 '/test/',
-                'test.file'
-            ]
+                'test.file',
+            ],
         ];
     }
 
@@ -154,7 +156,7 @@ class ZipExtensionTest extends PmaTestCase
      */
     public function testCreateSingleFile()
     {
-        $file = $this->zipExtension->createFile("Test content", "test.txt");
+        $file = $this->zipExtension->createFile('Test content', 'test.txt');
         $this->assertNotEmpty($file);
 
         $tmp = tempnam('./', 'zip-test');
@@ -183,8 +185,11 @@ class ZipExtensionTest extends PmaTestCase
         $this->assertEquals(
             false,
             $this->zipExtension->createFile(
-                "Content",
-                ["name1.txt", "name2.txt"]
+                'Content',
+                [
+                    'name1.txt',
+                    'name2.txt',
+                ]
             )
         );
     }
@@ -197,8 +202,14 @@ class ZipExtensionTest extends PmaTestCase
     public function testCreateMultiFile()
     {
         $file = $this->zipExtension->createFile(
-            ["Content", 'Content2'],
-            ["name1.txt", "name2.txt"]
+            [
+                'Content',
+                'Content2',
+            ],
+            [
+                'name1.txt',
+                'name2.txt',
+            ]
         );
         $this->assertNotEmpty($file);
 

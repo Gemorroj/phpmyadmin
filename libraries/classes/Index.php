@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * holds the database index class
  *
@@ -9,11 +8,8 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\IndexColumn;
-use PhpMyAdmin\Message;
-use PhpMyAdmin\Sanitize;
-use PhpMyAdmin\Url;
-use PhpMyAdmin\Util;
+use PhpMyAdmin\Html\Generator;
+use PhpMyAdmin\Html\MySQLDocumentation;
 
 /**
  * Index manipulation class
@@ -290,8 +286,7 @@ class Index
             // $columns[names][]
             // $columns[sub_parts][]
             foreach ($columns['names'] as $key => $name) {
-                $sub_part = isset($columns['sub_parts'][$key])
-                    ? $columns['sub_parts'][$key] : '';
+                $sub_part = $columns['sub_parts'][$key] ?? '';
                 $_columns[] = [
                     'Column_name'   => $name,
                     'Sub_part'      => $sub_part,
@@ -360,20 +355,18 @@ class Index
         }
         if (isset($params['Index_choice'])) {
             $this->_choice = $params['Index_choice'];
+        } elseif ('PRIMARY' == $this->_name) {
+            $this->_choice = 'PRIMARY';
+        } elseif ('FULLTEXT' == $this->_type) {
+            $this->_choice = 'FULLTEXT';
+            $this->_type = '';
+        } elseif ('SPATIAL' == $this->_type) {
+            $this->_choice = 'SPATIAL';
+            $this->_type = '';
+        } elseif ('0' == $this->_non_unique) {
+            $this->_choice = 'UNIQUE';
         } else {
-            if ('PRIMARY' == $this->_name) {
-                $this->_choice = 'PRIMARY';
-            } elseif ('FULLTEXT' == $this->_type) {
-                $this->_choice = 'FULLTEXT';
-                $this->_type = '';
-            } elseif ('SPATIAL' == $this->_type) {
-                $this->_choice = 'SPATIAL';
-                $this->_type = '';
-            } elseif ('0' == $this->_non_unique) {
-                $this->_choice = 'UNIQUE';
-            } else {
-                $this->_choice = 'INDEX';
-            }
+            $this->_choice = 'INDEX';
         }
         if (isset($params['Key_block_size'])) {
             $this->_key_block_size = $params['Key_block_size'];
@@ -416,7 +409,7 @@ class Index
     /**
      * Return the key block size
      *
-     * @return number
+     * @return int
      */
     public function getKeyBlockSize()
     {
@@ -494,7 +487,7 @@ class Index
     {
         return [
             'BTREE',
-            'HASH'
+            'HASH',
         ];
     }
 
@@ -520,7 +513,7 @@ class Index
                 continue;
             }
             $html_options .= '<option value="' . $each_index_choice . '"'
-                 . (($this->_choice == $each_index_choice)
+                 . ($this->_choice == $each_index_choice
                  ? ' selected="selected"'
                  : '')
                  . '>' . $each_index_choice . '</option>' . "\n";
@@ -537,16 +530,16 @@ class Index
      */
     public function generateIndexTypeSelector()
     {
-        $types = ["" => "--"];
+        $types = ['' => '--'];
         foreach (Index::getIndexTypes() as $type) {
             $types[$type] = $type;
         }
 
-        return Util::getDropdown(
-            "index[Index_type]",
+        return Html\Forms\Fields\DropDown::generate(
+            'index[Index_type]',
             $types,
             $this->_type,
-            "select_index_type"
+            'select_index_type'
         );
     }
 
@@ -644,17 +637,17 @@ class Index
     /**
      * Get HTML for display indexes
      *
-     * @return string $html_output
+     * @return string
      */
     public static function getHtmlForDisplayIndexes()
     {
-        $html_output = '<div id="index_div" class="width100 ajax" >';
+        $html_output = '<div id="index_div" class="w-100 ajax" >';
         $html_output .= self::getHtmlForIndexes(
             $GLOBALS['table'],
             $GLOBALS['db']
         );
         $html_output .= '<fieldset class="tblFooters print_ignore" style="text-align: '
-            . 'left;"><form action="tbl_indexes.php" method="post">';
+            . 'left;"><form action="' . Url::getFromRoute('/table/indexes') . '" method="post">';
         $html_output .= Url::getHiddenInputs(
             $GLOBALS['db'],
             $GLOBALS['table']
@@ -662,11 +655,11 @@ class Index
         $html_output .= sprintf(
             __('Create an index on &nbsp;%s&nbsp;columns'),
             '<input type="number" name="added_fields" value="1" '
-            . 'min="1" required="required" />'
+            . 'min="1" required="required">'
         );
-        $html_output .= '<input type="hidden" name="create_index" value="1" />'
-            . '<input class="add_index ajax"'
-            . ' type="submit" value="' . __('Go') . '" />';
+        $html_output .= '<input type="hidden" name="create_index" value="1">'
+            . '<input class="btn btn-primary add_index ajax"'
+            . ' type="submit" value="' . __('Go') . '">';
 
         $html_output .= '</form>'
             . '</fieldset>'
@@ -691,14 +684,14 @@ class Index
         $indexes = Index::getFromTable($table, $schema);
 
         $no_indexes_class = count($indexes) > 0 ? ' hide' : '';
-        $no_indexes  = "<div class='no_indexes_defined$no_indexes_class'>";
+        $no_indexes  = "<div class='no_indexes_defined" . $no_indexes_class . "'>";
         $no_indexes .= Message::notice(__('No index defined!'))->getDisplay();
         $no_indexes .= '</div>';
 
         if (! $print_mode) {
             $r  = '<fieldset class="index_info">';
             $r .= '<legend id="index_header">' . __('Indexes');
-            $r .= Util::showMySQLDocu('optimizing-database-structure');
+            $r .= MySQLDocumentation::show('optimizing-database-structure');
 
             $r .= '</legend>';
             $r .= $no_indexes;
@@ -746,8 +739,8 @@ class Index
                 $r .= '" ' . $row_span . '>'
                    . '    <a class="';
                 $r .= 'ajax';
-                $r .= '" href="tbl_indexes.php' . Url::getCommon($this_params)
-                   . '">' . Util::getIcon('b_edit', __('Edit')) . '</a>'
+                $r .= '" href="' . Url::getFromRoute('/table/indexes') . '" data-post="' . Url::getCommon($this_params, '')
+                   . '">' . Generator::getIcon('b_edit', __('Edit')) . '</a>'
                    . '</td>' . "\n";
                 $this_params = $GLOBALS['url_params'];
                 if ($index->getName() == 'PRIMARY') {
@@ -756,7 +749,7 @@ class Index
                         . ' DROP PRIMARY KEY;';
                     $this_params['message_to_show']
                         = __('The primary key has been dropped.');
-                    $js_msg = Sanitize::jsFormat($this_params['sql_query']);
+                    $js_msg = Sanitize::jsFormat($this_params['sql_query'], false);
                 } else {
                     $this_params['sql_query'] = 'ALTER TABLE '
                         . Util::backquote($table) . ' DROP INDEX '
@@ -765,15 +758,15 @@ class Index
                         __('Index %s has been dropped.'),
                         htmlspecialchars($index->getName())
                     );
-                    $js_msg = Sanitize::jsFormat($this_params['sql_query']);
+                    $js_msg = Sanitize::jsFormat($this_params['sql_query'], false);
                 }
 
                 $r .= '<td ' . $row_span . ' class="print_ignore">';
                 $r .= '<input type="hidden" class="drop_primary_key_index_msg"'
-                    . ' value="' . $js_msg . '" />';
-                $r .= Util::linkOrButton(
-                    'sql.php' . Url::getCommon($this_params),
-                    Util::getIcon('b_drop', __('Drop')),
+                    . ' value="' . $js_msg . '">';
+                $r .= Generator::linkOrButton(
+                    Url::getFromRoute('/sql', $this_params),
+                    Generator::getIcon('b_drop', __('Drop')),
                     ['class' => 'drop_primary_key_index_anchor ajax']
                 );
                 $r .= '</td>' . "\n";
@@ -863,6 +856,7 @@ class Index
      * @param string $schema schema name
      *
      * @return string  Output HTML
+     *
      * @access  public
      */
     public static function findDuplicates($table, $schema)

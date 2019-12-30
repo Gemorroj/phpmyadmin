@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Handles visualization of GIS data
  *
@@ -64,6 +63,7 @@ class GisVisualization
      * Returns the settings array
      *
      * @return array the settings array
+     *
      * @access public
      */
     public function getSettings()
@@ -145,6 +145,7 @@ class GisVisualization
      * All the variable initialization, options handling has to be done here.
      *
      * @return void
+     *
      * @access protected
      */
     protected function init()
@@ -164,15 +165,23 @@ class GisVisualization
     private function _modifySqlQuery($sql_query, $rows, $pos)
     {
         $modified_query = 'SELECT ';
+        $spatialAsText = 'ASTEXT';
+        $spatialSrid = 'SRID';
+
+        if ($this->_userSpecifiedSettings['mysqlVersion'] >= 50600) {
+            $spatialAsText = 'ST_ASTEXT';
+            $spatialSrid = 'ST_SRID';
+        }
+
         // If label column is chosen add it to the query
-        if (!empty($this->_userSpecifiedSettings['labelColumn'])) {
+        if (! empty($this->_userSpecifiedSettings['labelColumn'])) {
             $modified_query .= Util::backquote(
                 $this->_userSpecifiedSettings['labelColumn']
             )
             . ', ';
         }
-        // Wrap the spatial column with 'ASTEXT()' function and add it
-        $modified_query .= 'ASTEXT('
+        // Wrap the spatial column with 'ST_ASTEXT()' function and add it
+        $modified_query .= $spatialAsText . '('
             . Util::backquote($this->_userSpecifiedSettings['spatialColumn'])
             . ') AS ' . Util::backquote(
                 $this->_userSpecifiedSettings['spatialColumn']
@@ -180,7 +189,7 @@ class GisVisualization
             . ', ';
 
         // Get the SRID
-        $modified_query .= 'SRID('
+        $modified_query .= $spatialSrid . '('
             . Util::backquote($this->_userSpecifiedSettings['spatialColumn'])
             . ') AS ' . Util::backquote('srid') . ' ';
 
@@ -204,7 +213,7 @@ class GisVisualization
     /**
      * Returns raw data for GIS visualization.
      *
-     * @return string the raw data.
+     * @return array the raw data.
      */
     private function _fetchRawData()
     {
@@ -227,11 +236,12 @@ class GisVisualization
      * chart needs to be a little bit different from the default one.
      *
      * @return void
+     *
      * @access private
      */
     private function _handleOptions()
     {
-        if (!is_null($this->_userSpecifiedSettings)) {
+        if ($this->_userSpecifiedSettings !== null) {
             $this->_settings = array_merge(
                 $this->_settings,
                 $this->_userSpecifiedSettings
@@ -246,6 +256,7 @@ class GisVisualization
      * @param string $ext       extension of the file
      *
      * @return string the sanitized file name
+     *
      * @access private
      */
     private function _sanitizeName($file_name, $ext)
@@ -261,7 +272,7 @@ class GisVisualization
                 $extension_start_pos,
                 mb_strlen($file_name)
             );
-        $required_extension = "." . $ext;
+        $required_extension = '.' . $ext;
         if (mb_strtolower($user_extension) != $required_extension) {
             $file_name .= $required_extension;
         }
@@ -277,6 +288,7 @@ class GisVisualization
      * @param string $ext       extension of the file
      *
      * @return void
+     *
      * @access private
      */
     private function _toFile($file_name, $type, $ext)
@@ -289,13 +301,14 @@ class GisVisualization
      * Generate the visualization in SVG format.
      *
      * @return string the generated image resource
+     *
      * @access private
      */
     private function _svg()
     {
         $this->init();
 
-        $output = '<?xml version="1.0" encoding="UTF-8" standalone="no"?' . ' >'
+        $output = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
             . "\n"
             . '<svg version="1.1" xmlns:svg="http://www.w3.org/2000/svg"'
             . ' xmlns="http://www.w3.org/2000/svg"'
@@ -315,13 +328,12 @@ class GisVisualization
      * Get the visualization as a SVG.
      *
      * @return string the visualization as a SVG
+     *
      * @access public
      */
     public function asSVG()
     {
-        $output = $this->_svg();
-
-        return $output;
+        return $this->_svg();
     }
 
     /**
@@ -330,19 +342,21 @@ class GisVisualization
      * @param string $file_name File name
      *
      * @return void
+     *
      * @access public
      */
     public function toFileAsSvg($file_name)
     {
         $img = $this->_svg();
         $this->_toFile($file_name, 'image/svg+xml', 'svg');
-        echo($img);
+        echo $img;
     }
 
     /**
      * Generate the visualization in PNG format.
      *
      * @return resource the generated image resource
+     *
      * @access private
      */
     private function _png()
@@ -376,6 +390,7 @@ class GisVisualization
      * Get the visualization as a PNG.
      *
      * @return string the visualization as a PNG
+     *
      * @access public
      */
     public function asPng()
@@ -386,13 +401,12 @@ class GisVisualization
         ob_start();
         imagepng($img, null, 9, PNG_ALL_FILTERS);
         imagedestroy($img);
-        $output = ob_get_contents();
-        ob_end_clean();
+        $output = ob_get_clean();
 
         // base64 encode
         $encoded = base64_encode($output);
 
-        return '<img src="data:image/png;base64,' . $encoded . '" />';
+        return '<img src="data:image/png;base64,' . $encoded . '">';
     }
 
     /**
@@ -401,6 +415,7 @@ class GisVisualization
      * @param string $file_name File name
      *
      * @return void
+     *
      * @access public
      */
     public function toFileAsPng($file_name)
@@ -414,9 +429,9 @@ class GisVisualization
     /**
      * Get the code for visualization with OpenLayers.
      *
-     * @todo Should return JSON to avoid eval() in gis_data_editor.js
-     *
      * @return string the code for visualization with OpenLayers
+     *
+     * @todo Should return JSON to avoid eval() in gis_data_editor.js
      * @access public
      */
     public function asOl()
@@ -467,6 +482,7 @@ class GisVisualization
      * @param string $file_name File name
      *
      * @return void
+     *
      * @access public
      */
     public function toFileAsPdf($file_name)
@@ -517,6 +533,7 @@ class GisVisualization
         } elseif ($format == 'ol') {
             return $this->asOl();
         }
+        return '';
     }
 
     /**
@@ -544,11 +561,17 @@ class GisVisualization
      * @param array $data Row data
      *
      * @return array an array containing the scale, x and y offsets
+     *
      * @access private
      */
     private function _scaleDataSet(array $data)
     {
-        $min_max = [];
+        $min_max = [
+            'maxX' => 0.0,
+            'maxY' => 0.0,
+            'minX' => 0.0,
+            'minY' => 0.0,
+        ];
         $border = 15;
         // effective width and height of the plot
         $plot_width = $this->_settings['width'] - 2 * $border;
@@ -564,7 +587,7 @@ class GisVisualization
             $type = mb_substr($ref_data, 0, $type_pos);
 
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $scale_data = $gis_obj->scaleRow(
@@ -572,23 +595,23 @@ class GisVisualization
             );
 
             // Update minimum/maximum values for x and y coordinates.
-            $c_maxX = (float)$scale_data['maxX'];
-            if (!isset($min_max['maxX']) || $c_maxX > $min_max['maxX']) {
+            $c_maxX = (float) $scale_data['maxX'];
+            if ($min_max['maxX'] === 0.0 || $c_maxX > $min_max['maxX']) {
                 $min_max['maxX'] = $c_maxX;
             }
 
-            $c_minX = (float)$scale_data['minX'];
-            if (!isset($min_max['minX']) || $c_minX < $min_max['minX']) {
+            $c_minX = (float) $scale_data['minX'];
+            if ($min_max['minX'] === 0.0 || $c_minX < $min_max['minX']) {
                 $min_max['minX'] = $c_minX;
             }
 
-            $c_maxY = (float)$scale_data['maxY'];
-            if (!isset($min_max['maxY']) || $c_maxY > $min_max['maxY']) {
+            $c_maxY = (float) $scale_data['maxY'];
+            if ($min_max['maxY'] === 0.0 || $c_maxY > $min_max['maxY']) {
                 $min_max['maxY'] = $c_maxY;
             }
 
-            $c_minY = (float)$scale_data['minY'];
-            if (!isset($min_max['minY']) || $c_minY < $min_max['minY']) {
+            $c_minY = (float) $scale_data['minY'];
+            if ($min_max['minY'] === 0.0 || $c_minY < $min_max['minY']) {
                 $min_max['minY'] = $c_minY;
             }
         }
@@ -596,9 +619,9 @@ class GisVisualization
         // scale the visualization
         $x_ratio = ($min_max['maxX'] - $min_max['minX']) / $plot_width;
         $y_ratio = ($min_max['maxY'] - $min_max['minY']) / $plot_height;
-        $ratio = ($x_ratio > $y_ratio) ? $x_ratio : $y_ratio;
+        $ratio = $x_ratio > $y_ratio ? $x_ratio : $y_ratio;
 
-        $scale = ($ratio != 0) ? (1 / $ratio) : 1;
+        $scale = $ratio != 0 ? 1 / $ratio : 1;
 
         if ($x_ratio < $y_ratio) {
             // center horizontally
@@ -634,6 +657,7 @@ class GisVisualization
      *                           TCPDF object in the case of pdf
      *
      * @return mixed the formatted array of data
+     *
      * @access private
      */
     private function _prepareDataSet(array $data, array $scale_data, $format, $results)
@@ -642,7 +666,7 @@ class GisVisualization
 
         // loop through the rows
         foreach ($data as $row) {
-            $index = $color_number % sizeof($this->_settings['colors']);
+            $index = $color_number % count($this->_settings['colors']);
 
             // Figure out the data type
             $ref_data = $row[$this->_settings['spatialColumn']];
@@ -653,13 +677,11 @@ class GisVisualization
             $type = mb_substr($ref_data, 0, $type_pos);
 
             $gis_obj = GisFactory::factory($type);
-            if (!$gis_obj) {
+            if (! $gis_obj) {
                 continue;
             }
             $label = '';
-            if (isset($this->_settings['labelColumn'])
-                && isset($row[$this->_settings['labelColumn']])
-            ) {
+            if (isset($this->_settings['labelColumn'], $row[$this->_settings['labelColumn']])) {
                 $label = $row[$this->_settings['labelColumn']];
             }
 

@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Handles actions related to GIS MULTIPOINT objects
  *
@@ -34,13 +33,13 @@ class GisMultiPoint extends GisGeometry
      * Returns the singleton.
      *
      * @return GisMultiPoint the singleton
+     *
      * @access public
      */
     public static function singleton()
     {
-        if (!isset(self::$_instance)) {
-            $class = __CLASS__;
-            self::$_instance = new $class;
+        if (! isset(self::$_instance)) {
+            self::$_instance = new GisMultiPoint();
         }
 
         return self::$_instance;
@@ -52,6 +51,7 @@ class GisMultiPoint extends GisGeometry
      * @param string $spatial spatial data of a row
      *
      * @return array an array containing the min, max values for x and y coordinates
+     *
      * @access public
      */
     public function scaleRow($spatial)
@@ -77,6 +77,7 @@ class GisMultiPoint extends GisGeometry
      * @param resource    $image       Image object
      *
      * @return resource the modified image object
+     *
      * @access public
      */
     public function prepareRowAsPng(
@@ -135,6 +136,7 @@ class GisMultiPoint extends GisGeometry
      * @param TCPDF       $pdf         TCPDF instance
      *
      * @return TCPDF the modified TCPDF instance
+     *
      * @access public
      */
     public function prepareRowAsPdf(
@@ -148,7 +150,14 @@ class GisMultiPoint extends GisGeometry
         $red = hexdec(mb_substr($point_color, 1, 2));
         $green = hexdec(mb_substr($point_color, 3, 2));
         $blue = hexdec(mb_substr($point_color, 4, 2));
-        $line = ['width' => 1.25, 'color' => [$red, $green, $blue]];
+        $line = [
+            'width' => 1.25,
+            'color' => [
+                $red,
+                $green,
+                $blue,
+            ],
+        ];
 
         // Trim to remove leading 'MULTIPOINT(' and trailing ')'
         $multipoint
@@ -186,6 +195,7 @@ class GisMultiPoint extends GisGeometry
      * @param array  $scale_data  Array containing data related to scaling
      *
      * @return string the code related to a row in the GIS dataset
+     *
      * @access public
      */
     public function prepareRowAsSvg($spatial, $label, $point_color, array $scale_data)
@@ -212,7 +222,7 @@ class GisMultiPoint extends GisGeometry
             if ($point[0] != '' && $point[1] != '') {
                 $row .= '<circle cx="' . $point[0] . '" cy="'
                     . $point[1] . '" r="3"';
-                $point_options['id'] = $label . rand();
+                $point_options['id'] = $label . mt_rand();
                 foreach ($point_options as $option => $val) {
                     $row .= ' ' . $option . '="' . trim((string) $val) . '"';
                 }
@@ -234,6 +244,7 @@ class GisMultiPoint extends GisGeometry
      * @param array  $scale_data  Array containing data related to scaling
      *
      * @return string JavaScript related to a row in the GIS dataset
+     *
      * @access public
      */
     public function prepareRowAsOl(
@@ -282,22 +293,22 @@ class GisMultiPoint extends GisGeometry
      * @param string $empty    Multipoint does not adhere to this
      *
      * @return string WKT with the set of parameters passed by the GIS editor
+     *
      * @access public
      */
     public function generateWkt(array $gis_data, $index, $empty = '')
     {
-        $no_of_points = isset($gis_data[$index]['MULTIPOINT']['no_of_points'])
-            ? $gis_data[$index]['MULTIPOINT']['no_of_points'] : 1;
+        $no_of_points = $gis_data[$index]['MULTIPOINT']['no_of_points'] ?? 1;
         if ($no_of_points < 1) {
             $no_of_points = 1;
         }
         $wkt = 'MULTIPOINT(';
         for ($i = 0; $i < $no_of_points; $i++) {
-            $wkt .= ((isset($gis_data[$index]['MULTIPOINT'][$i]['x'])
-                    && trim((string) $gis_data[$index]['MULTIPOINT'][$i]['x']) != '')
+            $wkt .= (isset($gis_data[$index]['MULTIPOINT'][$i]['x'])
+                    && trim((string) $gis_data[$index]['MULTIPOINT'][$i]['x']) != ''
                     ? $gis_data[$index]['MULTIPOINT'][$i]['x'] : '')
-                . ' ' . ((isset($gis_data[$index]['MULTIPOINT'][$i]['y'])
-                    && trim((string) $gis_data[$index]['MULTIPOINT'][$i]['y']) != '')
+                . ' ' . (isset($gis_data[$index]['MULTIPOINT'][$i]['y'])
+                    && trim((string) $gis_data[$index]['MULTIPOINT'][$i]['y']) != ''
                     ? $gis_data[$index]['MULTIPOINT'][$i]['y'] : '') . ',';
         }
 
@@ -318,6 +329,7 @@ class GisMultiPoint extends GisGeometry
      * @param array $row_data GIS data
      *
      * @return string the WKT for the data from ESRI shape files
+     *
      * @access public
      */
     public function getShape(array $row_data)
@@ -346,6 +358,7 @@ class GisMultiPoint extends GisGeometry
      * @param integer $index Index of the geometry
      *
      * @return array params for the GIS data editor from the value of the GIS column
+     *
      * @access public
      */
     public function generateParams($value, $index = -1)
@@ -388,6 +401,7 @@ class GisMultiPoint extends GisGeometry
      * @param string $srid       spatial reference id
      *
      * @return string JavaScript for adding an array of points to OpenLayers
+     *
      * @access protected
      */
     protected function getPointsArrayForOpenLayers(array $points_arr, $srid)

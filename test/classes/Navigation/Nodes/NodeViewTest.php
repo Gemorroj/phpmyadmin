@@ -1,5 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeView class
  *
@@ -11,7 +10,6 @@ namespace PhpMyAdmin\Tests\Navigation\Nodes;
 
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeView class
@@ -25,7 +23,7 @@ class NodeViewTest extends PmaTestCase
      *
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['server'] = 0;
     }
@@ -42,11 +40,13 @@ class NodeViewTest extends PmaTestCase
             'text',
             $parent->links
         );
-        $this->assertContains(
-            'sql.php',
+        $this->assertStringContainsString(
+            'index.php?route=/sql',
             $parent->links['text']
         );
-        $this->assertContains('b_props', $parent->icon);
-        $this->assertContains('view', $parent->classes);
+        if (is_string($parent->icon)) {
+            $this->assertStringContainsString('b_props', $parent->icon);
+        }
+        $this->assertStringContainsString('view', $parent->classes);
     }
 }
