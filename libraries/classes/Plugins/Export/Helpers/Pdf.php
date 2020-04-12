@@ -1,9 +1,6 @@
 <?php
 /**
  * PhpMyAdmin\Plugins\Export\Helpers\Pdf class
- *
- * @package    PhpMyAdmin-Export
- * @subpackage PDF
  */
 declare(strict_types=1);
 
@@ -15,12 +12,13 @@ use PhpMyAdmin\Relation;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Util;
 use TCPDF_STATIC;
+use function array_key_exists;
+use function count;
+use function ksort;
+use function stripos;
 
 /**
  * Adapted from a LGPL script by Philip Clarke
- *
- * @package    PhpMyAdmin-Export
- * @subpackage PDF
  */
 class Pdf extends PdfLib
 {
@@ -47,27 +45,23 @@ class Pdf extends PdfLib
     private $currentTable;
     private $aliases;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Transformations
-     */
+    /** @var Transformations */
     private $transformations;
 
     /**
      * Constructs PDF and configures standard parameters.
      *
-     * @param string  $orientation page orientation
-     * @param string  $unit        unit
-     * @param string  $format      the format used for pages
-     * @param boolean $unicode     true means that the input text is unicode
-     * @param string  $encoding    charset encoding; default is UTF-8.
-     * @param boolean $diskcache   if true reduce the RAM memory usage by caching
-     *                             temporary data on filesystem (slower).
-     * @param boolean $pdfa        If TRUE set the document to PDF/A mode.
+     * @param string $orientation page orientation
+     * @param string $unit        unit
+     * @param string $format      the format used for pages
+     * @param bool   $unicode     true means that the input text is unicode
+     * @param string $encoding    charset encoding; default is UTF-8.
+     * @param bool   $diskcache   if true reduce the RAM memory usage by caching
+     *                            temporary data on filesystem (slower).
+     * @param bool   $pdfa        If TRUE set the document to PDF/A mode.
      *
      * @access public
      */
@@ -99,10 +93,10 @@ class Pdf extends PdfLib
      * @param float|int $h       cell height. Default value: 0
      * @param mixed     $y       starting y position, leave empty for current
      *                           position
-     * @param boolean   $addpage if true add a page, otherwise only return
+     * @param bool      $addpage if true add a page, otherwise only return
      *                           the true/false state
      *
-     * @return boolean true in case of page break, false otherwise.
+     * @return bool true in case of page break, false otherwise.
      */
     public function checkPageBreak($h = 0, $y = '', $addpage = true)
     {
@@ -351,7 +345,7 @@ class Pdf extends PdfLib
     public function getTriggers($db, $table)
     {
         $triggers = $GLOBALS['dbi']->getTriggers($db, $table);
-        if ([] === $triggers) {
+        if ($triggers === []) {
             return; //prevents printing blank trigger list for any table
         }
 
@@ -745,7 +739,7 @@ class Pdf extends PdfLib
                  * @todo do not deactivate completely the display
                  * but show the field's name and [BLOB]
                  */
-                    if (false !== stripos($this->fields[$i]->flags, 'BINARY')) {
+                    if (stripos($this->fields[$i]->flags, 'BINARY') !== false) {
                         $this->display_column[$i] = false;
                         unset($this->colTitles[$i]);
                     }

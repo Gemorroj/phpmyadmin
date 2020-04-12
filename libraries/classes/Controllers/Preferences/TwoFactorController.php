@@ -1,7 +1,4 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Preferences
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Preferences;
@@ -14,10 +11,8 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\TwoFactor;
 use PhpMyAdmin\UserPreferencesHeader;
+use function count;
 
-/**
- * @package PhpMyAdmin\Controllers\Preferences
- */
 class TwoFactorController extends AbstractController
 {
     /** @var Relation */
@@ -35,14 +30,17 @@ class TwoFactorController extends AbstractController
         $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
-        global $cfg;
+        global $cfg, $route;
 
-        echo UserPreferencesHeader::getContent($this->template, $this->relation);
+        $cfgRelation = $this->relation->getRelationsParam();
+
+        echo $this->template->render('preferences/header', [
+            'route' => $route,
+            'is_saved' => ! empty($_GET['saved']),
+            'has_config_storage' => $cfgRelation['userconfigwork'],
+        ]);
 
         $twoFactor = new TwoFactor($cfg['Server']['user']);
 

@@ -1,21 +1,16 @@
 <?php
 /**
  * Used to render the console of PMA's pages
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Bookmark;
-use PhpMyAdmin\Relation;
-use PhpMyAdmin\Template;
+use function count;
+use function sprintf;
 
 /**
  * Class used to output the console
- *
- * @package PhpMyAdmin
  */
 class Console
 {
@@ -35,14 +30,10 @@ class Console
      */
     private $_isAjax;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
     /**
@@ -60,8 +51,6 @@ class Console
      * we are servicing an ajax request
      *
      * @param bool $isAjax Whether we are servicing an ajax request
-     *
-     * @return void
      */
     public function setAjax(bool $isAjax): void
     {
@@ -70,8 +59,6 @@ class Console
 
     /**
      * Disables the rendering of the footer
-     *
-     * @return void
      */
     public function disable(): void
     {
@@ -80,8 +67,6 @@ class Console
 
     /**
      * Renders the bookmark content
-     *
-     * @return string
      *
      * @access public
      */
@@ -127,8 +112,6 @@ class Console
 
     /**
      * Renders the console
-     *
-     * @return string
      *
      * @access public
      */

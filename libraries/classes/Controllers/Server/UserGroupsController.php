@@ -1,7 +1,4 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Server
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
@@ -18,8 +15,6 @@ use PhpMyAdmin\Url;
 
 /**
  * Displays the 'User groups' sub page under 'Users' page.
- *
- * @package PhpMyAdmin\Controllers\Server
  */
 class UserGroupsController extends AbstractController
 {
@@ -38,9 +33,6 @@ class UserGroupsController extends AbstractController
         $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         $cfgRelation = $this->relation->getRelationsParam();
@@ -63,9 +55,10 @@ class UserGroupsController extends AbstractController
         }
 
         $this->response->addHTML('<div class="container-fluid">');
-        $this->response->addHTML(Users::getHtmlForSubMenusOnUsersPage(
-            Url::getFromRoute('/server/user-groups')
-        ));
+        $this->response->addHTML($this->template->render('server/privileges/subnav', [
+            'active' => 'user-groups',
+            'is_super_user' => $this->dbi->isSuperuser(),
+        ]));
 
         /**
          * Delete user group

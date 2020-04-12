@@ -1,21 +1,13 @@
 <?php
-/**
- * @package PhpMyAdmin\Server
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Server;
 
 use PhpMyAdmin\DatabaseInterface;
 
-/**
- * @package PhpMyAdmin\Server
- */
 class Plugins
 {
-    /**
-     * @var DatabaseInterface
-     */
+    /** @var DatabaseInterface */
     private $dbi;
 
     /**
@@ -49,8 +41,6 @@ class Plugins
 
     /**
      * @param array $row Row fetched from database
-     *
-     * @return Plugin
      */
     private function mapRowToPlugin(array $row): Plugin
     {

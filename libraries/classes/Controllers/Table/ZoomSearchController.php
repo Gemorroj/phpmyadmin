@@ -1,11 +1,9 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
 
+use PhpMyAdmin\Common;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Relation;
@@ -13,13 +11,25 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Table\Search;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
+use function array_search;
+use function count;
+use function htmlspecialchars;
+use function in_array;
+use function intval;
+use function is_numeric;
+use function json_encode;
+use function mb_strtolower;
+use function md5;
+use function preg_match;
+use function preg_replace;
+use function str_ireplace;
+use function str_replace;
+use function strncasecmp;
 
 /**
  * Handles table zoom search tab.
  *
  * Display table zoom search form, create SQL queries from form data.
- *
- * @package PhpMyAdmin\Controllers\Table
  */
 class ZoomSearchController extends AbstractController
 {
@@ -70,14 +80,11 @@ class ZoomSearchController extends AbstractController
         $this->_loadTableInfo();
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $goto;
 
-        require_once ROOT_PATH . 'libraries/tbl_common.inc.php';
+        Common::table();
 
         $header = $this->response->getHeader();
         $scripts = $header->getScripts();
@@ -147,8 +154,6 @@ class ZoomSearchController extends AbstractController
     /**
      * Gets all the columns of a table along with their types, collations
      * and whether null or not.
-     *
-     * @return void
      */
     private function _loadTableInfo(): void
     {
@@ -402,8 +407,8 @@ class ZoomSearchController extends AbstractController
      * Provides a column's type, collation, operators list, and criteria value
      * to display in table search form
      *
-     * @param integer $search_index Row number in table search form
-     * @param integer $column_index Column index in ColumnNames array
+     * @param int $search_index Row number in table search form
+     * @param int $column_index Column index in ColumnNames array
      *
      * @return array Array containing column's properties
      */

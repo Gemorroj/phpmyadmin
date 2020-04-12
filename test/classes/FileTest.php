@@ -1,27 +1,22 @@
 <?php
 /**
  * tests for File class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\File;
-use PhpMyAdmin\Tests\PmaTestCase;
+use function bin2hex;
+use function file_get_contents;
 
 /**
  * tests for PhpMyAdmin\File class
- *
- * @package PhpMyAdmin-test
  */
 class FileTest extends PmaTestCase
 {
     /**
      * Setup function for test cases
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -33,8 +28,6 @@ class FileTest extends PmaTestCase
      *
      * @param string $file file string
      * @param string $mime expected mime
-     *
-     * @return void
      *
      * @dataProvider compressedFiles
      */
@@ -49,8 +42,6 @@ class FileTest extends PmaTestCase
      *
      * @param string $file file string
      *
-     * @return void
-     *
      * @dataProvider compressedFiles
      */
     public function testBinaryContent($file): void
@@ -64,8 +55,6 @@ class FileTest extends PmaTestCase
      * Test for File::read
      *
      * @param string $file file string
-     *
-     * @return void
      *
      * @dataProvider compressedFiles
      * @requires extension bz2 1

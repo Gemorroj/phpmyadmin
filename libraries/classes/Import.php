@@ -1,8 +1,6 @@
 <?php
 /**
  * Holds the PhpMyAdmin\Import class
- *
- * @package PhpMyAdmin-Import
  */
 declare(strict_types=1);
 
@@ -14,11 +12,38 @@ use PhpMyAdmin\SqlParser\Statements\InsertStatement;
 use PhpMyAdmin\SqlParser\Statements\ReplaceStatement;
 use PhpMyAdmin\SqlParser\Statements\UpdateStatement;
 use PhpMyAdmin\SqlParser\Utils\Query;
+use function abs;
+use function count;
+use function explode;
+use function htmlspecialchars;
+use function implode;
+use function is_array;
+use function is_numeric;
+use function max;
+use function mb_chr;
+use function mb_ord;
+use function mb_stripos;
+use function mb_strlen;
+use function mb_strpos;
+use function mb_strtoupper;
+use function mb_substr;
+use function mb_substr_count;
+use function pow;
+use function preg_match;
+use function preg_replace;
+use function sprintf;
+use function strcmp;
+use function strlen;
+use function strncmp;
+use function strpos;
+use function strtoupper;
+use function substr;
+use function time;
+use function trim;
+use function unlink;
 
 /**
  * Library that provides common import functions that are used by import plugins
- *
- * @package PhpMyAdmin
  */
 class Import
 {
@@ -42,9 +67,6 @@ class Import
     public const SIZES = 1;
     public const FORMATTEDSQL = 2;
 
-    /**
-     * Import constructor.
-     */
     public function __construct()
     {
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
@@ -56,7 +78,7 @@ class Import
     /**
      * Checks whether timeout is getting close
      *
-     * @return boolean true if timeout is close
+     * @return bool true if timeout is close
      *
      * @access public
      */
@@ -83,8 +105,6 @@ class Import
      * @param string $sql      query to run
      * @param string $full     query to display, this might be commented
      * @param array  $sql_data SQL parse data storage
-     *
-     * @return void
      *
      * @access public
      */
@@ -171,8 +191,6 @@ class Import
      * @param string $sql      query to run
      * @param string $full     query to display, this might be commented
      * @param array  $sql_data SQL parse data storage
-     *
-     * @return void
      *
      * @access public
      */
@@ -349,7 +367,6 @@ class Import
         ];
     }
 
-
     /**
      * Returns next part of imported file/buffer
      *
@@ -452,7 +469,7 @@ class Import
      *
      * @return string The column's "Excel" name
      *
-     * @access  public
+     * @access public
      */
     public function getColumnAlphaName(int $num): string
     {
@@ -500,7 +517,7 @@ class Import
      *
      * @return int The column number
      *
-     * @access  public
+     * @access public
      */
     public function getColumnNumberFromName(string $name): int
     {
@@ -536,7 +553,7 @@ class Import
      *
      * @return int Precision of the given decimal size notation
      *
-     * @access  public
+     * @access public
      */
     public function getDecimalPrecision(string $last_cumulative_size): int
     {
@@ -555,7 +572,7 @@ class Import
      *
      * @return int Scale of the given decimal size notation
      *
-     * @access  public
+     * @access public
      */
     public function getDecimalScale(string $last_cumulative_size): int
     {
@@ -574,7 +591,7 @@ class Import
      * @return array Contains the precision, scale, and full size
      *                representation of the given decimal cell
      *
-     * @access  public
+     * @access public
      */
     public function getDecimalSize(string $cell): array
     {
@@ -604,7 +621,7 @@ class Import
      *
      * @return string|int Size of the given cell in the type-appropriate format
      *
-     * @access  public
+     * @access public
      * @todo    Handle the error cases more elegantly
      */
     public function detectSize(
@@ -712,7 +729,7 @@ class Import
                     return $size[self::FULL];
                 }
 
-                return ($last_cumulative_size . ',' . $size[self::D]);
+                return $last_cumulative_size . ',' . $size[self::D];
             } elseif (! isset($last_cumulative_type) || $last_cumulative_type == self::NONE) {
                 /**
                  * This is the first row to be analyzed
@@ -760,7 +777,7 @@ class Import
                 }
 
                 /* Use $newInt + $oldD as new M */
-                return (($newInt + $oldD) . ',' . $oldD);
+                return ($newInt + $oldD) . ',' . $oldD;
             } elseif ($last_cumulative_type == self::BIGINT || $last_cumulative_type == self::INT) {
                 /**
                  * The last cumulative type was BIGINT or INT
@@ -808,7 +825,7 @@ class Import
      * @return int  The MySQL type representation
      *               (VARCHAR or INT or BIGINT or DECIMAL or NONE)
      *
-     * @access  public
+     * @access public
      */
     public function detectType(?int $last_cumulative_type, ?string $cell): int
     {
@@ -830,8 +847,8 @@ class Import
         }
 
         if ($cell == (string) (float) $cell
-            && mb_strpos($cell, '.') !== false
-            && mb_substr_count($cell, '.') === 1
+            && mb_strpos((string) $cell, '.') !== false
+            && mb_substr_count((string) $cell, '.') === 1
         ) {
             return self::DECIMAL;
         }
@@ -856,7 +873,7 @@ class Import
      *
      * @return array|bool array(array $types, array $sizes)
      *
-     * @access  public
+     * @access public
      * @todo    Handle the error case more elegantly
      */
     public function analyzeTable(array &$table)
@@ -961,9 +978,7 @@ class Import
      * @param array|null $options        Associative array of options
      * @param array      $sql_data       2-element array with sql data
      *
-     * @return void
-     *
-     * @access  public
+     * @access public
      */
     public function buildSql(
         string $db_name,
@@ -973,6 +988,7 @@ class Import
         ?array $options = null,
         array &$sql_data
     ): void {
+        global $import_notice;
         /* Needed to quell the beast that is Message */
         $import_notice = null;
 
@@ -1336,19 +1352,15 @@ class Import
 
         $message .= '</ul></ul>';
 
-        global $import_notice;
         $import_notice = $message;
     }
-
 
     /**
      * Stops the import on (mostly upload/file related) error
      *
      * @param Message $error_message The error message
      *
-     * @return void
-     *
-     * @access  public
+     * @access public
      */
     public function stop(Message $error_message): void
     {
@@ -1375,8 +1387,6 @@ class Import
 
     /**
      * Handles request for Simulation of UPDATE/DELETE queries.
-     *
-     * @return void
      */
     public function handleSimulateDmlRequest(): void
     {
@@ -1583,7 +1593,7 @@ class Import
      *
      * @param string $matched_row_query SQL query
      *
-     * @return integer Number of rows returned
+     * @return int Number of rows returned
      */
     public function executeMatchedRowQuery(string $matched_row_query): int
     {
@@ -1600,8 +1610,6 @@ class Import
      * Handles request for ROLLBACK.
      *
      * @param string $sql_query SQL query(s)
-     *
-     * @return void
      */
     public function handleRollbackRequest(string $sql_query): void
     {
@@ -1645,8 +1653,6 @@ class Import
      * Checks if ROLLBACK is possible for a SQL query or not.
      *
      * @param string $sql_query SQL query
-     *
-     * @return bool
      */
     public function checkIfRollbackPossible(string $sql_query): bool
     {
@@ -1684,8 +1690,6 @@ class Import
      * Checks if a table is 'InnoDB' or not.
      *
      * @param string $table Table details
-     *
-     * @return bool
      */
     public function isTableTransactional(string $table): bool
     {

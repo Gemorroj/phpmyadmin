@@ -2,9 +2,6 @@
 /**
  * HTTP Authentication plugin for phpMyAdmin.
  * NOTE: Requires PHP loaded as a Apache module.
- *
- * @package    PhpMyAdmin-Authentication
- * @subpackage HTTP
  */
 declare(strict_types=1);
 
@@ -15,18 +12,24 @@ use PhpMyAdmin\Core;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Plugins\AuthenticationPlugin;
 use PhpMyAdmin\Response;
+use function base64_decode;
+use function defined;
+use function hash_equals;
+use function preg_replace;
+use function sprintf;
+use function strcmp;
+use function strpos;
+use function substr;
 
 /**
  * Handles the HTTP authentication methods
- *
- * @package PhpMyAdmin-Authentication
  */
 class AuthenticationHttp extends AuthenticationPlugin
 {
     /**
      * Displays authentication form and redirect as necessary
      *
-     * @return boolean   always true (no return indeed)
+     * @return bool always true (no return indeed)
      */
     public function showLoginForm()
     {
@@ -48,7 +51,7 @@ class AuthenticationHttp extends AuthenticationPlugin
     /**
      * Displays authentication form
      *
-     * @return boolean
+     * @return bool
      */
     public function authForm()
     {
@@ -101,7 +104,7 @@ class AuthenticationHttp extends AuthenticationPlugin
     /**
      * Gets authentication credentials
      *
-     * @return boolean   whether we get authentication settings or not
+     * @return bool whether we get authentication settings or not
      */
     public function readCredentials()
     {

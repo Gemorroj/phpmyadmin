@@ -1,8 +1,6 @@
 <?php
 /**
  * Base class for phpMyAdmin tests
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -12,28 +10,26 @@ use PhpMyAdmin\Response;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
+use function array_slice;
+use function call_user_func_array;
+use function count;
+use function end;
+use function is_array;
+use function is_int;
 
 /**
  * Base class for phpMyAdmin tests
- *
- * @package PhpMyAdmin-test
  */
 class PmaTestCase extends TestCase
 {
-    /**
-     * @var Response|null
-     */
+    /** @var Response|null */
     protected $restoreInstance = null;
 
-    /**
-     * @var ReflectionProperty|null
-     */
+    /** @var ReflectionProperty|null */
     protected $attrInstance = null;
 
     /**
      * This method is called before the first test of this test class is run.
-     *
-     * @return void
      */
     public static function setUpBeforeClass(): void
     {
@@ -107,8 +103,6 @@ class PmaTestCase extends TestCase
 
     /**
      * Tear down function for mockResponse method
-     *
-     * @return void
      */
     protected function tearDown(): void
     {

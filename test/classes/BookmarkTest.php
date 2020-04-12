@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for Bookmark class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -13,16 +11,12 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for Bookmark class
- *
- * @package PhpMyAdmin-test
  */
 class BookmarkTest extends TestCase
 {
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */

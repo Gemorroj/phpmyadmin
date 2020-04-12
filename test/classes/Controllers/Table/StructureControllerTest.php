@@ -3,8 +3,6 @@
  * TableStructureController_Test class
  *
  * this class is for testing StructureController class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -18,31 +16,22 @@ use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Transformations;
 use ReflectionClass;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * TableStructureController_Test class
  *
  * this class is for testing StructureController class
- *
- * @package PhpMyAdmin-test
  */
 class StructureControllerTest extends PmaTestCase
 {
-    /**
-     * @var \PhpMyAdmin\Tests\Stubs\Response
-     */
+    /** @var ResponseStub */
     private $_response;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     private $template;
 
     /**
      * Prepares environment for the test.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -93,12 +82,6 @@ class StructureControllerTest extends PmaTestCase
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
             new Relation($GLOBALS['dbi'], $this->template),
             new Transformations(),
             new CreateAddField($GLOBALS['dbi'])
@@ -152,12 +135,6 @@ class StructureControllerTest extends PmaTestCase
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
             new Relation($GLOBALS['dbi'], $this->template),
             new Transformations(),
             new CreateAddField($GLOBALS['dbi'])
@@ -189,12 +166,6 @@ class StructureControllerTest extends PmaTestCase
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
             new Relation($GLOBALS['dbi'], $this->template),
             new Transformations(),
             new CreateAddField($GLOBALS['dbi'])
@@ -225,12 +196,6 @@ class StructureControllerTest extends PmaTestCase
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
             new Relation($GLOBALS['dbi'], $this->template),
             new Transformations(),
             new CreateAddField($GLOBALS['dbi'])
@@ -298,12 +263,6 @@ class StructureControllerTest extends PmaTestCase
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
             new Relation($GLOBALS['dbi'], $this->template),
             new Transformations(),
             new CreateAddField($GLOBALS['dbi'])
@@ -317,7 +276,6 @@ class StructureControllerTest extends PmaTestCase
             'table2',
         ];
         $action = 'db_delete_row';
-        $containerBuilder = new ContainerBuilder();
 
         list($what, $query_type, $is_unset_submit_mult, $mult_btn, $centralColsError)
             = $method->invokeArgs(
@@ -326,7 +284,6 @@ class StructureControllerTest extends PmaTestCase
                     $submit_mult,
                     $selected,
                     $action,
-                    $containerBuilder,
                 ]
             );
 
@@ -369,7 +326,6 @@ class StructureControllerTest extends PmaTestCase
                     $submit_mult,
                     $selected,
                     $action,
-                    $containerBuilder,
                 ]
             );
 

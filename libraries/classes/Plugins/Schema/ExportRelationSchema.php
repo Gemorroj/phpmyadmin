@@ -2,8 +2,6 @@
 /**
  * Contains PhpMyAdmin\Plugins\Schema\ExportRelationSchema class which is
  * inherited by all schema classes.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -12,14 +10,14 @@ namespace PhpMyAdmin\Plugins\Schema;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function htmlspecialchars;
+use function intval;
 use function rawurldecode;
 
 /**
  * This class is inherited by all schema classes
  * It contains those methods which are common in them
  * it works like factory pattern
- *
- * @package PhpMyAdmin
  */
 class ExportRelationSchema
 {
@@ -34,9 +32,7 @@ class ExportRelationSchema
     protected $pageNumber;
     protected $offline;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     protected $relation;
 
     /**
@@ -55,7 +51,7 @@ class ExportRelationSchema
     /**
      * Set Page Number
      *
-     * @param integer $value Page Number of the document to be created
+     * @param int $value Page Number of the document to be created
      *
      * @return void
      */
@@ -67,7 +63,7 @@ class ExportRelationSchema
     /**
      * Returns the schema page number
      *
-     * @return integer schema page number
+     * @return int schema page number
      */
     public function getPageNumber()
     {
@@ -77,7 +73,7 @@ class ExportRelationSchema
     /**
      * Sets showColor
      *
-     * @param boolean $value whether to show colors
+     * @param bool $value whether to show colors
      *
      * @return void
      */
@@ -89,7 +85,7 @@ class ExportRelationSchema
     /**
      * Returns whether to show colors
      *
-     * @return boolean whether to show colors
+     * @return bool whether to show colors
      */
     public function isShowColor()
     {
@@ -99,7 +95,7 @@ class ExportRelationSchema
     /**
      * Set Table Dimension
      *
-     * @param boolean $value show table co-ordinates or not
+     * @param bool $value show table co-ordinates or not
      *
      * @return void
      */
@@ -111,7 +107,7 @@ class ExportRelationSchema
     /**
      * Returns whether to show table dimensions
      *
-     * @return boolean whether to show table dimensions
+     * @return bool whether to show table dimensions
      */
     public function isTableDimension()
     {
@@ -121,7 +117,7 @@ class ExportRelationSchema
     /**
      * Set same width of All Tables
      *
-     * @param boolean $value set same width of all tables or not
+     * @param bool $value set same width of all tables or not
      *
      * @return void
      */
@@ -133,7 +129,7 @@ class ExportRelationSchema
     /**
      * Returns whether to use same width for all tables or not
      *
-     * @return boolean whether to use same width for all tables or not
+     * @return bool whether to use same width for all tables or not
      */
     public function isAllTableSameWidth()
     {
@@ -143,7 +139,7 @@ class ExportRelationSchema
     /**
      * Set Show only keys
      *
-     * @param boolean $value show only keys or not
+     * @param bool $value show only keys or not
      *
      * @return void
      *
@@ -157,7 +153,7 @@ class ExportRelationSchema
     /**
      * Returns whether to show keys
      *
-     * @return boolean whether to show keys
+     * @return bool whether to show keys
      */
     public function isShowKeys()
     {
@@ -215,7 +211,7 @@ class ExportRelationSchema
     /**
      * Set whether the document is generated from client side DB
      *
-     * @param boolean $value offline or not
+     * @param bool $value offline or not
      *
      * @return void
      *
@@ -229,7 +225,7 @@ class ExportRelationSchema
     /**
      * Returns whether the client side database is used
      *
-     * @return boolean
+     * @return bool
      *
      * @access public
      */
@@ -281,9 +277,9 @@ class ExportRelationSchema
     /**
      * Displays an error message
      *
-     * @param integer $pageNumber    ID of the chosen page
-     * @param string  $type          Schema Type
-     * @param string  $error_message The error message
+     * @param int    $pageNumber    ID of the chosen page
+     * @param string $type          Schema Type
+     * @param string $error_message The error message
      *
      * @return void
      *

@@ -1,8 +1,6 @@
 <?php
 /**
  * functions for displaying server, database and table export
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -25,27 +23,24 @@ use Throwable;
 use Twig_Error_Loader;
 use Twig_Error_Runtime;
 use Twig_Error_Syntax;
+use function explode;
+use function function_exists;
+use function in_array;
+use function mb_strpos;
+use function strlen;
+use function urldecode;
 
 /**
  * PhpMyAdmin\Display\Export class
- *
- * @package PhpMyAdmin
  */
 class Export
 {
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         $this->relation = new Relation($GLOBALS['dbi']);
@@ -57,7 +52,7 @@ class Export
      *
      * @param string $str option name
      *
-     * @return boolean
+     * @return bool
      */
     private function checkboxCheck($str)
     {
@@ -330,7 +325,6 @@ class Export
         ]);
     }
 
-
     /**
      * Prints Html For Export Options
      *
@@ -558,7 +552,7 @@ class Export
         $html .= $this->getHtmlForOptionsSelection($exportType, $multiValues);
 
         $tableObject = new Table($table, $db);
-        if (strlen($table) > 0 && empty($numTables) && ! $tableObject->isMerge()) {
+        if (strlen($table) > 0 && empty($numTables) && ! $tableObject->isMerge() && $exportType !== 'raw') {
             $html .= $this->getHtmlForOptionsRows($db, $table, $unlimNumRows);
         }
 
@@ -806,12 +800,12 @@ class Export
         }
 
         $response->setRequestStatus(true);
-        if ('create' == $_POST['templateAction']) {
+        if ($_POST['templateAction'] == 'create') {
             $response->addJSON(
                 'data',
                 $this->getOptionsForTemplates($_POST['exportType'])
             );
-        } elseif ('load' == $_POST['templateAction']) {
+        } elseif ($_POST['templateAction'] == 'load') {
             $data = null;
             while ($row = $GLOBALS['dbi']->fetchAssoc(
                 $result,

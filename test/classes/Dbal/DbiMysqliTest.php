@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Dbi\DbiMysqli class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -12,24 +10,21 @@ use mysqli;
 use mysqli_result;
 use PhpMyAdmin\Dbal\DbiMysqli;
 use PHPUnit\Framework\TestCase;
+use const MYSQLI_ASSOC;
+use const MYSQLI_BOTH;
+use const MYSQLI_NUM;
 
 /**
  * Tests for PhpMyAdmin\Dbi\DbiMysqli class
- *
- * @package PhpMyAdmin-test
  */
 class DbiMysqliTest extends TestCase
 {
-    /**
-     * @var DbiMysqli
-     */
+    /** @var DbiMysqli */
     protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -40,8 +35,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for selectDb
-     *
-     * @return void
      */
     public function testSelectDb(): void
     {
@@ -57,8 +50,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for realMultiQuery
-     *
-     * @return void
      */
     public function testRealMultiQuery(): void
     {
@@ -74,8 +65,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for fetchArray
-     *
-     * @return void
      */
     public function testFetchArray(): void
     {
@@ -91,8 +80,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for fetchAssoc
-     *
-     * @return void
      */
     public function testFetchAssoc(): void
     {
@@ -108,8 +95,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for fetchRow
-     *
-     * @return void
      */
     public function testFetchRow(): void
     {
@@ -125,8 +110,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for dataSeek
-     *
-     * @return void
      */
     public function testDataSeek(): void
     {
@@ -142,8 +125,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for freeResult
-     *
-     * @return void
      */
     public function testFreeResult(): void
     {
@@ -156,8 +137,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for moreResults
-     *
-     * @return void
      */
     public function testMoreResults(): void
     {
@@ -171,8 +150,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for nextResult
-     *
-     * @return void
      */
     public function testNextResult(): void
     {
@@ -186,8 +163,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for storeResult
-     *
-     * @return void
      */
     public function testStoreResult(): void
     {
@@ -201,8 +176,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for numRows
-     *
-     * @return void
      */
     public function testNumRows(): void
     {
@@ -211,8 +184,6 @@ class DbiMysqliTest extends TestCase
 
     /**
      * Test for escapeString
-     *
-     * @return void
      */
     public function testEscapeString(): void
     {

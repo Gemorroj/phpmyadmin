@@ -1,36 +1,36 @@
 <?php
 /**
  * Holds the PhpMyAdmin\Database\Designer\Common class
- *
- * @package PhpMyAdmin-Designer
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Database\Designer;
 
-use PhpMyAdmin\Database\Designer\DesignerTable;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Table;
 use PhpMyAdmin\Util;
+use function count;
+use function explode;
+use function in_array;
+use function intval;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function mb_strtoupper;
 use function rawurlencode;
 
 /**
  * Common functions for Designer
- *
- * @package PhpMyAdmin-Designer
  */
 class Common
 {
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var DatabaseInterface
-     */
+    /** @var DatabaseInterface */
     private $dbi;
 
     /**
@@ -54,7 +54,7 @@ class Common
     public function getTablesInfo(string $db = null, string $table = null): array
     {
         $designerTables = [];
-        $db = $db === null ? $GLOBALS['db'] : $db;
+        $db = $db ?? $GLOBALS['db'];
         // seems to be needed later
         $this->dbi->selectDb($db);
         if ($db === null && $table === null) {
@@ -324,7 +324,7 @@ class Common
      *
      * @param int $pg page id
      *
-     * @return boolean success/failure
+     * @return bool success/failure
      */
     public function deletePage($pg)
     {
@@ -389,6 +389,35 @@ class Common
             return intval($default_page_no[0]);
         }
         return -1;
+    }
+
+    /**
+     * Get the status if the page already exists
+     * If no such exists, returns negative index.
+     *
+     * @param string $pg name
+     *
+     * @return bool if the page already exists
+     */
+    public function getPageExists(string $pg): bool
+    {
+        $cfgRelation = $this->relation->getRelationsParam();
+        if (! $cfgRelation['pdfwork']) {
+            return false;
+        }
+
+        $query = 'SELECT `page_nr`'
+            . ' FROM ' . Util::backquote($cfgRelation['db'])
+            . '.' . Util::backquote($cfgRelation['pdf_pages'])
+            . " WHERE `page_descr` = '" . $this->dbi->escapeString($pg) . "'";
+        $pageNos = $this->dbi->fetchResult(
+            $query,
+            null,
+            null,
+            DatabaseInterface::CONNECT_CONTROL,
+            DatabaseInterface::QUERY_STORE
+        );
+        return is_array($pageNos) && count($pageNos) > 0;
     }
 
     /**
@@ -457,7 +486,7 @@ class Common
      *
      * @param int $pg pdf page id
      *
-     * @return boolean success/failure
+     * @return bool success/failure
      */
     public function saveTablePositions($pg)
     {
@@ -562,9 +591,9 @@ class Common
     public function addNewRelation($db, $T1, $F1, $T2, $F2, $on_delete, $on_update, $DB1, $DB2): array
     {
         $tables = $this->dbi->getTablesFull($DB1, $T1);
-        $type_T1 = mb_strtoupper($tables[$T1]['ENGINE']);
+        $type_T1 = mb_strtoupper($tables[$T1]['ENGINE'] ?? '');
         $tables = $this->dbi->getTablesFull($DB2, $T2);
-        $type_T2 = mb_strtoupper($tables[$T2]['ENGINE']);
+        $type_T2 = mb_strtoupper($tables[$T2]['ENGINE'] ?? '');
 
         // native foreign key
         if (Util::isForeignKeySupported($type_T1)

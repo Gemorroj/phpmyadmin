@@ -1,34 +1,29 @@
 <?php
 /**
  * Tests for ErrorHandler
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\ErrorHandler;
-use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionClass;
+use const E_RECOVERABLE_ERROR;
+use const E_USER_NOTICE;
+use const E_USER_WARNING;
+use const E_WARNING;
 
 /**
  * Test for PhpMyAdmin\ErrorHandler class.
- *
- * @package PhpMyAdmin-test
  */
 class ErrorHandlerTest extends PmaTestCase
 {
-    /**
-     * @access protected
-     */
+    /** @access protected */
     protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -40,8 +35,6 @@ class ErrorHandlerTest extends PmaTestCase
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -96,14 +89,14 @@ class ErrorHandlerTest extends PmaTestCase
     /**
      * Test for getDispErrors when PHP errors are not shown
      *
-     * @param integer $errno       error number
-     * @param string  $errstr      error string
-     * @param string  $errfile     error file
-     * @param integer $errline     error line
-     * @param string  $output_show expected output if showing of errors is
-     *                             enabled
-     * @param string  $output_hide expected output if showing of errors is
-     *                             disabled and 'sendErrorReports' is set to 'never'
+     * @param int    $errno       error number
+     * @param string $errstr      error string
+     * @param string $errfile     error file
+     * @param int    $errline     error line
+     * @param string $output_show expected output if showing of errors is
+     *                            enabled
+     * @param string $output_hide expected output if showing of errors is
+     *                            disabled and 'sendErrorReports' is set to 'never'
      *
      * @return void
      *
@@ -134,14 +127,14 @@ class ErrorHandlerTest extends PmaTestCase
     /**
      * Test for getDispErrors when PHP errors are shown
      *
-     * @param integer $errno       error number
-     * @param string  $errstr      error string
-     * @param string  $errfile     error file
-     * @param integer $errline     error line
-     * @param string  $output_show expected output if showing of errors is
-     *                             enabled
-     * @param string  $output_hide expected output if showing of errors is
-     *                             disabled
+     * @param int    $errno       error number
+     * @param string $errstr      error string
+     * @param string $errfile     error file
+     * @param int    $errline     error line
+     * @param string $output_show expected output if showing of errors is
+     *                            enabled
+     * @param string $output_hide expected output if showing of errors is
+     *                            disabled
      *
      * @return void
      *
@@ -170,7 +163,6 @@ class ErrorHandlerTest extends PmaTestCase
      */
     public function testCheckSavedErrors()
     {
-
         $_SESSION['errors'] = [];
 
         $this->_callProtectedFunction(

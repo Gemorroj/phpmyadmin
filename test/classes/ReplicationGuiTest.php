@@ -1,8 +1,6 @@
 <?php
 /**
  * tests for PhpMyAdmin\ReplicationGui
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,20 +9,14 @@ namespace PhpMyAdmin\Tests;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Replication;
 use PhpMyAdmin\ReplicationGui;
+use PhpMyAdmin\ReplicationInfo;
 use PhpMyAdmin\Template;
 use PHPUnit\Framework\TestCase;
-
-/*
-* Include to test.
-*/
-require_once ROOT_PATH . 'libraries/replication.inc.php';
 
 /**
  * PhpMyAdmin\Tests\ReplicationGuiTest class
  *
  * this class is for testing PhpMyAdmin\ReplicationGui methods
- *
- * @package PhpMyAdmin-test
  */
 class ReplicationGuiTest extends TestCase
 {
@@ -37,8 +29,6 @@ class ReplicationGuiTest extends TestCase
 
     /**
      * Prepares environment for the test.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -59,6 +49,8 @@ class ReplicationGuiTest extends TestCase
 
         $GLOBALS['table'] = 'table';
         $GLOBALS['url_params'] = [];
+
+        ReplicationInfo::load();
 
         $this->replicationGui = new ReplicationGui(new Replication(), new Template());
 

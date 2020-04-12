@@ -1,7 +1,4 @@
 <?php
-/**
- * @package PhpMyAdmin\Tests\Charsets
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Charsets;
@@ -9,14 +6,8 @@ namespace PhpMyAdmin\Tests\Charsets;
 use PhpMyAdmin\Charsets\Collation;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @package PhpMyAdmin\Tests\Charsets
- */
 class CollationTest extends TestCase
 {
-    /**
-     * @return void
-     */
     public function testFromServer(): void
     {
         $serverCollation = [
@@ -47,8 +38,6 @@ class CollationTest extends TestCase
      *
      * @param string $collation   Collation for which description is reqd
      * @param string $description Expected Description
-     *
-     * @return void
      *
      * @dataProvider providerTestBuildDescription
      */

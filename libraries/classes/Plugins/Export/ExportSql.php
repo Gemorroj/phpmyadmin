@@ -1,9 +1,6 @@
 <?php
 /**
  * Set of functions used to build SQL dumps of tables
- *
- * @package    PhpMyAdmin-Export
- * @subpackage SQL
  */
 declare(strict_types=1);
 
@@ -28,25 +25,42 @@ use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Statements\CreateStatement;
 use PhpMyAdmin\SqlParser\Token;
 use PhpMyAdmin\Util;
+use function bin2hex;
+use function count;
+use function defined;
+use function explode;
+use function implode;
+use function in_array;
+use function intval;
+use function is_array;
+use function mb_strlen;
+use function mb_strpos;
+use function mb_substr;
+use function preg_quote;
+use function preg_replace;
+use function preg_split;
+use function sprintf;
+use function str_repeat;
+use function str_replace;
+use function stripos;
+use function strtotime;
+use function strtoupper;
+use function trigger_error;
+use const E_USER_ERROR;
+use const PHP_VERSION;
 
 /**
  * Handles the export for the SQL class
- *
- * @package    PhpMyAdmin-Export
- * @subpackage SQL
  */
 class ExportSql extends ExportPlugin
 {
     /**
      * Whether charset header was sent.
      *
-     * @var boolean
+     * @var bool
      */
     private $_sent_charset = false;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct();
@@ -74,6 +88,13 @@ class ExportSql extends ExportPlugin
         ) {
             $hide_structure = true;
             $hide_sql = true;
+        }
+
+        // In case we have `raw_query` parameter set,
+        // we initialize SQL option
+        if (isset($_REQUEST['raw_query'])) {
+            $hide_structure = false;
+            $hide_sql = false;
         }
 
         if (! $hide_sql) {
@@ -754,8 +775,7 @@ class ExportSql extends ExportPlugin
         }
 
         if (isset($GLOBALS['sql_use_transaction'])) {
-            $head .= 'SET AUTOCOMMIT = 0;' . $crlf
-                . 'START TRANSACTION;' . $crlf;
+            $head .= 'START TRANSACTION;' . $crlf;
         }
 
         /* Change timezone if we should export timestamps in UTC */
@@ -986,7 +1006,7 @@ class ExportSql extends ExportPlugin
 
             foreach ($event_names as $event_name) {
                 if (! empty($GLOBALS['sql_drop_table'])) {
-                    $text .= 'DROP EVENT '
+                    $text .= 'DROP EVENT IF EXISTS '
                         . Util::backquote($event_name)
                         . $delimiter . $crlf;
                 }
@@ -1994,6 +2014,20 @@ class ExportSql extends ExportPlugin
     } // end of the '_getTableComments()' function
 
     /**
+     * Outputs a raw query
+     *
+     * @param string $err_url   the url to go back in case of error
+     * @param string $sql_query the rawquery to output
+     * @param string $crlf      the seperator for a file
+     *
+     * @return bool if succeeded
+     */
+    public function exportRawQuery(string $err_url, string $sql_query, string $crlf): bool
+    {
+        return $this->export->outputHandler($sql_query);
+    }
+
+    /**
      * Outputs table's structure
      *
      * @param string $db          database name
@@ -2429,7 +2463,7 @@ class ExportSql extends ExportPlugin
                     // timestamp is numeric on some MySQL 4.1, BLOBs are
                     // sometimes numeric
                     $values[] = $row[$j];
-                } elseif (false !== stripos($field_flags[$j], 'BINARY')
+                } elseif (stripos($field_flags[$j], 'BINARY') !== false
                     && isset($GLOBALS['sql_hex_for_binary'])
                 ) {
                     // a true BLOB
@@ -2476,7 +2510,7 @@ class ExportSql extends ExportPlugin
             ) {
                 $insert_line = $schema_insert;
                 for ($i = 0; $i < $fields_cnt; $i++) {
-                    if (0 == $i) {
+                    if ($i == 0) {
                         $insert_line .= ' ';
                     }
                     if ($i > 0) {

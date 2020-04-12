@@ -1,8 +1,6 @@
 <?php
 /**
  * Functionality for the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 declare(strict_types=1);
 
@@ -20,17 +18,44 @@ use PhpMyAdmin\RecentFavoriteTable;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
+use function array_key_exists;
+use function array_keys;
+use function array_shift;
+use function base64_decode;
+use function count;
+use function explode;
+use function floor;
+use function get_class;
+use function htmlspecialchars;
+use function in_array;
+use function is_array;
+use function is_object;
+use function mb_strlen;
+use function mb_strpos;
+use function mb_substr;
+use function method_exists;
+use function sort;
+use function sprintf;
+use function strcasecmp;
+use function strlen;
+use function strnatcasecmp;
+use function strpos;
+use function strrpos;
+use function strstr;
+use function substr;
+use function trigger_error;
+use function trim;
+use function urlencode;
+use function usort;
+use function vsprintf;
+use const E_USER_WARNING;
 
 /**
  * Displays a collapsible of database objects in the navigation frame
- *
- * @package PhpMyAdmin-Navigation
  */
 class NavigationTree
 {
-    /**
-     * @var Node Reference to the root node of the tree
-     */
+    /** @var Node Reference to the root node of the tree */
     private $tree;
     /**
      * @var array The actual paths to all expanded nodes in the tree
@@ -89,14 +114,10 @@ class NavigationTree
      */
     private $largeGroupWarning = false;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     private $template;
 
-    /**
-     * @var DatabaseInterface
-     */
+    /** @var DatabaseInterface */
     private $dbi;
 
     /**
@@ -124,7 +145,7 @@ class NavigationTree
         if (isset($_REQUEST['aPath'])) {
             $this->aPath[0] = $this->parsePath($_REQUEST['aPath']);
             $this->pos2Name[0] = $_REQUEST['pos2_name'];
-            $this->pos2Value[0] = $_REQUEST['pos2_value'];
+            $this->pos2Value[0] = (int) $_REQUEST['pos2_value'];
             if (isset($_REQUEST['pos3_name'])) {
                 $this->pos3Name[0] = $_REQUEST['pos3_name'];
                 $this->pos3Value[0] = $_REQUEST['pos3_value'];
@@ -678,8 +699,6 @@ class NavigationTree
      *                   to group the whole tree. If
      *                   passed as an argument, $node
      *                   must be of type CONTAINER
-     *
-     * @return void
      */
     public function groupTree(?Node $node = null): void
     {
@@ -798,7 +817,7 @@ class NavigationTree
                 if ($node instanceof NodeTableContainer
                     || $node instanceof NodeViewContainer
                 ) {
-                    $tblGroup = '&amp;tbl_group=' . urlencode($key);
+                    $tblGroup = '&amp;tbl_group=' . urlencode((string) $key);
                     $groups[$key]->links = [
                         'text' => $node->links['text'] . $tblGroup,
                         'icon' => $node->links['icon'] . $tblGroup,
@@ -879,7 +898,7 @@ class NavigationTree
         $this->groupTree();
         $children = $this->tree->children;
         usort($children, [
-            NavigationTree::class,
+            self::class,
             'sortNode',
         ]);
         $this->setVisibility();
@@ -921,7 +940,7 @@ class NavigationTree
             $listContent .= $this->getPageSelector($node);
             $children = $node->children;
             usort($children, [
-                NavigationTree::class,
+                self::class,
                 'sortNode',
             ]);
 
@@ -1019,7 +1038,7 @@ class NavigationTree
      * @param array $tree  Tree to check
      * @param array $paths Paths to check
      *
-     * @return boolean
+     * @return bool
      */
     private function findTreeMatch(array $tree, array $paths)
     {
@@ -1081,7 +1100,7 @@ class NavigationTree
             // if node name itself is in sterile, then allow
             if ($node->isGroup
                 || (! in_array($parentName, $sterile) && ! $node->isNew)
-                || in_array($node->realName, $sterile)
+                || (in_array($node->realName, $sterile) && ! empty($node->children))
             ) {
                 $retval .= "<div class='block'>";
                 $iClass = '';
@@ -1166,7 +1185,7 @@ class NavigationTree
                 }
             }
 
-            $retval .= "<div class='block " . $divClass . "'>";
+            $retval .= "<div class='block second" . $divClass . "'>";
 
             if (isset($node->links['icon']) && ! empty($node->links['icon'])) {
                 $args = [];
@@ -1194,7 +1213,7 @@ class NavigationTree
                     $args[] = urlencode($parent->realName);
                 }
                 $link = vsprintf($node->links['text'], $args);
-                $title = $node->links['title'] ?? '';
+                $title = $node->links['title'] ?? $node->title ?? '';
                 if ($node->type == Node::CONTAINER) {
                     $retval .= "&nbsp;<a class='hover_show_full' href='" . $link . "'>";
                     $retval .= htmlspecialchars($node->name);
@@ -1229,7 +1248,7 @@ class NavigationTree
             usort(
                 $children,
                 [
-                    NavigationTree::class,
+                    self::class,
                     'sortNode',
                 ]
             );
@@ -1315,7 +1334,7 @@ class NavigationTree
 
         $children = $this->tree->children;
         usort($children, [
-            NavigationTree::class,
+            self::class,
             'sortNode',
         ]);
         $this->setVisibility();

@@ -1,12 +1,13 @@
 <?php
 /**
  * Contains PhpMyAdmin\Plugins\Schema\Dia\RelationStatsDia class
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Dia;
+
+use function array_search;
+use function shuffle;
 
 /**
  * Relation preferences/statistics
@@ -16,9 +17,9 @@ namespace PhpMyAdmin\Plugins\Schema\Dia;
  * master table's master field to foreign table's foreign key
  * in dia XML document.
  *
- * @package PhpMyAdmin
- * @name    Relation_Stats_Dia
  * @see     PMA_DIA
+ *
+ * @name    Relation_Stats_Dia
  */
 class RelationStatsDia
 {
@@ -37,8 +38,6 @@ class RelationStatsDia
     public $referenceColor;
 
     /**
-     * The "PhpMyAdmin\Plugins\Schema\Dia\RelationStatsDia" constructor
-     *
      * @see Relation_Stats_Dia::_getXy
      *
      * @param Dia           $diagram       The DIA diagram
@@ -111,13 +110,13 @@ class RelationStatsDia
      *
      * @see    PDF
      *
-     * @param boolean $showColor Whether to use one color per relation or not
-     *                           if showColor is true then an array of $listOfColors
-     *                           will be used to choose the random colors for
-     *                           references lines. we can change/add more colors to
-     *                           this
+     * @param bool $showColor Whether to use one color per relation or not
+     *                        if showColor is true then an array of $listOfColors
+     *                        will be used to choose the random colors for
+     *                        references lines. we can change/add more colors to
+     *                        this
      *
-     * @return boolean|void
+     * @return bool|void
      *
      * @access public
      */

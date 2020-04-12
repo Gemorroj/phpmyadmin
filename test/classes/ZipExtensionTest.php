@@ -1,32 +1,27 @@
 <?php
 /**
  * Tests zip extension usage.
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
-use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\ZipExtension;
 use ZipArchive;
+use function fclose;
+use function fopen;
+use function fwrite;
+use function tempnam;
+use function unlink;
 
 /**
  * Tests zip extension usage.
- *
- * @package PhpMyAdmin-test
  */
 class ZipExtensionTest extends PmaTestCase
 {
-    /**
-     * @var ZipExtension
-     */
+    /** @var ZipExtension */
     private $zipExtension;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         $this->zipExtension = new ZipExtension();
@@ -38,8 +33,6 @@ class ZipExtensionTest extends PmaTestCase
      * @param string $file           path to zip file
      * @param string $specific_entry regular expression to match a file
      * @param mixed  $output         expected output
-     *
-     * @return void
      *
      * @dataProvider provideTestGetContents
      */
@@ -84,8 +77,6 @@ class ZipExtensionTest extends PmaTestCase
      * @param string $file        path to zip file
      * @param string $file_regexp regular expression for the file name to match
      * @param mixed  $output      expected output
-     *
-     * @return void
      *
      * @dataProvider provideTestFindFile
      */

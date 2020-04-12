@@ -1,19 +1,24 @@
 <?php
 /**
  * Base class for all GIS data type classes
- *
- * @package PhpMyAdmin-GIS
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Gis;
 
 use TCPDF;
+use function explode;
+use function floatval;
+use function intval;
+use function mb_strlen;
+use function mb_strripos;
+use function mb_substr;
+use function preg_match;
+use function str_replace;
+use function trim;
 
 /**
  * Base class for all GIS data type classes.
- *
- * @package PhpMyAdmin-GIS
  */
 abstract class GisGeometry
 {
@@ -218,7 +223,7 @@ abstract class GisGeometry
      *
      * @param string     $point_set  string of comma separated points
      * @param array|null $scale_data data related to scaling
-     * @param boolean    $linear     if true, as a 1D array, else as a 2D array
+     * @param bool       $linear     if true, as a 1D array, else as a 2D array
      *
      * @return array scaled points
      *

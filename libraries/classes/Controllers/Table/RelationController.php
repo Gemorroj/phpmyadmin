@@ -1,7 +1,4 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -15,20 +12,24 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Table;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
+use function array_key_exists;
+use function array_keys;
+use function array_values;
+use function htmlspecialchars;
 use function mb_strtoupper;
+use function md5;
+use function strtoupper;
+use function uksort;
+use function usort;
 
 /**
  * Display table relations for viewing and editing.
  *
  * Includes phpMyAdmin relations and InnoDB relations.
- *
- * @package PhpMyAdmin\Controllers\Table
  */
 final class RelationController extends AbstractController
 {
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
     /**
@@ -53,8 +54,6 @@ final class RelationController extends AbstractController
 
     /**
      * Index
-     *
-     * @return void
      */
     public function index(): void
     {
@@ -195,7 +194,8 @@ final class RelationController extends AbstractController
                 'dbi' => $this->dbi,
                 'default_sliders_state' => $GLOBALS['cfg']['InitialSlidersState'],
                 'foreignKeySupported' => $foreignKeySupported,
-                'displayIndexesHtml' => $foreignKeySupported ? Index::getHtmlForDisplayIndexes() : null,
+                'indexes' => $foreignKeySupported ? Index::getFromTable($this->table, $this->db) : null,
+                'indexes_duplicates' => $foreignKeySupported ? Index::findDuplicates($this->table, $this->db) : null,
                 'route' => $route,
             ])
         );
@@ -206,8 +206,6 @@ final class RelationController extends AbstractController
      *
      * @param Table $table       table
      * @param array $cfgRelation relation parameters
-     *
-     * @return void
      */
     private function updateForDisplayField(Table $table, array $cfgRelation): void
     {
@@ -231,8 +229,6 @@ final class RelationController extends AbstractController
      * @param Table $table            Table
      * @param array $options          Options
      * @param array $relationsForeign External relations
-     *
-     * @return void
      */
     private function updateForForeignKeys(Table $table, array $options, array $relationsForeign): void
     {
@@ -286,8 +282,6 @@ final class RelationController extends AbstractController
      * @param Table $table       Table
      * @param array $cfgRelation Relation parameters
      * @param array $relations   Relations
-     *
-     * @return void
      */
     private function updateForInternalRelation(Table $table, array $cfgRelation, array $relations): void
     {
@@ -313,8 +307,6 @@ final class RelationController extends AbstractController
 
     /**
      * Send table columns for foreign table dropdown
-     *
-     * @return void
      */
     public function getDropdownValueForTable(): void
     {
@@ -338,7 +330,7 @@ final class RelationController extends AbstractController
 
         // @todo should be: $server->db($db)->table($table)->primary()
         $primary = Index::getPrimary($foreignTable, $_POST['foreignDb']);
-        if (false === $primary) {
+        if ($primary === false) {
             return;
         }
 
@@ -349,8 +341,6 @@ final class RelationController extends AbstractController
      * Send database selection values for dropdown
      *
      * @param string $storageEngine Storage engine.
-     *
-     * @return void
      */
     public function getDropdownValueForDatabase(string $storageEngine): void
     {
@@ -368,7 +358,7 @@ final class RelationController extends AbstractController
 
             while ($row = $this->dbi->fetchArray($tables_rs)) {
                 if (isset($row['Engine'])
-                    &&  mb_strtoupper($row['Engine']) == $storageEngine
+                    && mb_strtoupper($row['Engine']) == $storageEngine
                 ) {
                     $tables[] = htmlspecialchars($row['Name']);
                 }

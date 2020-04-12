@@ -1,12 +1,11 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Database
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Database;
 
+use PhpMyAdmin\Charsets;
 use PhpMyAdmin\CheckUserPrivileges;
+use PhpMyAdmin\Common;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Display\CreateTable;
 use PhpMyAdmin\Html\Generator;
@@ -20,11 +19,12 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function count;
+use function mb_strtolower;
+use function strlen;
 
 /**
  * Handles miscellaneous database operations.
- *
- * @package PhpMyAdmin\Controllers\Database
  */
 class OperationsController extends AbstractController
 {
@@ -67,9 +67,6 @@ class OperationsController extends AbstractController
         $this->relationCleanup = $relationCleanup;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $cfg, $db, $server, $url_query, $sql_query, $move, $message, $tables_full;
@@ -267,7 +264,7 @@ class OperationsController extends AbstractController
             $this->relation->setDbComment($db, $_POST['comment']);
         }
 
-        require ROOT_PATH . 'libraries/db_common.inc.php';
+        Common::database();
 
         $url_params['goto'] = Url::getFromRoute('/database/operations');
         $url_query .= Url::getCommon($url_params, '&');
@@ -287,71 +284,63 @@ class OperationsController extends AbstractController
             $pos,
         ] = Util::getDbInfo($db, $sub_part ?? '');
 
-        echo "\n";
-
+        $oldMessage = '';
         if (isset($message)) {
-            echo Generator::getMessage($message, $sql_query);
+            $oldMessage = Generator::getMessage($message, $sql_query);
             unset($message);
         }
 
         $db_collation = $this->dbi->getDbCollation($db);
         $is_information_schema = $this->dbi->isSystemSchema($db);
 
-        if (! $is_information_schema) {
-            if ($cfgRelation['commwork']) {
-                /**
-                 * database comment
-                 */
-                $this->response->addHTML($this->operations->getHtmlForDatabaseComment($db));
-            }
+        if ($is_information_schema) {
+            return;
+        }
 
-            $this->response->addHTML('<div>');
-            $this->response->addHTML(CreateTable::getHtml($db));
-            $this->response->addHTML('</div>');
+        $databaseComment = '';
+        if ($cfgRelation['commwork']) {
+            $databaseComment = $this->relation->getDbComment($db);
+        }
 
-            /**
-             * rename database
-             */
-            if ($db != 'mysql') {
-                $this->response->addHTML($this->operations->getHtmlForRenameDatabase($db, $db_collation));
-            }
+        $hasAdjustPrivileges = $GLOBALS['db_priv'] && $GLOBALS['table_priv']
+            && $GLOBALS['col_priv'] && $GLOBALS['proc_priv'] && $GLOBALS['is_reload_priv'];
 
-            // Drop link if allowed
-            // Don't even try to drop information_schema.
-            // You won't be able to. Believe me. You won't.
-            // Don't allow to easily drop mysql database, RFE #1327514.
-            if (($this->dbi->isSuperuser() || $cfg['AllowUserDropDatabase'])
-                && ! $db_is_system_schema
-                && $db != 'mysql'
-            ) {
-                $this->response->addHTML($this->operations->getHtmlForDropDatabaseLink($db));
-            }
-            /**
-             * Copy database
-             */
-            $this->response->addHTML($this->operations->getHtmlForCopyDatabase($db, $db_collation));
+        $isDropDatabaseAllowed = ($this->dbi->isSuperuser() || $cfg['AllowUserDropDatabase'])
+            && ! $db_is_system_schema && $db !== 'mysql';
 
-            /**
-             * Change database charset
-             */
-            $this->response->addHTML($this->operations->getHtmlForChangeDatabaseCharset($db, $db_collation));
+        $switchToNew = isset($_SESSION['pma_switch_to_new']) && $_SESSION['pma_switch_to_new'];
 
-            if (! $cfgRelation['allworks']
-                && $cfg['PmaNoRelation_DisableWarning'] == false
-            ) {
-                $message = Message::notice(
-                    __(
-                        'The phpMyAdmin configuration storage has been deactivated. ' .
-                        '%sFind out why%s.'
-                    )
-                );
-                $message->addParamHtml('<a href="' . Url::getFromRoute('/check-relations') . '" data-post="' . $url_query . '">');
-                $message->addParamHtml('</a>');
-                /* Show error if user has configured something, notice elsewhere */
-                if (! empty($cfg['Servers'][$server]['pmadb'])) {
-                    $message->isError(true);
-                }
+        $charsets = Charsets::getCharsets($this->dbi, $GLOBALS['cfg']['Server']['DisableIS']);
+        $collations = Charsets::getCollations($this->dbi, $GLOBALS['cfg']['Server']['DisableIS']);
+
+        if (! $cfgRelation['allworks']
+            && $cfg['PmaNoRelation_DisableWarning'] == false
+        ) {
+            $message = Message::notice(
+                __(
+                    'The phpMyAdmin configuration storage has been deactivated. ' .
+                    '%sFind out why%s.'
+                )
+            );
+            $message->addParamHtml('<a href="' . Url::getFromRoute('/check-relations') . '" data-post="' . $url_query . '">');
+            $message->addParamHtml('</a>');
+            /* Show error if user has configured something, notice elsewhere */
+            if (! empty($cfg['Servers'][$server]['pmadb'])) {
+                $message->isError(true);
             }
         }
+
+        $this->response->addHTML($this->template->render('database/operations/index', [
+            'message' => $oldMessage,
+            'db' => $db,
+            'has_comment' => $cfgRelation['commwork'],
+            'db_comment' => $databaseComment,
+            'db_collation' => $db_collation,
+            'has_adjust_privileges' => $hasAdjustPrivileges,
+            'is_drop_database_allowed' => $isDropDatabaseAllowed,
+            'switch_to_new' => $switchToNew,
+            'charsets' => $charsets,
+            'collations' => $collations,
+        ]));
     }
 }

@@ -1,8 +1,6 @@
 <?php
 /**
  * holds the PhpMyAdmin\Database\DatabaseList class
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -12,8 +10,6 @@ use PhpMyAdmin\ListDatabase;
 
 /**
  * holds the DatabaseList class
- *
- * @package PhpMyAdmin
  */
 class DatabaseList
 {
@@ -45,12 +41,10 @@ class DatabaseList
 
     /**
      * Accessor to PMA::$databases
-     *
-     * @return ListDatabase
      */
     public function getDatabaseList(): ListDatabase
     {
-        if (null === $this->databases) {
+        if ($this->databases === null) {
             $this->databases = new ListDatabase();
         }
 

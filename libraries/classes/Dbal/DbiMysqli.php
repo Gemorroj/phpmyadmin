@@ -1,8 +1,6 @@
 <?php
 /**
  * Interface to the MySQL Improved extension (MySQLi)
- *
- * @package PhpMyAdmin-DBI
  */
 declare(strict_types=1);
 
@@ -13,18 +11,71 @@ use mysqli_result;
 use mysqli_stmt;
 use PhpMyAdmin\DatabaseInterface;
 use stdClass;
+use function defined;
+use function implode;
+use function is_array;
+use function is_bool;
 use function mysqli_init;
+use function stripos;
+use function trigger_error;
+use const E_USER_WARNING;
+use const MYSQLI_ASSOC;
+use const MYSQLI_AUTO_INCREMENT_FLAG;
+use const MYSQLI_BLOB_FLAG;
+use const MYSQLI_BOTH;
+use const MYSQLI_CLIENT_COMPRESS;
+use const MYSQLI_CLIENT_SSL;
+use const MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT;
+use const MYSQLI_ENUM_FLAG;
+use const MYSQLI_MULTIPLE_KEY_FLAG;
+use const MYSQLI_NOT_NULL_FLAG;
+use const MYSQLI_NUM;
+use const MYSQLI_NUM_FLAG;
+use const MYSQLI_OPT_LOCAL_INFILE;
+use const MYSQLI_OPT_SSL_VERIFY_SERVER_CERT;
+use const MYSQLI_PART_KEY_FLAG;
+use const MYSQLI_PRI_KEY_FLAG;
+use const MYSQLI_SET_FLAG;
+use const MYSQLI_STORE_RESULT;
+use const MYSQLI_TIMESTAMP_FLAG;
+use const MYSQLI_TYPE_BIT;
+use const MYSQLI_TYPE_BLOB;
+use const MYSQLI_TYPE_DATE;
+use const MYSQLI_TYPE_DATETIME;
+use const MYSQLI_TYPE_DECIMAL;
+use const MYSQLI_TYPE_DOUBLE;
+use const MYSQLI_TYPE_ENUM;
+use const MYSQLI_TYPE_FLOAT;
+use const MYSQLI_TYPE_GEOMETRY;
+use const MYSQLI_TYPE_INT24;
+use const MYSQLI_TYPE_JSON;
+use const MYSQLI_TYPE_LONG;
+use const MYSQLI_TYPE_LONG_BLOB;
+use const MYSQLI_TYPE_LONGLONG;
+use const MYSQLI_TYPE_MEDIUM_BLOB;
+use const MYSQLI_TYPE_NEWDATE;
+use const MYSQLI_TYPE_NEWDECIMAL;
+use const MYSQLI_TYPE_NULL;
+use const MYSQLI_TYPE_SET;
+use const MYSQLI_TYPE_SHORT;
+use const MYSQLI_TYPE_STRING;
+use const MYSQLI_TYPE_TIME;
+use const MYSQLI_TYPE_TIMESTAMP;
+use const MYSQLI_TYPE_TINY;
+use const MYSQLI_TYPE_TINY_BLOB;
+use const MYSQLI_TYPE_VAR_STRING;
+use const MYSQLI_TYPE_YEAR;
+use const MYSQLI_UNIQUE_KEY_FLAG;
+use const MYSQLI_UNSIGNED_FLAG;
+use const MYSQLI_USE_RESULT;
+use const MYSQLI_ZEROFILL_FLAG;
 
 /**
  * Interface to the MySQL Improved extension (MySQLi)
- *
- * @package PhpMyAdmin-DBI
  */
 class DbiMysqli implements DbiExtension
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private static $pma_mysqli_flag_names = [
         MYSQLI_NUM_FLAG => 'num',
         MYSQLI_PART_KEY_FLAG => 'part_key',
@@ -76,27 +127,12 @@ class DbiMysqli implements DbiExtension
                 ! empty($server['ssl_ca_path']) ||
                 ! empty($server['ssl_ciphers'])
             ) {
-                if (! isset($server['ssl_key']) || is_null($server['ssl_key'])) {
-                    $server['ssl_key'] = '';
-                }
-                if (! isset($server['ssl_cert']) || is_null($server['ssl_cert'])) {
-                    $server['ssl_cert'] = '';
-                }
-                if (! isset($server['ssl_ca']) || is_null($server['ssl_ca'])) {
-                    $server['ssl_ca'] = '';
-                }
-                if (! isset($server['ssl_ca_path']) || is_null($server['ssl_ca_path'])) {
-                    $server['ssl_ca_path'] = '';
-                }
-                if (! isset($server['ssl_ciphers']) || is_null($server['ssl_ciphers'])) {
-                    $server['ssl_ciphers'] = '';
-                }
                 $mysqli->ssl_set(
-                    $server['ssl_key'],
-                    $server['ssl_cert'],
-                    $server['ssl_ca'],
-                    $server['ssl_ca_path'],
-                    $server['ssl_ciphers']
+                    $server['ssl_key'] ?? '',
+                    $server['ssl_cert'] ?? '',
+                    $server['ssl_ca'] ?? '',
+                    $server['ssl_ca_path'] ?? '',
+                    $server['ssl_ciphers'] ?? ''
                 );
             }
             /*
@@ -168,7 +204,7 @@ class DbiMysqli implements DbiExtension
      * @param string $databaseName database name to select
      * @param mysqli $mysqli       the mysqli object
      *
-     * @return boolean
+     * @return bool
      */
     public function selectDb($databaseName, $mysqli)
     {
@@ -259,7 +295,7 @@ class DbiMysqli implements DbiExtension
      * Adjusts the result pointer to an arbitrary row in the result
      *
      * @param mysqli_result $result database result
-     * @param integer       $offset offset to seek
+     * @param int           $offset offset to seek
      *
      * @return bool true on success, false on failure
      */
@@ -365,14 +401,14 @@ class DbiMysqli implements DbiExtension
     {
         $GLOBALS['errno'] = 0;
 
-        if (null !== $mysqli && false !== $mysqli) {
+        if ($mysqli !== null && $mysqli !== false) {
             $error_number = $mysqli->errno;
             $error_message = $mysqli->error;
         } else {
             $error_number = $mysqli->connect_errno;
             $error_message = $mysqli->connect_error;
         }
-        if (0 == $error_number) {
+        if ($error_number == 0) {
             return false;
         }
 
@@ -534,19 +570,19 @@ class DbiMysqli implements DbiExtension
      * @param mysqli_result $result result set identifier
      * @param int           $i      field
      *
-     * @return string|bool name of $i. field in $result
+     * @return string name of $i. field in $result
      */
     public function fieldName($result, $i)
     {
         if ($i >= $this->numFields($result)) {
-            return false;
+            return '';
         }
         /** @var stdClass $fieldDefinition */
         $fieldDefinition = $result->fetch_field_direct($i);
         if ($fieldDefinition !== false) {
             return $fieldDefinition->name;
         }
-        return false;
+        return '';
     }
 
     /**
@@ -583,7 +619,7 @@ class DbiMysqli implements DbiExtension
             if (($type == MYSQLI_TYPE_TINY_BLOB || $type == MYSQLI_TYPE_BLOB
                 || $type == MYSQLI_TYPE_MEDIUM_BLOB || $type == MYSQLI_TYPE_LONG_BLOB
                 || $type == MYSQLI_TYPE_VAR_STRING || $type == MYSQLI_TYPE_STRING)
-                && 63 == $charsetNumber
+                && $charsetNumber == 63
             ) {
                 $flags[] = 'binary';
             }

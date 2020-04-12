@@ -1,8 +1,6 @@
 <?php
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationCookie class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -16,25 +14,25 @@ use PhpMyAdmin\Plugins\Auth\AuthenticationCookie;
 use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionException;
 use ReflectionMethod;
-
-require_once ROOT_PATH . 'libraries/config.default.php';
+use function base64_encode;
+use function function_exists;
+use function is_readable;
+use function json_encode;
+use function ob_get_clean;
+use function ob_start;
+use function strlen;
+use function time;
 
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationCookie class
- *
- * @package PhpMyAdmin-test
  */
 class AuthenticationCookieTest extends PmaTestCase
 {
-    /**
-     * @var AuthenticationCookie
-     */
+    /** @var AuthenticationCookie */
     protected $object;
 
     /**
      * Configures global environment.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -52,8 +50,6 @@ class AuthenticationCookieTest extends PmaTestCase
 
     /**
      * tearDown for test cases
-     *
-     * @return void
      */
     protected function tearDown(): void
     {
@@ -234,13 +230,13 @@ class AuthenticationCookieTest extends PmaTestCase
 
         $this->assertStringContainsString(
             '<input type="text" name="pma_username" id="input_username" ' .
-            'value="pmauser" size="24" class="textfield form-control">',
+            'value="pmauser" size="24" class="textfield" autocomplete="username">',
             $result
         );
 
         $this->assertStringContainsString(
             '<input type="password" name="pma_password" id="input_password" ' .
-            'value="" size="24" class="textfield form-control">',
+            'value="" size="24" class="textfield" autocomplete="current-password">',
             $result
         );
 
@@ -313,7 +309,7 @@ class AuthenticationCookieTest extends PmaTestCase
         $loc = LOCALE_PATH . '/cs/LC_MESSAGES/phpmyadmin.mo';
         if (is_readable($loc)) {
             $this->assertStringContainsString(
-                '<select name="lang" class="autosubmit form-control" lang="en" dir="ltr" ' .
+                '<select name="lang" class="autosubmit" lang="en" dir="ltr" ' .
                 'id="sel-lang">',
                 $result
             );
@@ -1010,6 +1006,19 @@ class AuthenticationCookieTest extends PmaTestCase
                 'sec321'
             )
         );
+        $this->assertEquals(
+            'root',
+            $this->object->cookieDecrypt(
+                '{"iv":"AclJhCM7ryNiuPnw3Y8cXg==","mac":"d0ef75e852bc162e81496e116dc571182cb2cba6","payload":"O4vrt9R1xyzAw7ypvrLmQA=="}',
+                ':Kb1?)c(r{]-{`HW*hOzuufloK(M~!p'
+            )
+        );
+        $this->assertFalse(
+            $this->object->cookieDecrypt(
+                '{"iv":"AclJhCM7ryNiuPnw3Y8cXg==","mac":"d0ef75e852bc162e81496e116dc571182cb2cba6","payload":"O4vrt9R1xyzAw7ypvrLmQA=="}',
+                'aedzoiefpzf,zf1z7ef6ef84'
+            )
+        );
     }
 
     /**
@@ -1061,8 +1070,6 @@ class AuthenticationCookieTest extends PmaTestCase
      * @param string $mac    mac
      * @param string $aes    aes
      *
-     * @return void
-     *
      * @dataProvider secretsProvider
      */
     public function testMACSecretSplit($secret, $mac, $aes): void
@@ -1079,8 +1086,6 @@ class AuthenticationCookieTest extends PmaTestCase
      * @param string $secret secret
      * @param string $mac    mac
      * @param string $aes    aes
-     *
-     * @return void
      *
      * @dataProvider secretsProvider
      */
@@ -1127,6 +1132,7 @@ class AuthenticationCookieTest extends PmaTestCase
             $encryptedCookie
         );
     }
+
     /**
      * Data provider for secrets splitting.
      *
@@ -1209,8 +1215,6 @@ class AuthenticationCookieTest extends PmaTestCase
      * @param bool   $nopass   nopass
      * @param array  $rules    rules
      * @param string $expected expected result
-     *
-     * @return void
      *
      * @dataProvider checkRulesProvider
      */

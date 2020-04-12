@@ -1,8 +1,6 @@
 <?php
 /**
  * tests for PhpMyAdmin\Utils\HttpRequest class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,20 +9,18 @@ namespace PhpMyAdmin\Tests\Utils;
 use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Utils\HttpRequest;
 use ReflectionClass;
+use function curl_version;
+use function function_exists;
+use function ini_get;
+use function stripos;
+use const CURLOPT_CAINFO;
+use const CURLOPT_CAPATH;
 
-/**
- * @package PhpMyAdmin\Tests\Utils
- */
 class HttpRequestTest extends PmaTestCase
 {
-    /**
-     * @var HttpRequest
-     */
+    /** @var HttpRequest */
     private $httpRequest;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         $this->httpRequest = new HttpRequest();
@@ -53,7 +49,7 @@ class HttpRequestTest extends PmaTestCase
     /**
      * Skip test if CURL extension is not installed
      *
-     * @param boolean $ssl_flags Whether to check support for SSL flags
+     * @param bool $ssl_flags Whether to check support for SSL flags
      *
      * @return void
      */
@@ -85,8 +81,6 @@ class HttpRequestTest extends PmaTestCase
      * @param bool   $return_only_status return only status
      * @param bool   $expected           expected result
      *
-     * @return void
-     *
      * @group medium
      * @dataProvider httpRequests
      * @group network
@@ -105,8 +99,6 @@ class HttpRequestTest extends PmaTestCase
      * @param string $method             method
      * @param bool   $return_only_status return only status
      * @param bool   $expected           expected result
-     *
-     * @return void
      *
      * @group medium
      * @dataProvider httpRequests
@@ -134,8 +126,6 @@ class HttpRequestTest extends PmaTestCase
      * @param bool   $return_only_status return only status
      * @param bool   $expected           expected result
      *
-     * @return void
-     *
      * @group medium
      * @dataProvider httpRequests
      * @group network
@@ -162,8 +152,6 @@ class HttpRequestTest extends PmaTestCase
      * @param bool   $return_only_status return only status
      * @param bool   $expected           expected result
      *
-     * @return void
-     *
      * @group medium
      * @dataProvider httpRequests
      * @group network
@@ -177,7 +165,6 @@ class HttpRequestTest extends PmaTestCase
         $this->validateHttp($result, $expected);
     }
 
-
     /**
      * Test for http request using generic interface
      *
@@ -185,8 +172,6 @@ class HttpRequestTest extends PmaTestCase
      * @param string $method             method
      * @param bool   $return_only_status return only status
      * @param bool   $expected           expected result
-     *
-     * @return void
      *
      * @group medium
      * @dataProvider httpRequests

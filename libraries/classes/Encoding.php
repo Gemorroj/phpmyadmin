@@ -1,20 +1,30 @@
 <?php
 /**
  * Hold the PhpMyAdmin\Encoding class
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Core;
-use PhpMyAdmin\Template;
+use function array_intersect;
+use function array_map;
+use function explode;
+use function fclose;
+use function feof;
+use function fgets;
+use function fopen;
+use function function_exists;
+use function fwrite;
+use function iconv;
+use function mb_convert_encoding;
+use function mb_convert_kana;
+use function mb_detect_encoding;
+use function mb_list_encodings;
+use function tempnam;
+use function unlink;
 
 /**
  * Encoding conversion helper class
- *
- * @package PhpMyAdmin
  */
 class Encoding
 {
@@ -107,8 +117,6 @@ class Encoding
 
     /**
      * Initializes encoding engine detecting available backends.
-     *
-     * @return void
      */
     public static function initEngine(): void
     {
@@ -143,8 +151,6 @@ class Encoding
      * Setter for engine. Use with caution, mostly useful for testing.
      *
      * @param int $engine Engine encoding
-     *
-     * @return void
      */
     public static function setEngine(int $engine): void
     {
@@ -153,8 +159,6 @@ class Encoding
 
     /**
      * Checks whether there is any charset conversion supported
-     *
-     * @return bool
      */
     public static function isSupported(): bool
     {
@@ -174,7 +178,7 @@ class Encoding
      *
      * @return string   converted text
      *
-     * @access  public
+     * @access public
      */
     public static function convertString(
         string $src_charset,
@@ -213,8 +217,6 @@ class Encoding
 
     /**
      * Detects whether Kanji encoding is available
-     *
-     * @return bool
      */
     public static function canConvertKanji(): bool
     {
@@ -223,8 +225,6 @@ class Encoding
 
     /**
      * Setter for Kanji encodings. Use with caution, mostly useful for testing.
-     *
-     * @return string
      */
     public static function getKanjiEncodings(): string
     {
@@ -235,8 +235,6 @@ class Encoding
      * Setter for Kanji encodings. Use with caution, mostly useful for testing.
      *
      * @param string $value Kanji encodings list
-     *
-     * @return void
      */
     public static function setKanjiEncodings(string $value): void
     {
@@ -245,8 +243,6 @@ class Encoding
 
     /**
      * Reverses SJIS & EUC-JP position in the encoding codes list
-     *
-     * @return void
      */
     public static function kanjiChangeOrder(): void
     {
@@ -289,7 +285,6 @@ class Encoding
         }
         return $dist;
     }
-
 
     /**
      * Kanji file encoding convert

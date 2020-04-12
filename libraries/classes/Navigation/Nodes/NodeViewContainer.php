@@ -1,8 +1,6 @@
 <?php
 /**
  * Functionality for the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 declare(strict_types=1);
 
@@ -14,8 +12,6 @@ use PhpMyAdmin\Url;
 
 /**
  * Represents a container for view nodes in the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 class NodeViewContainer extends NodeDatabaseChildContainer
 {
@@ -29,14 +25,12 @@ class NodeViewContainer extends NodeDatabaseChildContainer
         $this->links = [
             'text' => Url::getFromRoute('/database/structure', [
                 'server' => $GLOBALS['server'],
-                'db' => '%1\$s',
                 'tbl_type' => 'view',
-            ]),
+            ]) . '&amp;db=%1$s',
             'icon' => Url::getFromRoute('/database/structure', [
                 'server' => $GLOBALS['server'],
-                'db' => '%1\$s',
                 'tbl_type' => 'view',
-            ]),
+            ]) . '&amp;db=%1$s',
         ];
         $this->classes = 'viewContainer subContainer';
         $this->realName = 'views';

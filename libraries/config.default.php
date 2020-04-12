@@ -14,8 +14,6 @@
  * config.inc.php
  *
  * All directives are explained in the documentation
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -2651,9 +2649,6 @@ $cfg['ThemeDefault'] = 'pmahomme';
  */
 $cfg['ThemePerServer'] = false;
 
-/*******************************************************************************
- *
- */
 
 /**
  * Default query for table
@@ -2858,6 +2853,15 @@ $cfg['DBG']['demo'] = false;
  */
 $cfg['DBG']['simple2fa'] = false;
 
+/**
+ * Sets the working environment
+ *
+ * This only needs to be changed when you are developing phpMyAdmin itself.
+ * The development mode may display debug information in some places.
+ *
+ * Possible values are 'production' or 'development'
+ */
+$cfg['environment'] = 'production';
 
 /*******************************************************************************
  * MySQL settings

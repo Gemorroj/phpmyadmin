@@ -1,9 +1,5 @@
 <?php
-/**
- * Functions for routine management.
- *
- * @package PhpMyAdmin
- */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Rte;
@@ -22,55 +18,51 @@ use PhpMyAdmin\SqlParser\Utils\Routine;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function array_merge;
+use function count;
+use function explode;
+use function htmlentities;
+use function htmlspecialchars;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_string;
+use function max;
+use function mb_strpos;
+use function mb_strtolower;
+use function mb_strtoupper;
+use function preg_match;
+use function sprintf;
+use function stripos;
+use function substr;
+use function trigger_error;
+use const E_USER_WARNING;
+use const ENT_QUOTES;
 
 /**
- * PhpMyAdmin\Rte\Routines class
- *
- * @package PhpMyAdmin
+ * Functions for routine management.
  */
 class Routines
 {
-    /**
-     * @var Export
-     */
-    private $export;
-
-    /**
-     * @var Footer
-     */
-    private $footer;
-
-    /**
-     * @var General
-     */
-    private $general;
-
-    /**
-     * @var RteList
-     */
-    private $rteList;
-
-    /**
-     * @var Words
-     */
-    private $words;
-
-    /**
-     * @var DatabaseInterface
-     */
+    /** @var DatabaseInterface */
     private $dbi;
 
+    /** @var Template */
+    private $template;
+
+    /** @var Response */
+    private $response;
+
     /**
-     * @param DatabaseInterface $dbi DatabaseInterface object
+     * @param DatabaseInterface $dbi      DatabaseInterface instance.
+     * @param Template          $template Template instance.
+     * @param Response          $response Response instance.
      */
-    public function __construct(DatabaseInterface $dbi)
+    public function __construct(DatabaseInterface $dbi, Template $template, $response)
     {
         $this->dbi = $dbi;
-        $this->export = new Export($this->dbi);
-        $this->footer = new Footer($this->dbi);
-        $this->general = new General($this->dbi);
-        $this->rteList = new RteList($this->dbi);
-        $this->words = new Words();
+        $this->template = $template;
+        $this->response = $response;
     }
 
     /**
@@ -111,7 +103,7 @@ class Routines
      */
     public function main($type)
     {
-        global $db;
+        global $db, $table, $pmaThemeImage, $text_dir;
 
         $this->setGlobals();
         /**
@@ -119,19 +111,39 @@ class Routines
          */
         $this->handleEditor();
         $this->handleExecute();
-        $this->export->routines();
+        $this->export();
         /**
          * Display a list of available routines
          */
         if (! Core::isValid($type, ['FUNCTION', 'PROCEDURE'])) {
             $type = null;
         }
+
         $items = $this->dbi->getRoutines($db, $type);
-        echo $this->rteList->get('routine', $items);
-        /**
-         * Display the form for adding a new routine, if the user has the privileges.
-         */
-        echo $this->footer->routines();
+        $isAjax = $this->response->isAjax() && empty($_REQUEST['ajax_page_request']);
+
+        $rows = '';
+        foreach ($items as $item) {
+            $rows .= $this->getRow(
+                $item,
+                $isAjax ? 'ajaxInsert hide' : ''
+            );
+        }
+
+        echo $this->template->render('rte/routines/list', [
+            'db' => $db,
+            'table' => $table,
+            'items' => $items,
+            'rows' => $rows,
+            'select_all_arrow_src' => $pmaThemeImage . 'arrow_' . $text_dir . '.png',
+        ]);
+
+        echo $this->template->render('rte/routines/footer', [
+            'db' => $db,
+            'table' => $table,
+            'has_privilege' => Util::currentUserHasPrivilege('CREATE ROUTINE', $db, $table),
+        ]);
+
         /**
          * Display a warning for users with PHP's old "mysql" extension.
          */
@@ -159,7 +171,6 @@ class Routines
         global $db, $errors;
 
         $errors = $this->handleRequestCreateOrEdit($errors, $db);
-        $response = Response::getInstance();
 
         /**
          * Display a form used to add/edit a routine, if necessary
@@ -188,7 +199,7 @@ class Routines
             $mode = null;
             $title = null;
             if (! empty($_REQUEST['add_item'])) {
-                $title = $this->words->get('add');
+                $title = __('Add routine');
                 $routine = $this->getDataFromRequest();
                 $mode = 'add';
             } elseif (! empty($_REQUEST['edit_item'])) {
@@ -212,11 +223,11 @@ class Routines
             if ($routine !== false) {
                 // Show form
                 $editor = $this->getEditorForm($mode, $operation, $routine);
-                if ($response->isAjax()) {
-                    $response->addJSON('message', $editor);
-                    $response->addJSON('title', $title);
-                    $response->addJSON('paramTemplate', $this->getParameterRow());
-                    $response->addJSON('type', $routine['item_type']);
+                if ($this->response->isAjax()) {
+                    $this->response->addJSON('message', $editor);
+                    $this->response->addJSON('title', $title);
+                    $this->response->addJSON('paramTemplate', $this->getParameterRow());
+                    $this->response->addJSON('type', $routine['item_type']);
                 } else {
                     echo "\n\n<h2>" . $title . "</h2>\n\n" . $editor;
                 }
@@ -224,7 +235,10 @@ class Routines
             } else {
                 $message  = __('Error in processing request:') . ' ';
                 $message .= sprintf(
-                    $this->words->get('no_edit'),
+                    __(
+                        'No routine with name %1$s found in database %2$s. '
+                        . 'You might be lacking the necessary privileges to edit this routine.'
+                    ),
                     htmlspecialchars(
                         Util::backquote($_REQUEST['item_name'])
                     ),
@@ -232,9 +246,9 @@ class Routines
                 );
 
                 $message = Message::error($message);
-                if ($response->isAjax()) {
-                    $response->setRequestStatus(false);
-                    $response->addJSON('message', $message);
+                if ($this->response->isAjax()) {
+                    $this->response->setRequestStatus(false);
+                    $this->response->addJSON('message', $message);
                     exit;
                 } else {
                     $message->display();
@@ -351,14 +365,14 @@ class Routines
         }
 
         $output = Generator::getMessage($message, $sql_query);
-        $response = Response::getInstance();
-        if (! $response->isAjax()) {
+
+        if (! $this->response->isAjax()) {
             return $errors;
         }
 
         if (! $message->isSuccess()) {
-            $response->setRequestStatus(false);
-            $response->addJSON('message', $output);
+            $this->response->setRequestStatus(false);
+            $this->response->addJSON('message', $output);
             exit;
         }
 
@@ -368,15 +382,15 @@ class Routines
             $_POST['item_name']
         );
         $routine = $routines[0];
-        $response->addJSON(
+        $this->response->addJSON(
             'name',
             htmlspecialchars(
                 mb_strtoupper($_POST['item_name'])
             )
         );
-        $response->addJSON('new_row', $this->rteList->getRoutineRow($routine));
-        $response->addJSON('insert', ! empty($routine));
-        $response->addJSON('message', $output);
+        $this->response->addJSON('new_row', $this->getRow($routine));
+        $this->response->addJSON('insert', ! empty($routine));
+        $this->response->addJSON('message', $output);
         exit;
     }
 
@@ -442,15 +456,7 @@ class Routines
             // but were unable to create the new one
             // Try to restore the backup query
             $result = $this->dbi->tryQuery($create_routine);
-            $errors = $this->general->checkResult(
-                $result,
-                __(
-                    'Sorry, we failed to restore'
-                    . ' the dropped routine.'
-                ),
-                $create_routine,
-                $errors
-            );
+            $errors = $this->checkResult($result, $create_routine, $errors);
 
             return [
                 $errors,
@@ -796,8 +802,7 @@ class Routines
             ];
         }
 
-        $template = new Template();
-        return $template->render('rte/routines/parameter_row', [
+        return $this->template->render('rte/routines/parameter_row', [
             'class' => $class,
             'index' => $index,
             'param_directions' => $param_directions,
@@ -831,8 +836,6 @@ class Routines
     public function getEditorForm($mode, $operation, array $routine)
     {
         global $db, $errors, $param_sqldataaccess, $param_opts_num;
-
-        $response = Response::getInstance();
 
         // Escape special characters
         $need_escape = [
@@ -931,7 +934,7 @@ class Routines
         $retval .= "<tr>\n";
         $retval .= '    <td>' . __('Type') . "</td>\n";
         $retval .= "    <td>\n";
-        if ($response->isAjax()) {
+        if ($this->response->isAjax()) {
             $retval .= "        <select name='item_type'>\n"
                 . "<option value='PROCEDURE'" . $isprocedure_select . ">PROCEDURE</option>\n"
                 . "<option value='FUNCTION'" . $isfunction_select . ">FUNCTION</option>\n"
@@ -976,7 +979,7 @@ class Routines
         $retval .= '<tr>';
         $retval .= '    <td>&nbsp;</td>';
         $retval .= '    <td>';
-        $retval .= "        <input type='button'";
+        $retval .= '        <input type="button" class="btn btn-primary"';
         $retval .= "               name='routine_addparameter'";
         $retval .= "               value='" . __('Add parameter') . "'>";
         $retval .= '        <input ' . $disableRemoveParam . '';
@@ -1099,7 +1102,7 @@ class Routines
         $retval .= '</tr>';
         $retval .= '</table>';
         $retval .= '</fieldset>';
-        if ($response->isAjax()) {
+        if ($this->response->isAjax()) {
             $retval .= "<input type='hidden' name='editor_process_" . $mode . "'";
             $retval .= "       value='true'>";
             $retval .= "<input type='hidden' name='ajax_request' value='true'>";
@@ -1341,8 +1344,6 @@ class Routines
     {
         global $db;
 
-        $response = Response::getInstance();
-
         /**
          * Handle all user requests other than the default of listing routines
          */
@@ -1356,14 +1357,14 @@ class Routines
             if ($routine === false) {
                 $message  = __('Error in processing request:') . ' ';
                 $message .= sprintf(
-                    $this->words->get('not_found'),
+                    __('No routine with name %1$s found in database %2$s.'),
                     htmlspecialchars(Util::backquote($_POST['item_name'])),
                     htmlspecialchars(Util::backquote($db))
                 );
                 $message = Message::error($message);
-                if ($response->isAjax()) {
-                    $response->setRequestStatus(false);
-                    $response->addJSON('message', $message);
+                if ($this->response->isAjax()) {
+                    $this->response->setRequestStatus(false);
+                    $this->response->addJSON('message', $message);
                     exit;
                 } else {
                     echo $message->getDisplay();
@@ -1519,10 +1520,10 @@ class Routines
             }
 
             // Print/send output
-            if ($response->isAjax()) {
-                $response->setRequestStatus($message->isSuccess());
-                $response->addJSON('message', $message->getDisplay() . $output);
-                $response->addJSON('dialog', false);
+            if ($this->response->isAjax()) {
+                $this->response->setRequestStatus($message->isSuccess());
+                $this->response->addJSON('message', $message->getDisplay() . $output);
+                $this->response->addJSON('dialog', false);
                 exit;
             } else {
                 echo $message->getDisplay() , $output;
@@ -1546,29 +1547,29 @@ class Routines
             );
             if ($routine !== false) {
                 $form = $this->getExecuteForm($routine);
-                if ($response->isAjax()) {
+                if ($this->response->isAjax()) {
                     $title = __('Execute routine') . ' ' . Util::backquote(
                         htmlentities($_GET['item_name'], ENT_QUOTES)
                     );
-                    $response->addJSON('message', $form);
-                    $response->addJSON('title', $title);
-                    $response->addJSON('dialog', true);
+                    $this->response->addJSON('message', $form);
+                    $this->response->addJSON('title', $title);
+                    $this->response->addJSON('dialog', true);
                 } else {
                     echo "\n\n<h2>" . __('Execute routine') . "</h2>\n\n";
                     echo $form;
                 }
                 exit;
-            } elseif ($response->isAjax()) {
+            } elseif ($this->response->isAjax()) {
                 $message  = __('Error in processing request:') . ' ';
                 $message .= sprintf(
-                    $this->words->get('not_found'),
+                    __('No routine with name %1$s found in database %2$s.'),
                     htmlspecialchars(Util::backquote($_GET['item_name'])),
                     htmlspecialchars(Util::backquote($db))
                 );
                 $message = Message::error($message);
 
-                $response->setRequestStatus(false);
-                $response->addJSON('message', $message);
+                $this->response->setRequestStatus(false);
+                $this->response->addJSON('message', $message);
                 exit;
             }
         }
@@ -1607,8 +1608,6 @@ class Routines
     {
         global $db, $cfg;
 
-        $response = Response::getInstance();
-
         // Escape special characters
         $routine['item_name'] = htmlentities($routine['item_name'], ENT_QUOTES);
         for ($i = 0; $i < $routine['item_num_params']; $i++) {
@@ -1629,7 +1628,7 @@ class Routines
         $retval .= "       value='" . $routine['item_type'] . "'>\n";
         $retval .= Url::getHiddenInputs($db) . "\n";
         $retval .= "<fieldset>\n";
-        if (! $response->isAjax()) {
+        if (! $this->response->isAjax()) {
             $retval .= '<legend>' . $routine['item_name'] . "</legend>\n";
             $retval .= "<table class='rte_table'>\n";
             $retval .= "<caption class='tblHeaders'>\n";
@@ -1660,8 +1659,8 @@ class Routines
             $retval .= '<td>' . $routine['item_param_type'][$i] . "</td>\n";
             if ($cfg['ShowFunctionFields']) {
                 $retval .= "<td>\n";
-                if (false !== stripos($routine['item_param_type'][$i], 'enum')
-                    || false !== stripos($routine['item_param_type'][$i], 'set')
+                if (stripos($routine['item_param_type'][$i], 'enum') !== false
+                    || stripos($routine['item_param_type'][$i], 'set') !== false
                     || in_array(
                         mb_strtolower($routine['item_param_type'][$i]),
                         $no_support_types
@@ -1724,7 +1723,7 @@ class Routines
             $retval .= "</tr>\n";
         }
         $retval .= "\n</table>\n";
-        if (! $response->isAjax()) {
+        if (! $this->response->isAjax()) {
             $retval .= "</fieldset>\n\n";
             $retval .= "<fieldset class='tblFooters'>\n";
             $retval .= "    <input type='submit' name='execute_routine'\n";
@@ -1738,5 +1737,183 @@ class Routines
         $retval .= "<!-- END ROUTINE EXECUTE FORM -->\n\n";
 
         return $retval;
+    }
+
+    /**
+     * Creates the contents for a row in the list of routines
+     *
+     * @param array  $routine  An array of routine data
+     * @param string $rowClass Additional class
+     *
+     * @return string HTML code of a row for the list of routines
+     */
+    private function getRow(array $routine, $rowClass = '')
+    {
+        global $db, $table;
+
+        $sqlDrop = sprintf(
+            'DROP %s IF EXISTS %s',
+            $routine['type'],
+            Util::backquote($routine['name'])
+        );
+
+        // this is for our purpose to decide whether to
+        // show the edit link or not, so we need the DEFINER for the routine
+        $where = 'ROUTINE_SCHEMA ' . Util::getCollateForIS() . '='
+            . "'" . $this->dbi->escapeString($db) . "' "
+            . "AND SPECIFIC_NAME='" . $this->dbi->escapeString($routine['name']) . "'"
+            . "AND ROUTINE_TYPE='" . $this->dbi->escapeString($routine['type']) . "'";
+        $query = 'SELECT `DEFINER` FROM INFORMATION_SCHEMA.ROUTINES WHERE ' . $where . ';';
+        $routineDefiner = $this->dbi->fetchValue($query);
+
+        $currentUser = $this->dbi->getCurrentUser();
+
+        // Since editing a procedure involved dropping and recreating, check also for
+        // CREATE ROUTINE privilege to avoid lost procedures.
+        $hasEditPrivilege = (Util::currentUserHasPrivilege('CREATE ROUTINE', $db)
+            && $currentUser == $routineDefiner) || $this->dbi->isSuperuser();
+
+        // There is a problem with Util::currentUserHasPrivilege():
+        // it does not detect all kinds of privileges, for example
+        // a direct privilege on a specific routine. So, at this point,
+        // we show the Execute link, hoping that the user has the correct rights.
+        // Also, information_schema might be hiding the ROUTINE_DEFINITION
+        // but a routine with no input parameters can be nonetheless executed.
+
+        // Check if the routine has any input parameters. If it does,
+        // we will show a dialog to get values for these parameters,
+        // otherwise we can execute it directly.
+
+        $definition = $this->dbi->getDefinition(
+            $db,
+            $routine['type'],
+            $routine['name']
+        );
+        $hasExecutePrivilege = Util::currentUserHasPrivilege('EXECUTE', $db);
+        $executeAction = '';
+
+        if ($definition !== null) {
+            $parser = new Parser($definition);
+
+            /**
+             * @var CreateStatement $stmt
+             */
+            $stmt = $parser->statements[0];
+
+            $params = Routine::getParameters($stmt);
+
+            if ($hasExecutePrivilege) {
+                $executeAction = 'execute_routine';
+                for ($i = 0; $i < $params['num']; $i++) {
+                    if ($routine['type'] == 'PROCEDURE'
+                        && $params['dir'][$i] == 'OUT'
+                    ) {
+                        continue;
+                    }
+                    $executeAction = 'execute_dialog';
+                    break;
+                }
+            }
+        }
+
+        $hasExportPrivilege = (Util::currentUserHasPrivilege('CREATE ROUTINE', $db)
+            && $currentUser == $routineDefiner) || $this->dbi->isSuperuser();
+
+        return $this->template->render('rte/routines/row', [
+            'db' => $db,
+            'table' => $table,
+            'sql_drop' => $sqlDrop,
+            'routine' => $routine,
+            'row_class' => $rowClass,
+            'has_edit_privilege' => $hasEditPrivilege,
+            'has_export_privilege' => $hasExportPrivilege,
+            'has_execute_privilege' => $hasExecutePrivilege,
+            'execute_action' => $executeAction,
+        ]);
+    }
+
+    /**
+     * @param resource|bool $result          Query result
+     * @param string        $createStatement Query
+     * @param array         $errors          Errors
+     *
+     * @return array
+     */
+    private function checkResult($result, $createStatement, array $errors)
+    {
+        if ($result) {
+            return $errors;
+        }
+
+        // OMG, this is really bad! We dropped the query,
+        // failed to create a new one
+        // and now even the backup query does not execute!
+        // This should not happen, but we better handle
+        // this just in case.
+        $errors[] = __('Sorry, we failed to restore the dropped routine.') . '<br>'
+            . __('The backed up query was:')
+            . '"' . htmlspecialchars($createStatement) . '"<br>'
+            . __('MySQL said: ') . $this->dbi->getError();
+
+        return $errors;
+    }
+
+    private function export(): void
+    {
+        global $db;
+
+        if (empty($_GET['export_item']) || empty($_GET['item_name']) || empty($_GET['item_type'])) {
+            return;
+        }
+
+        if ($_GET['item_type'] !== 'FUNCTION' && $_GET['item_type'] !== 'PROCEDURE') {
+            return;
+        }
+
+        $routineDefinition = $this->dbi->getDefinition($db, $_GET['item_type'], $_GET['item_name']);
+        $exportData = false;
+
+        if ($routineDefinition !== null) {
+            $exportData = "DELIMITER $$\n" . $routineDefinition . "$$\nDELIMITER ;\n";
+        }
+
+        $itemName = htmlspecialchars(Util::backquote($_GET['item_name']));
+        if ($exportData !== false) {
+            $exportData = htmlspecialchars(trim($exportData));
+            $title = sprintf(__('Export of routine %s'), $itemName);
+
+            if ($this->response->isAjax()) {
+                $this->response->addJSON('message', $exportData);
+                $this->response->addJSON('title', $title);
+
+                exit;
+            }
+
+            $exportData = '<textarea cols="40" rows="15" style="width: 100%;">'
+                . $exportData . '</textarea>';
+            echo "<fieldset>\n" . '<legend>' . $title . "</legend>\n"
+                . $exportData . "</fieldset>\n";
+
+            return;
+        }
+
+        $message = sprintf(
+            __(
+                'Error in processing request: No routine with name %1$s found in database %2$s.'
+                . ' You might be lacking the necessary privileges to view/export this routine.'
+            ),
+            $itemName,
+            htmlspecialchars(Util::backquote($db))
+        );
+        $message = Message::error($message);
+
+        if ($this->response->isAjax()) {
+            $this->response->setRequestStatus(false);
+            $this->response->addJSON('message', $message);
+
+            exit;
+        }
+
+        $message->display();
     }
 }

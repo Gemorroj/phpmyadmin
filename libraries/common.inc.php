@@ -26,8 +26,6 @@
  * - loading of an authentication library
  * - db connection
  * - authentication work
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -40,7 +38,9 @@ use PhpMyAdmin\LanguageManager;
 use PhpMyAdmin\Logging;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\MoTranslator\Loader;
+use PhpMyAdmin\Plugins\AuthenticationPlugin;
 use PhpMyAdmin\Response;
+use PhpMyAdmin\Routing;
 use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\Session;
 use PhpMyAdmin\SqlParser\Lexer;
@@ -49,9 +49,9 @@ use PhpMyAdmin\Tracker;
 use PhpMyAdmin\Util;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 
-global $containerBuilder, $error_handler, $PMA_Config, $server, $dbi, $lang, $cfg;
+global $containerBuilder, $error_handler, $PMA_Config, $server, $dbi, $lang, $cfg, $isConfigLoading, $auth_plugin, $route;
 
 /**
  * block attempts to directly run this script
@@ -71,10 +71,12 @@ if (PHP_VERSION_ID < 70103) {
     );
 }
 
+// phpcs:disable PSR1.Files.SideEffects
 /**
  * for verification in all procedural scripts under libraries
  */
 define('PHPMYADMIN', true);
+// phpcs:enable
 
 /**
  * Load vendor configuration.
@@ -94,10 +96,17 @@ if (! @is_readable(AUTOLOAD_FILE)) {
 }
 require_once AUTOLOAD_FILE;
 
+$route = Routing::getCurrentRoute();
+
+if ($route === '/import-status') {
+    // phpcs:disable PSR1.Files.SideEffects
+    define('PMA_MINIMUM_COMMON', true);
+    // phpcs:enable
+}
+
 $containerBuilder = new ContainerBuilder();
-$loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
-$loader->load('../services.yml');
-$loader->load('../services_controllers.yml');
+$loader = new PhpFileLoader($containerBuilder, new FileLocator(__DIR__));
+$loader->load('services_loader.php');
 /** @var Migration $diMigration */
 $diMigration = $containerBuilder->get('di_migration');
 
@@ -119,13 +128,14 @@ Core::checkExtensions();
  */
 Core::configure();
 
-/******************************************************************************/
 /* start procedural code                       label_start_procedural         */
 
 Core::cleanupPathInfo();
 
-/******************************************************************************/
 /* parsing configuration file                  LABEL_parsing_config_file      */
+
+/** @var bool $isConfigLoading Indication for the error handler */
+$isConfigLoading = false;
 
 /**
  * Force reading of config file, because we removed sensitive values
@@ -134,6 +144,8 @@ Core::cleanupPathInfo();
  * @var Config $PMA_Config
  */
 $PMA_Config = $containerBuilder->get('config');
+
+register_shutdown_function([Config::class, 'fatalErrorHandler']);
 
 /**
  * include session handling after the globals, to prevent overwriting
@@ -280,7 +292,6 @@ if (Core::isValid($_POST['sql_query'])) {
 //$_REQUEST['server']; // checked later in this file
 //$_REQUEST['lang'];   // checked by LABEL_loading_language_file
 
-/******************************************************************************/
 /* loading language file                       LABEL_loading_language_file    */
 
 /**
@@ -302,7 +313,6 @@ Core::checkConfiguration();
 /* Check request for possible attacks */
 Core::checkRequest();
 
-/******************************************************************************/
 /* setup servers                                       LABEL_setup_servers    */
 
 $PMA_Config->checkServers();
@@ -321,7 +331,6 @@ $diMigration->setGlobal('url_params', ['server' => $containerBuilder->getParamet
  */
 $PMA_Config->enableBc();
 
-/******************************************************************************/
 /* setup themes                                          LABEL_theme_setup    */
 
 ThemeManager::initializeTheme();
@@ -339,13 +348,10 @@ if (! defined('PMA_MINIMUM_COMMON')) {
 
     ThemeManager::getInstance()->setThemeCookie();
 
-    if (! empty($cfg['Server'])) {
-        /**
-         * Loads the proper database interface for this server
-         */
-        $containerBuilder->set(DatabaseInterface::class, DatabaseInterface::load());
-        $containerBuilder->setAlias('dbi', DatabaseInterface::class);
+    $containerBuilder->set(DatabaseInterface::class, DatabaseInterface::load());
+    $containerBuilder->setAlias('dbi', DatabaseInterface::class);
 
+    if (! empty($cfg['Server'])) {
         // get LoginCookieValidity from preferences cache
         // no generic solution for loading preferences from cache as some settings
         // need to be kept for processing in
@@ -377,8 +383,9 @@ if (! defined('PMA_MINIMUM_COMMON')) {
         if (isset($_POST['pma_password']) && strlen($_POST['pma_password']) > 256) {
             $_POST['pma_password'] = substr($_POST['pma_password'], 0, 256);
         }
-        $auth_plugin = new $auth_class();
 
+        /** @var AuthenticationPlugin $auth_plugin */
+        $auth_plugin = new $auth_class();
         $auth_plugin->authenticate();
 
         // Try to connect MySQL with the control user profile (will be used to

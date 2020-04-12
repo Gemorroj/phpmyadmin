@@ -1,11 +1,9 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Database
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Database;
 
+use PhpMyAdmin\Common;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Display\CreateTable;
 use PhpMyAdmin\Html\Generator;
@@ -16,11 +14,12 @@ use PhpMyAdmin\Tracker;
 use PhpMyAdmin\Tracking;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function count;
+use function htmlspecialchars;
+use function sprintf;
 
 /**
  * Tracking configuration for database.
- *
- * @package PhpMyAdmin\Controllers\Database
  */
 class TrackingController extends AbstractController
 {
@@ -40,9 +39,6 @@ class TrackingController extends AbstractController
         $this->tracking = $tracking;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $db, $pmaThemeImage, $text_dir, $url_query, $url_params, $tables, $num_tables, $pos, $data, $cfg;
@@ -57,7 +53,7 @@ class TrackingController extends AbstractController
         /**
          * If we are not in an Ajax request, then do the common work and show the links etc.
          */
-        require ROOT_PATH . 'libraries/db_common.inc.php';
+        Common::database();
 
         $url_params['goto'] = Url::getFromRoute('/table/tracking');
         $url_params['back'] = Url::getFromRoute('/database/tracking');

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for Table.php
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -12,22 +10,17 @@ use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Table;
-use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\DbiDummy;
 use ReflectionClass;
 use stdClass;
 
 /**
  * Tests behaviour of Table class
- *
- * @package PhpMyAdmin-test
  */
 class TableTest extends PmaTestCase
 {
     /**
      * Configures environment
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -60,37 +53,37 @@ class TableTest extends PmaTestCase
             }
         };
 
-        $sql_isView_true =  "SELECT TABLE_NAME
-            FROM information_schema.VIEWS
-            WHERE TABLE_SCHEMA = 'PMA'
-                AND TABLE_NAME = 'PMA_BookMark'";
+        $sql_isView_true =  'SELECT TABLE_NAME'
+            . ' FROM information_schema.VIEWS'
+            . ' WHERE TABLE_SCHEMA = \'PMA\''
+            . ' AND TABLE_NAME = \'PMA_BookMark\'';
 
-        $sql_isView_false =  "SELECT TABLE_NAME
-            FROM information_schema.VIEWS
-            WHERE TABLE_SCHEMA = 'PMA'
-                AND TABLE_NAME = 'PMA_BookMark_2'";
+        $sql_isView_false =  'SELECT TABLE_NAME'
+            . ' FROM information_schema.VIEWS'
+            . ' WHERE TABLE_SCHEMA = \'PMA\''
+            . ' AND TABLE_NAME = \'PMA_BookMark_2\'';
 
-        $sql_isUpdatableView_true = "SELECT TABLE_NAME
-            FROM information_schema.VIEWS
-            WHERE TABLE_SCHEMA = 'PMA'
-                AND TABLE_NAME = 'PMA_BookMark'
-                AND IS_UPDATABLE = 'YES'";
+        $sql_isUpdatableView_true = 'SELECT TABLE_NAME'
+            . ' FROM information_schema.VIEWS'
+            . ' WHERE TABLE_SCHEMA = \'PMA\''
+            . ' AND TABLE_NAME = \'PMA_BookMark\''
+            . ' AND IS_UPDATABLE = \'YES\'';
 
-        $sql_isUpdatableView_false = "SELECT TABLE_NAME
-            FROM information_schema.VIEWS
-            WHERE TABLE_SCHEMA = 'PMA'
-                AND TABLE_NAME = 'PMA_BookMark_2'
-                AND IS_UPDATABLE = 'YES'";
+        $sql_isUpdatableView_false = 'SELECT TABLE_NAME'
+            . ' FROM information_schema.VIEWS'
+            . ' WHERE TABLE_SCHEMA = \'PMA\''
+            . ' AND TABLE_NAME = \'PMA_BookMark_2\''
+            . ' AND IS_UPDATABLE = \'YES\'';
 
-        $sql_analyzeStructure_true = "SELECT COLUMN_NAME, DATA_TYPE
-                FROM information_schema.COLUMNS
-                WHERE TABLE_SCHEMA = 'PMA'
-                AND TABLE_NAME = 'PMA_BookMark'";
+        $sql_analyzeStructure_true = 'SELECT COLUMN_NAME, DATA_TYPE'
+            . ' FROM information_schema.COLUMNS'
+            . ' WHERE TABLE_SCHEMA = \'PMA\''
+            . ' AND TABLE_NAME = \'PMA_BookMark\'';
 
-        $sql_copy_data = "SELECT TABLE_NAME
-            FROM information_schema.VIEWS
-            WHERE TABLE_SCHEMA = 'db_data'
-                AND TABLE_NAME = 'table_data'";
+        $sql_copy_data = 'SELECT TABLE_NAME'
+            . ' FROM information_schema.VIEWS'
+            . ' WHERE TABLE_SCHEMA = \'db_data\''
+            . ' AND TABLE_NAME = \'table_data\'';
 
         $getUniqueColumns_sql = 'select unique column';
 
@@ -403,11 +396,9 @@ class TableTest extends PmaTestCase
     /**
      * Test name validation
      *
-     * @param string  $name          name to test
-     * @param boolean $result        expected result
-     * @param boolean $is_backquoted is backquoted
-     *
-     * @return void
+     * @param string $name          name to test
+     * @param bool   $result        expected result
+     * @param bool   $is_backquoted is backquoted
      *
      * @dataProvider dataValidateName
      */
@@ -710,7 +701,6 @@ class TableTest extends PmaTestCase
             $query
         );
 
-        $type = 'INT';
         $default_type = 'NONE';
         $move_to = '-first';
         $query = Table::generateFieldSpec(
@@ -736,7 +726,6 @@ class TableTest extends PmaTestCase
             $query
         );
 
-        $type = 'INT';
         $default_type = 'NONE';
         $move_to = '-first';
         $query = Table::generateFieldSpec(
@@ -763,7 +752,6 @@ class TableTest extends PmaTestCase
             $query
         );
 
-        $type = 'INT';
         $default_type = 'NONE';
         $move_to = '-first';
         $query = Table::generateFieldSpec(
@@ -790,7 +778,6 @@ class TableTest extends PmaTestCase
             $query
         );
 
-        $type = 'INT';
         $default_type = 'NONE';
         $move_to = '-first';
         $query = Table::generateFieldSpec(
@@ -817,7 +804,6 @@ class TableTest extends PmaTestCase
             $query
         );
 
-        $type = 'INT';
         $default_type = 'NONE';
         $move_to = '-first';
         $query = Table::generateFieldSpec(
@@ -844,7 +830,6 @@ class TableTest extends PmaTestCase
             $query
         );
 
-        $type = 'INT';
         $default_type = 'NONE';
         $move_to = '-first';
         $query = Table::generateFieldSpec(
@@ -871,7 +856,6 @@ class TableTest extends PmaTestCase
             $query
         );
     }
-
 
     /**
      * Test for duplicateInfo
@@ -910,6 +894,7 @@ class TableTest extends PmaTestCase
             $ret
         );
     }
+
     /**
      * Test for isUpdatableView
      *
@@ -1177,7 +1162,6 @@ class TableTest extends PmaTestCase
             $table->getLastMessage()
         );
     }
-
 
     /**
      * Test for getUniqueColumns
@@ -1521,7 +1505,7 @@ class TableTest extends PmaTestCase
 
         //removeUiProp
         $table->removeUiProp($property);
-        $is_define_property = isset($table->uiprefs[$property]) ? true : false;
+        $is_define_property = isset($table->uiprefs[$property]);
         $this->assertEquals(
             false,
             $is_define_property

@@ -1,8 +1,6 @@
 <?php
 /**
  * Displays Error
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -17,8 +15,6 @@ use Twig_Error_Syntax;
 
 /**
  * Displays Error
- *
- * @package PhpMyAdmin
  */
 class Error
 {
@@ -28,8 +24,6 @@ class Error
      * @param string   $dir          Direction of text of the HTML page
      * @param string   $errorHeader  Error header
      * @param string   $errorMessage Error message
-     *
-     * @return string
      *
      * @throws Throwable
      * @throws Twig_Error_Loader

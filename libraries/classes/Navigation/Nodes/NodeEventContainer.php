@@ -1,8 +1,6 @@
 <?php
 /**
  * Functionality for the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 declare(strict_types=1);
 
@@ -14,8 +12,6 @@ use PhpMyAdmin\Url;
 
 /**
  * Represents a container for events nodes in the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 class NodeEventContainer extends NodeDatabaseChildContainer
 {
@@ -36,8 +32,9 @@ class NodeEventContainer extends NodeDatabaseChildContainer
         ];
         $this->realName = 'events';
 
+        $newLabel = _pgettext('Create new event', 'New');
         $new = NodeFactory::getInstanceForNewNode(
-            _pgettext('Create new event', 'New'),
+            $newLabel,
             'new_event italics'
         );
         $new->icon = Generator::getImage('b_event_add', '');

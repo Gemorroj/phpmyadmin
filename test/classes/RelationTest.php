@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Relation
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -14,21 +12,16 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests for PhpMyAdmin\Relation
  *
- * @package PhpMyAdmin-test
  * @group medium
  */
 class RelationTest extends TestCase
 {
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */

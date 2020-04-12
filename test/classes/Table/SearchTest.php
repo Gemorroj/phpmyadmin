@@ -1,7 +1,4 @@
 <?php
-/**
- * @package PhpMyAdmin\Tests\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Table;
@@ -9,17 +6,11 @@ namespace PhpMyAdmin\Tests\Table;
 use PhpMyAdmin\Table\Search;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @package PhpMyAdmin\Tests\Table
- */
 class SearchTest extends TestCase
 {
     /** @var Search */
     private $search;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         global $dbi;
@@ -27,9 +18,6 @@ class SearchTest extends TestCase
         $this->search = new Search($dbi);
     }
 
-    /**
-     * @return void
-     */
     public function testBuildSqlQuery(): void
     {
         $_POST['distinct'] = true;
@@ -107,9 +95,6 @@ class SearchTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testBuildSqlQueryWithWhereClause(): void
     {
         $_POST['zoom_submit'] = true;
@@ -155,6 +140,84 @@ class SearchTest extends TestCase
 
         $this->assertEquals(
             'SELECT *  FROM `PMA` WHERE `b` <= 10 AND `a` = 2 AND `c` IS NULL AND `d` IS NOT NULL',
+            $this->search->buildSqlQuery()
+        );
+    }
+
+    public function testBuildSqlQueryWithWhereClauseGeom(): void
+    {
+        $_POST['zoom_submit'] = true;
+        $_POST['table'] = 'PMA';
+
+        $this->assertEquals(
+            'SELECT *  FROM `PMA`',
+            $this->search->buildSqlQuery()
+        );
+
+        $_POST['customWhereClause'] = '`table` = \'WhereClause\'';
+
+        $this->assertEquals(
+            'SELECT *  FROM `PMA` WHERE `table` = \'WhereClause\'',
+            $this->search->buildSqlQuery()
+        );
+
+        unset($_POST['customWhereClause']);
+        $_POST['criteriaColumnNames'] = [
+            'b',
+        ];
+        $_POST['criteriaColumnOperators'] = [
+            '=',
+        ];
+        $_POST['geom_func'] = [
+            'Dimension',
+        ];
+        $_POST['criteriaValues'] = [
+            '1',
+        ];
+        $_POST['criteriaColumnTypes'] = [
+            'geometry',
+        ];
+
+        $this->assertEquals(
+            'SELECT *  FROM `PMA` WHERE Dimension(`b`) = \'1\'',
+            $this->search->buildSqlQuery()
+        );
+    }
+
+    public function testBuildSqlQueryWithWhereClauseEnum(): void
+    {
+        $_POST['zoom_submit'] = true;
+        $_POST['table'] = 'PMA';
+
+        $this->assertEquals(
+            'SELECT *  FROM `PMA`',
+            $this->search->buildSqlQuery()
+        );
+
+        $_POST['customWhereClause'] = '`table` = \'WhereClause\'';
+
+        $this->assertEquals(
+            'SELECT *  FROM `PMA` WHERE `table` = \'WhereClause\'',
+            $this->search->buildSqlQuery()
+        );
+
+        unset($_POST['customWhereClause']);
+        $_POST['criteriaColumnNames'] = [
+            'rating',
+        ];
+        $_POST['criteriaColumnOperators'] = [
+            '=',
+        ];
+
+        $_POST['criteriaValues'] = [
+            'PG-13',
+        ];
+        $_POST['criteriaColumnTypes'] = [
+            'enum(\'G\', \'PG\', \'PG-13\', \'R\', \'NC-17\')',
+        ];
+
+        $this->assertEquals(
+            'SELECT *  FROM `PMA` WHERE `rating` = \'PG-13\'',
             $this->search->buildSqlQuery()
         );
     }

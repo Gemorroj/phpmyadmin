@@ -1,8 +1,6 @@
 <?php
 /**
  * Holds the PhpMyAdmin\Controllers\Database\DataDictionaryController
- *
- * @package PhpMyAdmin\Controllers
  */
 declare(strict_types=1);
 
@@ -15,20 +13,15 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Util;
+use function count;
+use function str_replace;
 
-/**
- * @package PhpMyAdmin\Controllers\Database
- */
 class DataDictionaryController extends AbstractController
 {
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Transformations
-     */
+    /** @var Transformations */
     private $transformations;
 
     /**
@@ -46,14 +39,9 @@ class DataDictionaryController extends AbstractController
         $this->transformations = $transformations;
     }
 
-    /**
-     * @param array $params Request parameters
-     *
-     * @return string
-     */
-    public function index(array $params): string
+    public function index(): void
     {
-        $this->db = $params['database'];
+        Util::checkParameters(['db'], true);
 
         $header = $this->response->getHeader();
         $header->enablePrintView();
@@ -131,29 +119,20 @@ class DataDictionaryController extends AbstractController
                 ];
             }
 
-            $indexesTable = '';
-            if (count(Index::getFromTable($tableName, $this->db)) > 0) {
-                $indexesTable = Index::getHtmlForIndexes(
-                    $tableName,
-                    $this->db,
-                    true
-                );
-            }
-
             $tables[$tableName] = [
                 'name' => $tableName,
                 'comment' => $showComment,
                 'has_relation' => $hasRelation,
                 'has_mime' => $cfgRelation['mimework'],
                 'columns' => $rows,
-                'indexes_table' => $indexesTable,
+                'indexes' => Index::getFromTable($tableName, $this->db),
             ];
         }
 
-        return $this->template->render('database/data_dictionary/index', [
+        $this->response->addHTML($this->template->render('database/data_dictionary/index', [
             'database' => $this->db,
             'comment' => $comment,
             'tables' => $tables,
-        ]);
+        ]));
     }
 }

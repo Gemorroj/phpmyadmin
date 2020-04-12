@@ -1,8 +1,6 @@
 <?php
 /**
  * Test for faked database access
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -12,15 +10,11 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests basic functionality of dummy dbi driver
- *
- * @package PhpMyAdmin-test
  */
 class DbiDummyTest extends TestCase
 {
     /**
      * Configures test parameters.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -60,8 +54,6 @@ class DbiDummyTest extends TestCase
      * @param string $schema   schema name
      * @param bool   $expected expected result
      *
-     * @return void
-     *
      * @dataProvider schemaData
      */
     public function testSystemSchema($schema, $expected): void
@@ -91,11 +83,9 @@ class DbiDummyTest extends TestCase
     /**
      * Test for error formatting
      *
-     * @param integer $number   error number
-     * @param string  $message  error message
-     * @param string  $expected expected result
-     *
-     * @return void
+     * @param int    $number   error number
+     * @param string $message  error message
+     * @param string $expected expected result
      *
      * @dataProvider errorData
      */
@@ -133,5 +123,22 @@ class DbiDummyTest extends TestCase
                 . 'server\'s socket is not correctly configured).',
             ],
         ];
+    }
+
+    /**
+     * Test for string escaping
+     *
+     * @return void
+     */
+    public function testEscapeString(): void
+    {
+        $this->assertEquals(
+            'a',
+            $GLOBALS['dbi']->escapeString('a')
+        );
+        $this->assertEquals(
+            'a\\\'',
+            $GLOBALS['dbi']->escapeString('a\'')
+        );
     }
 }

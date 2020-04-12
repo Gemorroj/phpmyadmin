@@ -1,8 +1,6 @@
 <?php
 /**
  * Classes to create relation schema in EPS format.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -12,6 +10,9 @@ use PhpMyAdmin\Plugins\Schema\Dia\TableStatsDia;
 use PhpMyAdmin\Plugins\Schema\ExportRelationSchema;
 use PhpMyAdmin\Plugins\Schema\Pdf\TableStatsPdf;
 use PhpMyAdmin\Plugins\Schema\Svg\TableStatsSvg;
+use function date;
+use function in_array;
+use function sprintf;
 
 /**
  * EPS Relation Schema Class
@@ -24,14 +25,11 @@ use PhpMyAdmin\Plugins\Schema\Svg\TableStatsSvg;
  * This class inherits ExportRelationSchema class has common functionality added
  * to this class
  *
- * @package PhpMyAdmin
  * @name    Eps_Relation_Schema
  */
 class EpsRelationSchema extends ExportRelationSchema
 {
-    /**
-     * @var TableStatsDia[]|TableStatsEps[]|TableStatsPdf[]|TableStatsSvg[]
-     */
+    /** @var TableStatsDia[]|TableStatsEps[]|TableStatsPdf[]|TableStatsSvg[] */
     private $_tables = [];
 
     /** @var RelationStatsEps[] Relations */
@@ -40,8 +38,6 @@ class EpsRelationSchema extends ExportRelationSchema
     private $_tablewidth;
 
     /**
-     * The "PMA_EPS_Relation_Schema" constructor
-     *
      * Upon instantiation This starts writing the EPS document
      * user will be prompted for download as .eps extension
      *
@@ -166,13 +162,13 @@ class EpsRelationSchema extends ExportRelationSchema
      * @see _setMinMax,Table_Stats_Eps::__construct(),
      * PhpMyAdmin\Plugins\Schema\Eps\RelationStatsEps::__construct()
      *
-     * @param string  $masterTable    The master table name
-     * @param string  $font           The font
-     * @param int     $fontSize       The font size
-     * @param string  $masterField    The relation field in the master table
-     * @param string  $foreignTable   The foreign table name
-     * @param string  $foreignField   The relation field in the foreign table
-     * @param boolean $tableDimension Whether to display table position or not
+     * @param string $masterTable    The master table name
+     * @param string $font           The font
+     * @param int    $fontSize       The font size
+     * @param string $masterField    The relation field in the master table
+     * @param string $foreignTable   The foreign table name
+     * @param string $foreignField   The relation field in the foreign table
+     * @param bool   $tableDimension Whether to display table position or not
      *
      * @return void
      */

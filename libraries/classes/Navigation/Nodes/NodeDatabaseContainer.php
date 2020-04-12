@@ -1,8 +1,6 @@
 <?php
 /**
  * Functionality for the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 declare(strict_types=1);
 
@@ -15,8 +13,6 @@ use PhpMyAdmin\Url;
 
 /**
  * Represents a container for database nodes in the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 class NodeDatabaseContainer extends Node
 {
@@ -35,8 +31,9 @@ class NodeDatabaseContainer extends Node
         if ($GLOBALS['is_create_db_priv']
             && $GLOBALS['cfg']['ShowCreateDb'] !== false
         ) {
+            $newLabel = _pgettext('Create new database', 'New');
             $new = NodeFactory::getInstanceForNewNode(
-                _pgettext('Create new database', 'New'),
+                $newLabel,
                 'new_database italics'
             );
             $new->icon = Generator::getImage('b_newdb', '');

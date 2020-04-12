@@ -151,6 +151,13 @@ var AJAX = {
      * @return void
      */
     lockPageHandler: function (event) {
+        // don't consider checkbox event
+        if (typeof event.target !== 'undefined') {
+            if (event.target.type === 'checkbox') {
+                return;
+            }
+        }
+
         var newHash = null;
         var oldHash = null;
         var lockId;
@@ -935,7 +942,7 @@ $(document).on('submit', 'form', AJAX.requestHandler);
  * Gracefully handle fatal server errors
  * (e.g: 500 - Internal server error)
  */
-$(document).ajaxError(function (event, request) {
+$(document).on('ajaxError', function (event, request) {
     if (AJAX.debug) {
         // eslint-disable-next-line no-console
         console.log('AJAX error: status=' + request.status + ', text=' + request.statusText);

@@ -1,19 +1,25 @@
 <?php
 /**
  * Handles actions related to GIS MULTIPOINT objects
- *
- * @package PhpMyAdmin-GIS
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Gis;
 
 use TCPDF;
+use function count;
+use function hexdec;
+use function imagearc;
+use function imagecolorallocate;
+use function imagestring;
+use function json_encode;
+use function mb_strlen;
+use function mb_substr;
+use function mt_rand;
+use function trim;
 
 /**
  * Handles actions related to GIS MULTIPOINT objects
- *
- * @package PhpMyAdmin-GIS
  */
 class GisMultiPoint extends GisGeometry
 {
@@ -354,8 +360,8 @@ class GisMultiPoint extends GisGeometry
     /**
      * Generate parameters for the GIS data editor from the value of the GIS column.
      *
-     * @param string  $value Value of the GIS column
-     * @param integer $index Index of the geometry
+     * @param string $value Value of the GIS column
+     * @param int    $index Index of the geometry
      *
      * @return array params for the GIS data editor from the value of the GIS column
      *

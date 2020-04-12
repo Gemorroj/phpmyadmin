@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Rte\Routines
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -12,25 +10,20 @@ use PhpMyAdmin\Config;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Rte\Routines;
+use PhpMyAdmin\Template;
 use PhpMyAdmin\Types;
 use PHPUnit\Framework\TestCase;
 
 /**
  * This class is for testing PhpMyAdmin\Rte\Routines methods
- *
- * @package PhpMyAdmin-test
  */
 class RoutinesTest extends TestCase
 {
-    /**
-     * @var Routines
-     */
+    /** @var Routines */
     private $routines;
 
     /**
      * Set up
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -43,7 +36,11 @@ class RoutinesTest extends TestCase
         $GLOBALS['table'] = 'table';
         $GLOBALS['PMA_PHP_SELF'] = 'index.php';
 
-        $this->routines = new Routines($GLOBALS['dbi']);
+        $this->routines = new Routines(
+            $GLOBALS['dbi'],
+            new Template(),
+            Response::getInstance()
+        );
     }
 
     /**
@@ -51,8 +48,6 @@ class RoutinesTest extends TestCase
      *
      * @param array $in  Input
      * @param array $out Expected output
-     *
-     * @return void
      *
      * @dataProvider providerGetDataFromRequest
      */
@@ -318,8 +313,6 @@ class RoutinesTest extends TestCase
      * @param mixed $index   Index
      * @param array $matcher Matcher
      *
-     * @return void
-     *
      * @depends testGetParameterRowEmpty
      * @dataProvider providerGetParameterRow
      */
@@ -399,8 +392,6 @@ class RoutinesTest extends TestCase
      *
      * @param array $data    Data for routine
      * @param array $matcher Matcher
-     *
-     * @return void
      *
      * @depends testGetParameterRow
      * @dataProvider providerGetParameterRowAjax
@@ -1168,8 +1159,6 @@ class RoutinesTest extends TestCase
      * @param string $query   Query
      * @param int    $num_err Error number
      *
-     * @return void
-     *
      * @dataProvider providerGetQueryFromRequest
      */
     public function testGetQueryFromRequest($request, $query, $num_err): void
@@ -1211,7 +1200,11 @@ class RoutinesTest extends TestCase
             );
         $GLOBALS['dbi'] = $dbi;
 
-        $routines = new Routines($dbi);
+        $routines = new Routines(
+            $dbi,
+            new Template(),
+            Response::getInstance()
+        );
 
         unset($_POST);
         $_POST = $request;

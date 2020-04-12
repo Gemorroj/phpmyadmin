@@ -1,21 +1,19 @@
 <?php
 /**
  * Test for PhpMyAdmin\Gis\GisMultiLineString
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Gis;
 
 use PhpMyAdmin\Gis\GisMultiLineString;
-use PhpMyAdmin\Tests\Gis\GisGeomTestCase;
 use TCPDF;
+use function function_exists;
+use function imagecreatetruecolor;
+use function preg_match;
 
 /**
  * Tests for PhpMyAdmin\Gis\GisMultiLineString class
- *
- * @package PhpMyAdmin-test
  */
 class GisMultiLineStringTest extends GisGeomTestCase
 {
@@ -29,8 +27,6 @@ class GisMultiLineStringTest extends GisGeomTestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
-     * @return void
-     *
      * @access protected
      */
     protected function setUp(): void
@@ -41,8 +37,6 @@ class GisMultiLineStringTest extends GisGeomTestCase
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -261,7 +255,6 @@ class GisMultiLineStringTest extends GisGeomTestCase
             ],
         ];
     }
-
 
     /**
      * test case for prepareRowAsPng() method

@@ -1,25 +1,24 @@
 <?php
 /**
  * Holds the PhpMyAdmin\Controllers\Database\RoutinesController
- *
- * @package PhpMyAdmin\Controllers\Database
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Database;
 
 use PhpMyAdmin\CheckUserPrivileges;
+use PhpMyAdmin\Common;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Rte\Routines;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function in_array;
+use function strlen;
 
 /**
  * Routines management.
- *
- * @package PhpMyAdmin\Controllers\Database
  */
 class RoutinesController extends AbstractController
 {
@@ -39,16 +38,13 @@ class RoutinesController extends AbstractController
         $this->checkUserPrivileges = $checkUserPrivileges;
     }
 
-    /**
-     * @param array $params Request parameters
-     *
-     * @return void
-     */
-    public function index(array $params): void
+    public function index(): void
     {
         global $_PMA_RTE, $db, $table, $tables, $num_tables, $total_num_tables, $sub_part, $is_show_stats;
         global $db_is_system_schema, $tooltip_truename, $tooltip_aliasname, $pos, $url_query;
         global $errors, $titles;
+
+        $params = ['type' => $_REQUEST['type'] ?? null];
 
         $this->checkUserPrivileges->getPrivileges();
 
@@ -59,10 +55,10 @@ class RoutinesController extends AbstractController
              * Displays the header and tabs
              */
             if (! empty($table) && in_array($table, $this->dbi->getTables($db))) {
-                include_once ROOT_PATH . 'libraries/tbl_common.inc.php';
+                Common::table();
             } else {
                 $table = '';
-                include_once ROOT_PATH . 'libraries/db_common.inc.php';
+                Common::database();
 
                 list(
                     $tables,
@@ -106,7 +102,7 @@ class RoutinesController extends AbstractController
          */
         $errors = [];
 
-        $routines = new Routines($this->dbi);
+        $routines = new Routines($this->dbi, $this->template, $this->response);
         $routines->main($params['type']);
     }
 }

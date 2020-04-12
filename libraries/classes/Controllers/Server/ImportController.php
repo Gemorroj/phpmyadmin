@@ -1,23 +1,15 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Server
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
 
+use PhpMyAdmin\Common;
 use PhpMyAdmin\Config\PageSettings;
 use PhpMyAdmin\Controllers\AbstractController;
 use PhpMyAdmin\Display\Import;
 
-/**
- * @package PhpMyAdmin\Controllers\Server
- */
 final class ImportController extends AbstractController
 {
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $db, $max_upload_size, $table;
@@ -28,7 +20,7 @@ final class ImportController extends AbstractController
         $scripts = $header->getScripts();
         $scripts->addFile('import.js');
 
-        require ROOT_PATH . 'libraries/server_common.inc.php';
+        Common::server();
 
         $this->response->addHTML(Import::get(
             'server',

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Database\Search
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -15,21 +13,15 @@ use ReflectionClass;
 
 /**
  * Tests for database search.
- *
- * @package PhpMyAdmin-test
  */
 class SearchTest extends PmaTestCase
 {
-    /**
-     * @access protected
-     */
+    /** @access protected */
     protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -63,8 +55,6 @@ class SearchTest extends PmaTestCase
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
      *
-     * @return void
-     *
      * @access protected
      */
     protected function tearDown(): void
@@ -93,8 +83,6 @@ class SearchTest extends PmaTestCase
      *
      * @param string $type     type
      * @param string $expected expected result
-     *
-     * @return void
      *
      * @dataProvider searchTypes
      */
@@ -210,7 +198,7 @@ class SearchTest extends PmaTestCase
             $main
         );
         $this->assertStringContainsString(
-            '<a id="togglequerybox"',
+            '<button class="btn btn-secondary" id="togglequerybox"',
             $main
         );
     }

@@ -1,49 +1,26 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
 
-use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Common;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Template;
+use function count;
+use function is_array;
+use function json_decode;
 
 /**
  * Displays index edit/creation form and handles it.
- *
- * @package PhpMyAdmin\Controllers\Table
  */
 class IndexesController extends AbstractController
 {
-    /**
-     * @param Response          $response Response object
-     * @param DatabaseInterface $dbi      DatabaseInterface object
-     * @param Template          $template Template object
-     * @param string            $db       Database name
-     * @param string            $table    Table name
-     */
-    public function __construct(
-        $response,
-        $dbi,
-        Template $template,
-        $db,
-        $table
-    ) {
-        parent::__construct($response, $dbi, $template, $db, $table);
-    }
-
-    /**
-     * @return void
-     */
     public function index(): void
     {
         if (! isset($_POST['create_edit_table'])) {
-            include_once ROOT_PATH . 'libraries/tbl_common.inc.php';
+            Common::table();
         }
         if (isset($_POST['index'])) {
             if (is_array($_POST['index'])) {
@@ -68,8 +45,6 @@ class IndexesController extends AbstractController
      * Display the form to edit/create an index
      *
      * @param Index $index An Index instance.
-     *
-     * @return void
      */
     public function displayForm(Index $index): void
     {
@@ -135,11 +110,11 @@ class IndexesController extends AbstractController
      * and moves back to /table/sql
      *
      * @param Index $index An Index instance.
-     *
-     * @return void
      */
     public function doSaveData(Index $index): void
     {
+        global $containerBuilder;
+
         $error = false;
 
         $sql_query = $this->dbi->getTable($this->db, $this->table)
@@ -163,15 +138,25 @@ class IndexesController extends AbstractController
                     'message',
                     Generator::getMessage($message, $sql_query, 'success')
                 );
+
+                $indexes = Index::getFromTable($this->table, $this->db);
+                $indexesDuplicates = Index::findDuplicates($this->table, $this->db);
+
                 $this->response->addJSON(
                     'index_table',
-                    Index::getHtmlForIndexes(
-                        $this->table,
-                        $this->db
-                    )
+                    $this->template->render('indexes', [
+                        'url_params' => [
+                            'db' => $this->db,
+                            'table' => $this->table,
+                        ],
+                        'indexes' => $indexes,
+                        'indexes_duplicates' => $indexesDuplicates,
+                    ])
                 );
             } else {
-                include ROOT_PATH . 'libraries/entry_points/table/structure.php';
+                /** @var StructureController $controller */
+                $controller = $containerBuilder->get(StructureController::class);
+                $controller->index();
             }
         } else {
             $this->response->setRequestStatus(false);

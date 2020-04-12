@@ -1,8 +1,6 @@
 <?php
 /**
  * Holds VariablesControllerTest class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -14,21 +12,19 @@ use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
+use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Williamdes\MariaDBMySQLKBS\Search as KBSearch;
 use Williamdes\MariaDBMySQLKBS\SlimData as KBSlimData;
+use function htmlspecialchars;
+use function str_replace;
 
 /**
  * Tests for VariablesController class
- *
- * @package PhpMyAdmin-test
  */
 class VariablesControllerTest extends TestCase
 {
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         $GLOBALS['PMA_Config'] = new Config();
@@ -83,18 +79,18 @@ class VariablesControllerTest extends TestCase
         $GLOBALS['dbi'] = $dbi;
     }
 
-    /**
-     * @return void
-     */
     public function testIndex(): void
     {
+        $response = new ResponseStub();
+
         $controller = new VariablesController(
-            Response::getInstance(),
+            $response,
             $GLOBALS['dbi'],
             new Template()
         );
 
-        $html = $controller->index([]);
+        $controller->index();
+        $html = $response->getHTMLResult();
 
         $this->assertStringContainsString(
             Generator::getIcon('b_save', __('Save')),
@@ -137,8 +133,6 @@ class VariablesControllerTest extends TestCase
 
     /**
      * Test for formatVariable()
-     *
-     * @return void
      */
     public function testFormatVariable(): void
     {

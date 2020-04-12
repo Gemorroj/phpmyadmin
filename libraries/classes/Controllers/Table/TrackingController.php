@@ -1,11 +1,9 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
 
+use PhpMyAdmin\Common;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
@@ -13,10 +11,13 @@ use PhpMyAdmin\Template;
 use PhpMyAdmin\Tracker;
 use PhpMyAdmin\Tracking;
 use PhpMyAdmin\Url;
+use function array_map;
+use function define;
+use function explode;
+use function htmlspecialchars;
+use function sprintf;
+use function strtotime;
 
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 final class TrackingController extends AbstractController
 {
     /** @var Tracking */
@@ -42,9 +43,6 @@ final class TrackingController extends AbstractController
         $this->tracking = $tracking;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $pmaThemeImage, $text_dir, $url_query, $url_params, $msg;
@@ -58,7 +56,7 @@ final class TrackingController extends AbstractController
         $scripts->addFile('table/tracking.js');
 
         define('TABLE_MAY_BE_ABSENT', true);
-        require ROOT_PATH . 'libraries/tbl_common.inc.php';
+        Common::table();
 
         if (Tracker::isActive()
             && Tracker::isTracked($GLOBALS['db'], $GLOBALS['table'])

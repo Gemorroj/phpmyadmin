@@ -1,8 +1,6 @@
 <?php
 /**
  * Functionality for the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 declare(strict_types=1);
 
@@ -14,8 +12,6 @@ use PhpMyAdmin\Url;
 
 /**
  * Represents a container for index nodes in the navigation tree
- *
- * @package PhpMyAdmin-Navigation
  */
 class NodeIndexContainer extends Node
 {
@@ -29,14 +25,10 @@ class NodeIndexContainer extends Node
         $this->links = [
             'text' => Url::getFromRoute('/table/structure', [
                 'server' => $GLOBALS['server'],
-                'db' => '%2\$s',
-                'table' => '%1\$s',
-            ]),
+            ]) . '&amp;db=%2$s&amp;table=%1$s',
             'icon' => Url::getFromRoute('/table/structure', [
                 'server' => $GLOBALS['server'],
-                'db' => '%2\$s',
-                'table' => '%1\$s',
-            ]),
+            ]) . '&amp;db=%2$s&amp;table=%1$s',
         ];
         $this->realName = 'indexes';
 

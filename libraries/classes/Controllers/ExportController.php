@@ -1,11 +1,9 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers;
 
+use PhpMyAdmin\Controllers\Database\ExportController as DatabaseExportController;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Encoding;
@@ -23,10 +21,17 @@ use PhpMyAdmin\SqlParser\Utils\Misc;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function count;
+use function in_array;
+use function ini_set;
+use function is_array;
+use function ob_end_clean;
+use function ob_get_length;
+use function register_shutdown_function;
+use function strlen;
+use function time;
+use const PHP_EOL;
 
-/**
- * @package PhpMyAdmin\Controllers
- */
 final class ExportController extends AbstractController
 {
     /** @var Export */
@@ -49,12 +54,9 @@ final class ExportController extends AbstractController
         $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
-        global $db, $export_type, $filename_template, $sql_query, $err_url, $message;
+        global $containerBuilder, $db, $export_type, $filename_template, $sql_query, $err_url, $message;
         global $compression, $crlf, $asfile, $buffer_needed, $save_on_server, $file_handle;
         global $output_charset_conversion, $output_kanji_conversion, $table, $what, $export_plugin, $single_table;
         global $compression_methods, $onserver, $back_button, $refreshButton, $save_filename, $filename, $separate_files;
@@ -70,7 +72,6 @@ final class ExportController extends AbstractController
         //check if it's the GET request to check export time out
         if (isset($_GET['check_time_out'])) {
             if (isset($_SESSION['pma_export_error'])) {
-                $err = $_SESSION['pma_export_error'];
                 unset($_SESSION['pma_export_error']);
                 echo 'timeout';
             } else {
@@ -307,7 +308,11 @@ final class ExportController extends AbstractController
             $this->response->disable();
             //Disable all active buffers (see: ob_get_status(true) at this point)
             do {
-                $hasBuffer = @ob_end_clean();
+                if (ob_get_length() > 0) {
+                    $hasBuffer = ob_end_clean();
+                } else {
+                    $hasBuffer = false;
+                }
             } while ($hasBuffer);
         }
 
@@ -327,6 +332,10 @@ final class ExportController extends AbstractController
             $err_url = Url::getFromRoute('/table/export', [
                 'db' => $db,
                 'table' => $table,
+            ]);
+        } elseif ($export_type === 'raw') {
+            $err_url = Url::getFromRoute('/server/export', [
+                'sql_query' => $sql_query,
             ]);
         } else {
             Core::fatalError(__('Bad parameters!'));
@@ -403,6 +412,11 @@ final class ExportController extends AbstractController
             $mime_type = '';
         }
 
+        // For raw query export, filename will be export.extension
+        if ($export_type === 'raw') {
+            [$filename ] = $this->export->getFinalFilenameAndMimetypeForFilename($export_plugin, $compression, 'export');
+        }
+
         // Open file on server if needed
         if ($save_on_server) {
             list($save_filename, $message, $file_handle) = $this->export->openFile(
@@ -436,7 +450,9 @@ final class ExportController extends AbstractController
                             __('No tables found in database.')
                         );
                         $active_page = Url::getFromRoute('/database/export');
-                        include ROOT_PATH . 'libraries/entry_points/database/export.php';
+                        /** @var DatabaseExportController $controller */
+                        $controller = $containerBuilder->get(DatabaseExportController::class);
+                        $controller->index();
                         exit;
                     }
                 }
@@ -466,13 +482,17 @@ final class ExportController extends AbstractController
                 || isset($GLOBALS[$what . '_comments']);
             $do_mime     = isset($GLOBALS[$what . '_mime']);
             if ($do_relation || $do_comments || $do_mime) {
-                $cfgRelation = $this->relation->getRelationsParam();
+                $this->relation->getRelationsParam();
             }
 
             // Include dates in export?
             $do_dates = isset($GLOBALS[$what . '_dates']);
 
             $whatStrucOrData = $GLOBALS[$what . '_structure_or_data'];
+
+            if ($export_type === 'raw') {
+                $whatStrucOrData = 'raw';
+            }
 
             /**
              * Builds the dump
@@ -548,6 +568,15 @@ final class ExportController extends AbstractController
                         $separate_files
                     );
                 }
+            } elseif ($export_type === 'raw') {
+                Export::exportRaw(
+                    $whatStrucOrData,
+                    $export_plugin,
+                    $crlf,
+                    $err_url,
+                    $sql_query,
+                    $export_type
+                );
             } else {
                 // We export just one table
                 // $allrows comes from the form when "Dump all rows" has been selected

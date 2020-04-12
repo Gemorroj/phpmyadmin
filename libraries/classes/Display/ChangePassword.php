@@ -1,15 +1,11 @@
 <?php
 /**
  * Displays form for password change
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Display;
 
-use PhpMyAdmin\Html\MySQLDocumentation;
-use PhpMyAdmin\Message;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\Server\Privileges;
@@ -19,8 +15,6 @@ use PhpMyAdmin\Util;
 
 /**
  * Displays form for password change
- *
- * @package PhpMyAdmin
  */
 class ChangePassword
 {
@@ -52,11 +46,6 @@ class ChangePassword
 
         $is_privileges = isset($_REQUEST['route']) && $_REQUEST['route'] === '/server/privileges';
 
-        $action = Url::getFromRoute('/user-password');
-        if ($is_privileges) {
-            $action = Url::getFromRoute('/server/privileges');
-        }
-
         $template = new Template();
         $html = $template->render('display/change_password/file_a', [
             'is_privileges' => $is_privileges,
@@ -73,39 +62,34 @@ class ChangePassword
             $hostname
         );
 
-        if (($serverType == 'MySQL'
-            && $serverVersion >= 50507)
-            || ($serverType == 'MariaDB'
-            && $serverVersion >= 50200)
-        ) {
+        $isNew = ($serverType == 'MySQL' && $serverVersion >= 50507)
+            || ($serverType == 'MariaDB' && $serverVersion >= 50200);
+
+        if ($isNew) {
             // Provide this option only for 5.7.6+
             // OR for privileged users in 5.5.7+
             if (($serverType == 'MySQL'
                 && $serverVersion >= 50706)
                 || ($GLOBALS['dbi']->isSuperuser() && $mode == 'edit_other')
             ) {
-                $auth_plugin_dropdown = $serverPrivileges->getHtmlForAuthPluginsDropdown(
-                    $orig_auth_plugin,
-                    'change_pw',
-                    'new'
-                );
+                $active_auth_plugins = $serverPrivileges->getActiveAuthPlugins();
+                if (isset($active_auth_plugins['mysql_old_password'])) {
+                    unset($active_auth_plugins['mysql_old_password']);
+                }
 
                 $html .= $template->render('display/change_password/file_b', [
-                    'auth_plugin_dropdown' => $auth_plugin_dropdown,
+                    'active_auth_plugins' => $active_auth_plugins,
                     'orig_auth_plugin' => $orig_auth_plugin,
                 ]);
             } else {
                 $html .= $template->render('display/change_password/file_c');
             }
         } else {
-            $auth_plugin_dropdown = $serverPrivileges->getHtmlForAuthPluginsDropdown(
-                $orig_auth_plugin,
-                'change_pw',
-                'old'
-            );
+            $active_auth_plugins = ['mysql_native_password' => __('Native MySQL authentication')];
 
             $html .= $template->render('display/change_password/file_d', [
-                'auth_plugin_dropdown' => $auth_plugin_dropdown,
+                'orig_auth_plugin' => $orig_auth_plugin,
+                'active_auth_plugins' => $active_auth_plugins,
             ]);
         }
 

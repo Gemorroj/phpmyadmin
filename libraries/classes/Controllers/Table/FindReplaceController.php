@@ -1,39 +1,39 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
 
+use PhpMyAdmin\Common;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
+use function array_key_exists;
+use function count;
+use function is_array;
+use function mb_strtolower;
+use function preg_match;
+use function preg_replace;
+use function str_ireplace;
+use function str_replace;
+use function strncasecmp;
+use function strpos;
 
 /**
  * Handles find and replace tab.
  *
  * Displays find and replace form, allows previewing and do the replacing.
- *
- * @package PhpMyAdmin\Controllers\Table
  */
 class FindReplaceController extends AbstractController
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private $_columnNames;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $_columnTypes;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $_connectionCharSet;
 
     /**
@@ -54,12 +54,9 @@ class FindReplaceController extends AbstractController
         );
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
-        require_once ROOT_PATH . 'libraries/tbl_common.inc.php';
+        Common::table();
 
         if (isset($_POST['find'])) {
             $this->findAction();
@@ -80,8 +77,6 @@ class FindReplaceController extends AbstractController
 
     /**
      * Gets all the columns of a table along with their types.
-     *
-     * @return void
      */
     private function _loadTableInfo(): void
     {
@@ -122,8 +117,6 @@ class FindReplaceController extends AbstractController
 
     /**
      * Display selection form action
-     *
-     * @return void
      */
     public function displaySelectionFormAction(): void
     {
@@ -160,9 +153,6 @@ class FindReplaceController extends AbstractController
         );
     }
 
-    /**
-     * @return void
-     */
     public function findAction(): void
     {
         $useRegex = array_key_exists('useRegex', $_POST)
@@ -178,9 +168,6 @@ class FindReplaceController extends AbstractController
         $this->response->addJSON('preview', $preview);
     }
 
-    /**
-     * @return void
-     */
     public function replaceAction(): void
     {
         $this->replace(
@@ -202,11 +189,11 @@ class FindReplaceController extends AbstractController
     /**
      * Returns HTML for previewing strings found and their replacements
      *
-     * @param int     $columnIndex index of the column
-     * @param string  $find        string to find in the column
-     * @param string  $replaceWith string to replace with
-     * @param boolean $useRegex    to use Regex replace or not
-     * @param string  $charSet     character set of the connection
+     * @param int    $columnIndex index of the column
+     * @param string $find        string to find in the column
+     * @param string $replaceWith string to replace with
+     * @param bool   $useRegex    to use Regex replace or not
+     * @param string $charSet     character set of the connection
      *
      * @return string HTML for previewing strings found and their replacements
      */
@@ -329,11 +316,11 @@ class FindReplaceController extends AbstractController
     /**
      * Replaces a given string in a column with a give replacement
      *
-     * @param int     $columnIndex index of the column
-     * @param string  $find        string to find in the column
-     * @param string  $replaceWith string to replace with
-     * @param boolean $useRegex    to use Regex replace or not
-     * @param string  $charSet     character set of the connection
+     * @param int    $columnIndex index of the column
+     * @param string $find        string to find in the column
+     * @param string $replaceWith string to replace with
+     * @param bool   $useRegex    to use Regex replace or not
+     * @param string $charSet     character set of the connection
      *
      * @return void
      */

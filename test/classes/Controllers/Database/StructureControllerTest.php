@@ -3,8 +3,6 @@
  * StructureControllerTest class
  *
  * this class is for testing StructureController class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -19,41 +17,34 @@ use PhpMyAdmin\Table;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
+use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use ReflectionException;
+use function define;
+use function defined;
+use function json_encode;
 
 /**
  * StructureControllerTest class
  *
  * this class is for testing StructureController class
- *
- * @package PhpMyAdmin-test
  */
 class StructureControllerTest extends PmaTestCase
 {
-    /**
-     * @var \PhpMyAdmin\Tests\Stubs\Response
-     */
+    /** @var ResponseStub */
     private $response;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Replication
-     */
+    /** @var Replication */
     private $replication;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     private $template;
 
     /**
      * Prepares environment for the test.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -448,7 +439,7 @@ class StructureControllerTest extends PmaTestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|RecentFavoriteTable
+     * @return MockObject|RecentFavoriteTable
      */
     private function getFavoriteTablesMock()
     {
@@ -496,9 +487,9 @@ class StructureControllerTest extends PmaTestCase
         $property = $class->getProperty('tables');
         $property->setAccessible(true);
 
-        $json = $controller->handleRealRowCountRequestAction([
-            'table' => 'table',
-        ]);
+        $_REQUEST['table'] = 'table';
+        $controller->handleRealRowCountRequestAction();
+        $json = $this->response->getJSONResult();
         $this->assertEquals(
             6,
             $json['real_row_count']
@@ -506,10 +497,9 @@ class StructureControllerTest extends PmaTestCase
 
         // Fall into another branch
         $property->setValue($controller, [['TABLE_NAME' => 'table']]);
-        $json = $controller->handleRealRowCountRequestAction([
-            'table' => 'table',
-            'real_row_count_all' => 'abc',
-        ]);
+        $_REQUEST['real_row_count_all'] = 'abc';
+        $controller->handleRealRowCountRequestAction();
+        $json = $this->response->getJSONResult();
 
         $expectedResult = [[
             'table' => 'table',
@@ -525,7 +515,7 @@ class StructureControllerTest extends PmaTestCase
     /**
      * @return void
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function testDisplayTableList()
     {

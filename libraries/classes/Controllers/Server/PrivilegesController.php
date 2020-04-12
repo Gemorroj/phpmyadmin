@@ -1,12 +1,10 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Server
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
 
 use PhpMyAdmin\CheckUserPrivileges;
+use PhpMyAdmin\Common;
 use PhpMyAdmin\Controllers\AbstractController;
 use PhpMyAdmin\Controllers\Database\PrivilegesController as DatabaseController;
 use PhpMyAdmin\Controllers\Table\PrivilegesController as TableController;
@@ -22,11 +20,16 @@ use PhpMyAdmin\Server\Users;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function header;
+use function implode;
+use function is_array;
+use function ob_get_clean;
+use function ob_start;
+use function str_replace;
+use function urlencode;
 
 /**
  * Server privileges and users manipulations.
- *
- * @package PhpMyAdmin\Controllers\Server
  */
 class PrivilegesController extends AbstractController
 {
@@ -45,9 +48,6 @@ class PrivilegesController extends AbstractController
         $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $db, $table, $err_url, $message, $pmaThemeImage, $text_dir, $url_query, $post_patterns;
@@ -103,7 +103,10 @@ class PrivilegesController extends AbstractController
             && $GLOBALS['cfgRelation']['menuswork']
         ) {
             $this->response->addHTML('<div class="container-fluid">');
-            $this->response->addHTML(Users::getHtmlForSubMenusOnUsersPage(Url::getFromRoute('/server/privileges')));
+            $this->response->addHTML($this->template->render('server/privileges/subnav', [
+                'active' => 'privileges',
+                'is_super_user' => $this->dbi->isSuperuser(),
+            ]));
         }
 
         /**
@@ -116,7 +119,7 @@ class PrivilegesController extends AbstractController
 
         Core::setPostAsGlobal($post_patterns);
 
-        require ROOT_PATH . 'libraries/server_common.inc.php';
+        Common::server();
 
         /**
          * Messages are built using the message name
@@ -450,8 +453,8 @@ class PrivilegesController extends AbstractController
             || (isset($_POST['submit_mult']) && $_POST['submit_mult'] == 'export')
         ) {
             [$title, $export] = $serverPrivileges->getListForExportUserDefinition(
-                $username ?? null,
-                $hostname ?? null
+                $username ?? '',
+                $hostname ?? ''
             );
 
             unset($username, $hostname, $grants, $one_grant);

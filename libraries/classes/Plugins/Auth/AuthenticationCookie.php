@@ -1,9 +1,6 @@
 <?php
 /**
  * Cookie Authentication plugin for phpMyAdmin
- *
- * @package    PhpMyAdmin-Authentication
- * @subpackage Cookie
  */
 declare(strict_types=1);
 
@@ -23,11 +20,35 @@ use PhpMyAdmin\Util;
 use phpseclib\Crypt;
 use phpseclib\Crypt\Random;
 use ReCaptcha;
+use function base64_decode;
+use function base64_encode;
+use function class_exists;
+use function count;
+use function defined;
+use function explode;
+use function function_exists;
+use function hash_equals;
+use function hash_hmac;
+use function in_array;
+use function ini_get;
+use function intval;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function openssl_cipher_iv_length;
+use function openssl_decrypt;
+use function openssl_encrypt;
+use function openssl_error_string;
+use function openssl_random_pseudo_bytes;
+use function preg_match;
+use function session_id;
+use function strlen;
+use function substr;
+use function time;
 
 /**
  * Handles the cookie authentication method
- *
- * @package PhpMyAdmin-Authentication
  */
 class AuthenticationCookie extends AuthenticationPlugin
 {
@@ -41,9 +62,6 @@ class AuthenticationCookie extends AuthenticationPlugin
      */
     private $_use_openssl;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct();
@@ -53,7 +71,7 @@ class AuthenticationCookie extends AuthenticationPlugin
     /**
      * Forces (not)using of openSSL
      *
-     * @param boolean $use The flag
+     * @param bool $use The flag
      *
      * @return void
      */
@@ -67,7 +85,7 @@ class AuthenticationCookie extends AuthenticationPlugin
      *
      * this function MUST exit/quit the application
      *
-     * @return boolean|void
+     * @return bool|void
      *
      * @global string $conn_error the last connection error
      */
@@ -228,7 +246,7 @@ class AuthenticationCookie extends AuthenticationPlugin
      *
      * it directly switches to showFailure() if user inactivity timeout is reached
      *
-     * @return boolean   whether we get authentication settings or not
+     * @return bool whether we get authentication settings or not
      */
     public function readCredentials()
     {
@@ -405,7 +423,7 @@ class AuthenticationCookie extends AuthenticationPlugin
     /**
      * Set the user and password after last checkings if required
      *
-     * @return boolean always true
+     * @return bool always true
      */
     public function storeCredentials()
     {
@@ -706,7 +724,7 @@ class AuthenticationCookie extends AuthenticationPlugin
 
     /**
      * Encryption using openssl's AES or phpseclib's AES
-     * (phpseclib uses mcrypt when it is available)
+     * (phpseclib uses anoher extension when it is available)
      *
      * @param string $data   original data
      * @param string $secret the secret
@@ -745,7 +763,7 @@ class AuthenticationCookie extends AuthenticationPlugin
 
     /**
      * Decryption using openssl's AES or phpseclib's AES
-     * (phpseclib uses mcrypt when it is available)
+     * (phpseclib uses anoher extension when it is available)
      *
      * @param string $encdata encrypted data
      * @param string $secret  the secret
@@ -862,7 +880,6 @@ class AuthenticationCookie extends AuthenticationPlugin
      */
     public function logOut()
     {
-        /** @var Config $PMA_Config */
         global $PMA_Config;
 
         // -> delete password cookie(s)

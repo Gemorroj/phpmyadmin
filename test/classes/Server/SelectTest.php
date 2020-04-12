@@ -1,8 +1,6 @@
 <?php
 /**
  * tests for PhpMyAdmin\Server\Select
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -16,15 +14,11 @@ use PHPUnit\Framework\TestCase;
  * PhpMyAdmin\Tests\Server\SelectTest class
  *
  * this class is for testing PhpMyAdmin\Server\Select methods
- *
- * @package PhpMyAdmin-test
  */
 class SelectTest extends TestCase
 {
     /**
      * Prepares environment for the test.
-     *
-     * @return void
      */
     protected function setUp(): void
     {

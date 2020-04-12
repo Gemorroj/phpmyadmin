@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for all input/output transformation plugins
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,6 +9,7 @@ namespace PhpMyAdmin\Tests\Plugins\Transformations;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Plugins\Transformations\Input\Image_JPEG_Upload;
 use PhpMyAdmin\Plugins\Transformations\Input\Text_Plain_FileUpload;
+use PhpMyAdmin\Plugins\Transformations\Input\Text_Plain_Iptolong;
 use PhpMyAdmin\Plugins\Transformations\Input\Text_Plain_RegexValidation;
 use PhpMyAdmin\Plugins\Transformations\Output\Application_Octetstream_Download;
 use PhpMyAdmin\Plugins\Transformations\Output\Application_Octetstream_Hex;
@@ -28,19 +27,18 @@ use PhpMyAdmin\Plugins\Transformations\Text_Plain_PreApPend;
 use PhpMyAdmin\Plugins\Transformations\Text_Plain_Substring;
 use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
+use function date_default_timezone_set;
+use function function_exists;
+use function method_exists;
 
 /**
  * Tests for different input/output transformation plugins
- *
- * @package PhpMyAdmin-test
  */
 class TransformationPluginsTest extends PmaTestCase
 {
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -65,8 +63,6 @@ class TransformationPluginsTest extends PmaTestCase
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -415,10 +411,10 @@ class TransformationPluginsTest extends PmaTestCase
                 . ' data via standard input. Returns the standard output of the'
                 . ' application. The default is Tidy, to pretty-print HTML code.'
                 . ' For security reasons, you have to manually edit the file'
-                . ' libraries/classes/Plugins/Transformations/Output/Text_Plain_External'
+                . ' libraries/classes/Plugins/Transformations/Abs/ExternalTransformationsPlugin'
                 . '.php and list the tools you want to make available.'
                 . ' The first option is then the number of the program you want to'
-                . ' use and the second option is the parameters for the program.'
+                . ' use. The second option should be blank for historical reasons.'
                 . ' The third option, if set to 1, will convert the output using'
                 . ' htmlspecialchars() (Default 1). The fourth option, if set to 1,'
                 . ' will prevent wrapping and ensure that the output appears all on'
@@ -718,8 +714,6 @@ class TransformationPluginsTest extends PmaTestCase
      * @param mixed  $expected the expected output
      * @param array  $args     the array of arguments
      *
-     * @return void
-     *
      * @dataProvider multiDataProvider
      * @group medium
      */
@@ -939,11 +933,10 @@ class TransformationPluginsTest extends PmaTestCase
                         '200',
                     ],
                 ],
-                '<a href="http://image/PMA_IMAGE" rel="noopener noreferrer" target="_blank">
-    <img src="http://image/PMA_IMAGE" border="0" width="200" height="50">
-    PMA_IMAGE
-</a>
-',
+                '<a href="http://image/PMA_IMAGE" rel="noopener noreferrer" target="_blank">' . "\n"
+                . '    <img src="http://image/PMA_IMAGE" border="0" width="200" height="50">' . "\n"
+                . '    PMA_IMAGE' . "\n"
+                . '</a>' . "\n",
             ],
             [
                 new Text_Plain_Imagelink(),
@@ -1072,6 +1065,26 @@ class TransformationPluginsTest extends PmaTestCase
                 new Text_Plain_Longtoipv4(),
                 ['<my ip>'],
                 '&lt;my ip&gt;',
+            ],
+            [
+                new Text_Plain_Iptolong(),
+                ['10.11.12.13'],
+                168496141,
+            ],
+            [
+                new Text_Plain_Iptolong(),
+                ['10.11.12.913'],
+                '10.11.12.913',
+            ],
+            [
+                new Text_Plain_Iptolong(),
+                ['my ip'],
+                'my ip',
+            ],
+            [
+                new Text_Plain_Iptolong(),
+                ['<my ip>'],
+                '<my ip>',
             ],
         ];
 

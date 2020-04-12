@@ -1,9 +1,6 @@
 <?php
 /**
  * Config Authentication plugin for phpMyAdmin
- *
- * @package    PhpMyAdmin-Authentication
- * @subpackage Config
  */
 declare(strict_types=1);
 
@@ -14,18 +11,22 @@ use PhpMyAdmin\Plugins\AuthenticationPlugin;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Server\Select;
 use PhpMyAdmin\Util;
+use function count;
+use function defined;
+use function sprintf;
+use function trigger_error;
+use const E_USER_NOTICE;
+use const E_USER_WARNING;
 
 /**
  * Handles the config authentication method
- *
- * @package PhpMyAdmin-Authentication
  */
 class AuthenticationConfig extends AuthenticationPlugin
 {
     /**
      * Displays authentication form
      *
-     * @return boolean always true
+     * @return bool always true
      */
     public function showLoginForm()
     {
@@ -47,7 +48,7 @@ class AuthenticationConfig extends AuthenticationPlugin
     /**
      * Gets authentication credentials
      *
-     * @return boolean always true
+     * @return bool always true
      */
     public function readCredentials()
     {

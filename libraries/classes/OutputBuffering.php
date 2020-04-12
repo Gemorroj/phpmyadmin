@@ -1,17 +1,27 @@
 <?php
 /**
  * Output buffering wrapper
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use function defined;
+use function flush;
+use function function_exists;
+use function header;
+use function ini_get;
+use function ob_end_clean;
+use function ob_flush;
+use function ob_get_contents;
+use function ob_get_length;
+use function ob_get_level;
+use function ob_get_status;
+use function ob_start;
+use function register_shutdown_function;
+
 /**
  * Output buffering wrapper class
- *
- * @package PhpMyAdmin
  */
 class OutputBuffering
 {
@@ -19,9 +29,7 @@ class OutputBuffering
     private $_mode;
     private $_content;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $_on;
 
     /**
@@ -36,7 +44,7 @@ class OutputBuffering
     /**
      * This function could be used eventually to support more modes.
      *
-     * @return integer  the output buffer mode
+     * @return int the output buffer mode
      */
     private function _getMode()
     {
@@ -95,7 +103,7 @@ class OutputBuffering
             }
             register_shutdown_function(
                 [
-                    OutputBuffering::class,
+                    self::class,
                     'stop',
                 ]
             );
@@ -112,7 +120,7 @@ class OutputBuffering
      */
     public static function stop()
     {
-        $buffer = OutputBuffering::getInstance();
+        $buffer = self::getInstance();
         if ($buffer->_on) {
             $buffer->_on = false;
             $buffer->_content = ob_get_contents();

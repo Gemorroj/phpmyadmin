@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PMA_StorageEngine_ndbcluster
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -13,21 +11,15 @@ use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Ndbcluster
- *
- * @package PhpMyAdmin-test
  */
 class NdbclusterTest extends PmaTestCase
 {
-    /**
-     * @access protected
-     */
+    /** @access protected */
     protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -40,8 +32,6 @@ class NdbclusterTest extends PmaTestCase
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */

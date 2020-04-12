@@ -1,8 +1,6 @@
 <?php
 /**
  * Test for PhpMyAdmin\Navigation\Nodes\NodeDatabaseChild
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -16,8 +14,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeDatabaseChild class
- *
- * @package PhpMyAdmin-test
  */
 class NodeDatabaseChildTest extends PmaTestCase
 {
@@ -30,8 +26,6 @@ class NodeDatabaseChildTest extends PmaTestCase
 
     /**
      * Sets up the fixture.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -52,8 +46,6 @@ class NodeDatabaseChildTest extends PmaTestCase
 
     /**
      * Tears down the fixture.
-     *
-     * @return void
      *
      * @access protected
      */

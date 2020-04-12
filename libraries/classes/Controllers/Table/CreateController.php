@@ -1,7 +1,4 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -11,16 +8,21 @@ use PhpMyAdmin\Core;
 use PhpMyAdmin\CreateAddField;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
+use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
+use PhpMyAdmin\Table\ColumnsDefinition;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function htmlspecialchars;
+use function is_array;
+use function mb_strtolower;
+use function sprintf;
+use function strlen;
 
 /**
  * Displays table create form and handles it.
- *
- * @package PhpMyAdmin\Controllers\Table
  */
 class CreateController extends AbstractController
 {
@@ -30,6 +32,9 @@ class CreateController extends AbstractController
     /** @var Config */
     private $config;
 
+    /** @var Relation */
+    private $relation;
+
     /**
      * @param Response          $response        A Response instance.
      * @param DatabaseInterface $dbi             A DatabaseInterface instance.
@@ -38,6 +43,7 @@ class CreateController extends AbstractController
      * @param string            $table           Table name.
      * @param Transformations   $transformations A Transformations instance.
      * @param Config            $config          A Config instance.
+     * @param Relation          $relation        A Relation instance.
      */
     public function __construct(
         $response,
@@ -46,16 +52,15 @@ class CreateController extends AbstractController
         $db,
         $table,
         Transformations $transformations,
-        Config $config
+        Config $config,
+        Relation $relation
     ) {
         parent::__construct($response, $dbi, $template, $db, $table);
         $this->transformations = $transformations;
         $this->config = $config;
+        $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $num_fields, $action, $sql_query, $result, $db, $table;
@@ -98,8 +103,6 @@ class CreateController extends AbstractController
 
         $createAddField = new CreateAddField($this->dbi);
 
-        // for libraries/tbl_columns_definition_form.inc.php
-        // check number of fields to be created
         $num_fields = $createAddField->getNumberOfFieldsFromRequest();
 
         $action = Url::getFromRoute('/table/create');
@@ -159,9 +162,14 @@ class CreateController extends AbstractController
         // This global variable needs to be reset for the header class to function properly
         $table = '';
 
-        /**
-         * Displays the form used to define the structure of the table
-         */
-        require ROOT_PATH . 'libraries/tbl_columns_definition_form.inc.php';
+        ColumnsDefinition::displayForm(
+            $this->response,
+            $this->template,
+            $this->transformations,
+            $this->relation,
+            $this->dbi,
+            $action,
+            $num_fields
+        );
     }
 }

@@ -1,8 +1,6 @@
 <?php
 /**
  * MySQL charset metadata and manipulations
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -10,11 +8,15 @@ namespace PhpMyAdmin;
 
 use PhpMyAdmin\Charsets\Charset;
 use PhpMyAdmin\Charsets\Collation;
+use function array_keys;
+use function count;
+use function explode;
+use function is_string;
+use function ksort;
+use const SORT_STRING;
 
 /**
  * Class used to manage MySQL charsets
- *
- * @package PhpMyAdmin
  */
 class Charsets
 {
@@ -56,23 +58,17 @@ class Charsets
      */
     private static $serverCharset = null;
 
-    /**
-     * @var array<string, Charset>
-     */
+    /** @var array<string, Charset> */
     private static $charsets = [];
 
-    /**
-     * @var array<string, array<string, Collation>>
-     */
+    /** @var array<string, array<string, Collation>> */
     private static $collations = [];
 
     /**
      * Loads charset data from the server
      *
      * @param DatabaseInterface $dbi       DatabaseInterface instance
-     * @param boolean           $disableIs Disable use of INFORMATION_SCHEMA
-     *
-     * @return void
+     * @param bool              $disableIs Disable use of INFORMATION_SCHEMA
      */
     private static function loadCharsets(DatabaseInterface $dbi, bool $disableIs): void
     {
@@ -105,9 +101,7 @@ class Charsets
      * Loads collation data from the server
      *
      * @param DatabaseInterface $dbi       DatabaseInterface instance
-     * @param boolean           $disableIs Disable use of INFORMATION_SCHEMA
-     *
-     * @return void
+     * @param bool              $disableIs Disable use of INFORMATION_SCHEMA
      */
     private static function loadCollations(DatabaseInterface $dbi, bool $disableIs): void
     {
@@ -144,9 +138,7 @@ class Charsets
       * Get current server charset
       *
       * @param DatabaseInterface $dbi       DatabaseInterface instance
-      * @param boolean           $disableIs Disable use of INFORMATION_SCHEMA
-      *
-      * @return Charset
+      * @param bool              $disableIs Disable use of INFORMATION_SCHEMA
       */
     public static function getServerCharset(DatabaseInterface $dbi, bool $disableIs): Charset
     {
@@ -166,7 +158,7 @@ class Charsets
      * Get all server charsets
      *
      * @param DatabaseInterface $dbi       DatabaseInterface instance
-     * @param boolean           $disableIs Disable use of INFORMATION_SCHEMA
+     * @param bool              $disableIs Disable use of INFORMATION_SCHEMA
      *
      * @return array
      */
@@ -180,7 +172,7 @@ class Charsets
      * Get all server collations
      *
      * @param DatabaseInterface $dbi       DatabaseInterface instance
-     * @param boolean           $disableIs Disable use of INFORMATION_SCHEMA
+     * @param bool              $disableIs Disable use of INFORMATION_SCHEMA
      *
      * @return array
      */
@@ -194,8 +186,6 @@ class Charsets
      * @param DatabaseInterface $dbi       DatabaseInterface instance
      * @param bool              $disableIs Disable use of INFORMATION_SCHEMA
      * @param string|null       $name      Collation name
-     *
-     * @return Collation|null
      */
     public static function findCollationByName(DatabaseInterface $dbi, bool $disableIs, ?string $name): ?Collation
     {

@@ -1,8 +1,6 @@
 <?php
 /**
  * Test for PhpMyAdmin\Navigation\NavigationTree class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -15,20 +13,14 @@ use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Navigation\NavigationTree class
- *
- * @package PhpMyAdmin-test
  */
 class NavigationTreeTest extends PmaTestCase
 {
-    /**
-     * @var NavigationTree
-     */
+    /** @var NavigationTree */
     protected $object;
 
     /**
      * Sets up the fixture.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -55,8 +47,6 @@ class NavigationTreeTest extends PmaTestCase
 
     /**
      * Tears down the fixture.
-     *
-     * @return void
      *
      * @access protected
      */

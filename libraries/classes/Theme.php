@@ -1,15 +1,25 @@
 <?php
 /**
  * hold Theme class
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Template;
-use PhpMyAdmin\ThemeManager;
+use function file_exists;
+use function file_get_contents;
+use function filemtime;
+use function filesize;
+use function in_array;
+use function is_array;
+use function is_dir;
+use function is_readable;
+use function json_decode;
+use function sprintf;
+use function trigger_error;
+use function trim;
+use function version_compare;
+use const E_USER_ERROR;
 
 /**
  * handles theme
@@ -17,43 +27,42 @@ use PhpMyAdmin\ThemeManager;
  * @todo add the possibility to make a theme depend on another theme
  * and by default on original
  * @todo make all components optional - get missing components from 'parent' theme
- * @package PhpMyAdmin
  */
 class Theme
 {
     /**
      * @var string theme version
-     * @access  protected
+     * @access protected
      */
     public $version = '0.0.0.0';
 
     /**
      * @var string theme name
-     * @access  protected
+     * @access protected
      */
     public $name = '';
 
     /**
      * @var string theme id
-     * @access  protected
+     * @access protected
      */
     public $id = '';
 
     /**
      * @var string theme path
-     * @access  protected
+     * @access protected
      */
     public $path = '';
 
     /**
      * @var string image path
-     * @access  protected
+     * @access protected
      */
     public $img_path = '';
 
     /**
-     * @var integer last modification time for info file
-     * @access  protected
+     * @var int last modification time for info file
+     * @access protected
      */
     public $mtime_info = 0;
 
@@ -61,8 +70,8 @@ class Theme
      * needed because sometimes, the mtime for different themes
      * is identical
      *
-     * @var integer filesize for info file
-     * @access  protected
+     * @var int filesize for info file
+     * @access protected
      */
     public $filesize_info = 0;
 
@@ -83,14 +92,9 @@ class Theme
         'icons',
     ];
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
-    /**
-     * Theme constructor.
-     */
     public function __construct()
     {
         $this->template = new Template();
@@ -99,9 +103,9 @@ class Theme
     /**
      * Loads theme information
      *
-     * @return boolean whether loading them info was successful or not
+     * @return bool whether loading them info was successful or not
      *
-     * @access  public
+     * @access public
      */
     public function loadInfo()
     {
@@ -269,7 +273,7 @@ class Theme
      *
      * @param string $version version to compare to
      *
-     * @return boolean true if theme version is equal or higher to $version
+     * @return bool true if theme version is equal or higher to $version
      *
      * @access public
      */
@@ -297,7 +301,7 @@ class Theme
      *
      * @return string name
      *
-     * @access  public
+     * @access public
      */
     public function getName()
     {

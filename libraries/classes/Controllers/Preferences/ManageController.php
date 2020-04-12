@@ -1,7 +1,4 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Preferences
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Preferences;
@@ -20,11 +17,25 @@ use PhpMyAdmin\ThemeManager;
 use PhpMyAdmin\UserPreferences;
 use PhpMyAdmin\UserPreferencesHeader;
 use PhpMyAdmin\Util;
+use function array_merge;
+use function define;
+use function file_exists;
+use function is_array;
+use function is_uploaded_file;
+use function json_decode;
+use function json_encode;
+use function mb_strpos;
+use function mb_substr;
+use function parse_url;
+use function str_replace;
+use function urlencode;
+use function var_export;
+use const JSON_PRETTY_PRINT;
+use const PHP_URL_PATH;
+use const UPLOAD_ERR_OK;
 
 /**
  * User preferences management page.
- *
- * @package PhpMyAdmin\Controllers\Preferences
  */
 class ManageController extends AbstractController
 {
@@ -53,13 +64,10 @@ class ManageController extends AbstractController
         $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $cf, $error, $filename, $import_handle, $json, $PMA_Config, $lang, $max_upload_size;
-        global $new_config, $config, $return_url, $form_display, $all_ok, $params, $query;
+        global $new_config, $config, $return_url, $form_display, $all_ok, $params, $query, $route;
 
         $cf = new ConfigFile($PMA_Config->base_settings);
         $this->userPreferences->pageInit($cf);
@@ -145,7 +153,13 @@ class ManageController extends AbstractController
                 }
                 if (! $all_ok) {
                     // mimic original form and post json in a hidden field
-                    echo UserPreferencesHeader::getContent($this->template, $this->relation);
+                    $cfgRelation = $this->relation->getRelationsParam();
+
+                    echo $this->template->render('preferences/header', [
+                        'route' => $route,
+                        'is_saved' => ! empty($_GET['saved']),
+                        'has_config_storage' => $cfgRelation['userconfigwork'],
+                    ]);
 
                     echo $this->template->render('preferences/manage/error', [
                         'form_errors' => $form_display->displayErrors(),
@@ -216,7 +230,14 @@ class ManageController extends AbstractController
         $scripts = $header->getScripts();
         $scripts->addFile('config.js');
 
-        echo UserPreferencesHeader::getContent($this->template, $this->relation);
+        $cfgRelation = $this->relation->getRelationsParam();
+
+        echo $this->template->render('preferences/header', [
+            'route' => $route,
+            'is_saved' => ! empty($_GET['saved']),
+            'has_config_storage' => $cfgRelation['userconfigwork'],
+        ]);
+
         if ($error) {
             if (! $error instanceof Message) {
                 $error = Message::error($error);

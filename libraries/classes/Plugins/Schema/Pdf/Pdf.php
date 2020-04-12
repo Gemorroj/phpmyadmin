@@ -1,8 +1,6 @@
 <?php
 /**
  * PDF schema handling
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -11,7 +9,16 @@ namespace PhpMyAdmin\Plugins\Schema\Pdf;
 use PhpMyAdmin\Pdf as PdfLib;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Util;
+use function class_exists;
+use function count;
+use function getcwd;
+use function max;
+use function mb_ord;
+use function str_replace;
+use function strlen;
+use function ucfirst;
 
+// phpcs:disable PSR1.Files.SideEffects
 /**
  * Skip the plugin if TCPDF is not available.
  */
@@ -26,14 +33,15 @@ if (! class_exists('TCPDF')) {
 if (getcwd() == __DIR__) {
     die('Attack stopped');
 }
+// phpcs:enable
 
 /**
  * Extends the "TCPDF" class and helps
  * in developing the structure of PDF Schema Export
  *
- * @access  public
- * @package PhpMyAdmin
  * @see     TCPDF
+ *
+ * @access  public
  */
 class Pdf extends PdfLib
 {
@@ -56,20 +64,18 @@ class Pdf extends PdfLib
     private $_withDoc;
     private $_db;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
     /**
      * Constructs PDF for schema export.
      *
-     * @param string  $orientation page orientation
-     * @param string  $unit        unit
-     * @param string  $paper       the format used for pages
-     * @param int     $pageNumber  schema page number that is being exported
-     * @param boolean $withDoc     with document dictionary
-     * @param string  $db          the database name
+     * @param string $orientation page orientation
+     * @param string $unit        unit
+     * @param string $paper       the format used for pages
+     * @param int    $pageNumber  schema page number that is being exported
+     * @param bool   $withDoc     with document dictionary
+     * @param string $db          the database name
      *
      * @access public
      */
@@ -138,9 +144,9 @@ class Pdf extends PdfLib
      * @param float|int $h      The cell height
      * @param string    $txt    The text to output
      * @param mixed     $border Whether to add borders or not
-     * @param integer   $ln     Where to put the cursor once the output is done
+     * @param int       $ln     Where to put the cursor once the output is done
      * @param string    $align  Align mode
-     * @param integer   $fill   Whether to fill the cell with a color or not
+     * @param int       $fill   Whether to fill the cell with a color or not
      * @param string    $link   Link
      *
      * @return void
@@ -385,7 +391,7 @@ class Pdf extends PdfLib
             if ($c == ' ') {
                 $sep = $i;
             }
-            $l += $cw[mb_ord($c)] ?? 0 ;
+            $l += $cw[mb_ord($c)] ?? 0;
             if ($l > $wmax) {
                 if ($sep == -1) {
                     if ($i == $j) {

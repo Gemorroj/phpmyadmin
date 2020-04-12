@@ -1,12 +1,12 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
 
+use PhpMyAdmin\Charsets;
 use PhpMyAdmin\CheckUserPrivileges;
+use PhpMyAdmin\Common;
+use PhpMyAdmin\Controllers\SqlController;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Index;
@@ -15,13 +15,17 @@ use PhpMyAdmin\Operations;
 use PhpMyAdmin\Partition;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
+use PhpMyAdmin\StorageEngine;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function count;
+use function implode;
+use function mb_strstr;
+use function mb_strtolower;
+use function mb_strtoupper;
+use function preg_replace;
 
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 class OperationsController extends AbstractController
 {
     /** @var Operations */
@@ -59,12 +63,9 @@ class OperationsController extends AbstractController
         $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
-        global $url_query, $url_params, $reread_info, $tbl_is_view, $tbl_storage_engine;
+        global $containerBuilder, $url_query, $url_params, $reread_info, $tbl_is_view, $tbl_storage_engine;
         global $show_comment, $tbl_collation, $table_info_num_rows, $row_format, $auto_increment, $create_options;
         global $table_alters, $warning_messages, $lowerCaseNames, $db, $table, $reload, $result;
         global $new_tbl_storage_engine, $sql_query, $message_to_show, $columns, $hideOrderTable, $indexes;
@@ -89,7 +90,7 @@ class OperationsController extends AbstractController
         /**
          * Runs common work
          */
-        require ROOT_PATH . 'libraries/tbl_common.inc.php';
+        Common::table();
         $url_params['goto'] = $url_params['back'] = Url::getFromRoute('/table/operations');
         $url_query .= Url::getCommon($url_params, '&');
 
@@ -103,7 +104,7 @@ class OperationsController extends AbstractController
         $this->dbi->selectDb($db);
 
         $reread_info = $pma_table->getStatusInfo(null, false);
-        $GLOBALS['showtable'] = $pma_table->getStatusInfo(null, (isset($reread_info) && $reread_info ? true : false));
+        $GLOBALS['showtable'] = $pma_table->getStatusInfo(null, (isset($reread_info) && $reread_info));
         if ($pma_table->isView()) {
             $tbl_is_view = true;
             $tbl_storage_engine = __('View');
@@ -152,7 +153,10 @@ class OperationsController extends AbstractController
          * If the table has to be maintained
          */
         if (isset($_POST['table_maintenance'])) {
-            include_once ROOT_PATH . 'libraries/entry_points/sql.php';
+            /** @var SqlController $controller */
+            $controller = $containerBuilder->get(SqlController::class);
+            $controller->index();
+
             unset($result);
         }
         /**
@@ -233,7 +237,7 @@ class OperationsController extends AbstractController
                     . Util::backquote($table);
                 $sql_query     .= "\r\n" . implode("\r\n", $table_alters);
                 $sql_query     .= ';';
-                $result         = $this->dbi->query($sql_query) ? true : false;
+                $result         = (bool) $this->dbi->query($sql_query);
                 $reread_info    = true;
                 unset($table_alters);
                 $warning_messages = $this->operations->getWarningMessagesArray();
@@ -359,18 +363,8 @@ class OperationsController extends AbstractController
 
         $url_params['goto'] = $url_params['back'] = Url::getFromRoute('/table/operations');
 
-        /**
-         * Get columns names
-         */
         $columns = $this->dbi->getColumns($db, $table);
 
-        /**
-         * Displays the page
-         */
-
-        /**
-         * Order the table
-         */
         $hideOrderTable = false;
         // `ALTER TABLE ORDER BY` does not make sense for InnoDB tables that contain
         // a user-defined clustered index (PRIMARY KEY or NOT NULL UNIQUE index).
@@ -396,15 +390,8 @@ class OperationsController extends AbstractController
                 }
             }
         }
-        if (! $hideOrderTable) {
-            $this->response->addHTML($this->operations->getHtmlForOrderTheTable($columns));
-        }
 
-        /**
-         * Move table
-         */
-        $this->response->addHTML($this->operations->getHtmlForMoveTable());
-
+        $comment = '';
         if (mb_strstr((string) $show_comment, '; InnoDB free') === false) {
             if (mb_strstr((string) $show_comment, 'InnoDB free') === false) {
                 // only user entered comment
@@ -418,114 +405,81 @@ class OperationsController extends AbstractController
             $comment = preg_replace('@; InnoDB free:.*?$@', '', (string) $show_comment);
         }
 
-        // PACK_KEYS: MyISAM or ISAM
-        // DELAY_KEY_WRITE, CHECKSUM, : MyISAM only
-        // AUTO_INCREMENT: MyISAM and InnoDB since 5.0.3, PBXT
+        $storageEngines = StorageEngine::getArray();
 
-        // Here should be version check for InnoDB, however it is supported
-        // in >5.0.4, >4.1.12 and >4.0.11, so I decided not to
-        // check for version
+        $charsets = Charsets::getCharsets($this->dbi, $GLOBALS['cfg']['Server']['DisableIS']);
+        $collations = Charsets::getCollations($this->dbi, $GLOBALS['cfg']['Server']['DisableIS']);
 
-        $this->response->addHTML(
-            $this->operations->getTableOptionDiv(
-                $pma_table,
-                $comment ?? '',
-                $tbl_collation,
-                $tbl_storage_engine,
-                $create_options['pack_keys'],
-                (string) $auto_increment,
-                (empty($create_options['delay_key_write']) ? '0' : '1'),
-                (isset($create_options['transactional']) && $create_options['transactional'] == '0' ? '0' : '1'),
-                ($create_options['page_checksum'] ?? ''),
-                (empty($create_options['checksum']) ? '0' : '1')
-            )
-        );
+        $hasPackKeys = isset($create_options['pack_keys'])
+            && $pma_table->isEngine(['MYISAM', 'ARIA', 'ISAM']);
+        $hasChecksumAndDelayKeyWrite = $pma_table->isEngine(['MYISAM', 'ARIA']);
+        $hasTransactionalAndPageChecksum = $pma_table->isEngine('ARIA');
+        $hasAutoIncrement = strlen((string) $auto_increment) > 0
+            && $pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT', 'ROCKSDB']);
 
-        /**
-         * Copy table
-         */
-        $this->response->addHTML($this->operations->getHtmlForCopytable());
+        $possibleRowFormats = $this->operations->getPossibleRowFormat();
 
-        /**
-         * Table maintenance
-         */
-        $this->response->addHTML(
-            $this->operations->getHtmlForTableMaintenance($pma_table, $url_params)
-        );
-
-        if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
-            $truncate_table_url_params = [];
-            $drop_table_url_params = [];
-
-            if (! $tbl_is_view
-                && ! (isset($db_is_system_schema) && $db_is_system_schema)
-            ) {
-                $this_sql_query = 'TRUNCATE TABLE '
-                    . Util::backquote($table);
-                $truncate_table_url_params = array_merge(
-                    $url_params,
-                    [
-                        'sql_query' => $this_sql_query,
-                        'goto' => Url::getFromRoute('/table/structure'),
-                        'reload' => '1',
-                        'message_to_show' => sprintf(
-                            __('Table %s has been emptied.'),
-                            htmlspecialchars($table)
-                        ),
-                    ]
-                );
-            }
-            if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
-                $this_sql_query = 'DROP TABLE '
-                    . Util::backquote($table);
-                $drop_table_url_params = array_merge(
-                    $url_params,
-                    [
-                        'sql_query' => $this_sql_query,
-                        'goto' => Url::getFromRoute('/database/operations'),
-                        'reload' => '1',
-                        'purge' => '1',
-                        'message_to_show' => sprintf(
-                            ($tbl_is_view
-                                ? __('View %s has been dropped.')
-                                : __('Table %s has been dropped.')
-                            ),
-                            htmlspecialchars($table)
-                        ),
-                        // table name is needed to avoid running
-                        // PhpMyAdmin\RelationCleanup::database() on the whole db later
-                        'table' => $table,
-                    ]
-                );
-            }
-            $this->response->addHTML(
-                $this->operations->getHtmlForDeleteDataOrTable(
-                    $truncate_table_url_params,
-                    $drop_table_url_params
-                )
-            );
+        $databaseList = [];
+        if (count($GLOBALS['dblist']->databases) <= $GLOBALS['cfg']['MaxDbList']) {
+            $databaseList = $GLOBALS['dblist']->databases->getList();
         }
+
+        $hasForeignKeys = ! empty($this->relation->getForeigners($db, $table, '', 'foreign'));
+        $hasPrivileges = $GLOBALS['table_priv'] && $GLOBALS['col_priv'] && $GLOBALS['is_reload_priv'];
+        $switchToNew = isset($_SESSION['pma_switch_to_new']) && $_SESSION['pma_switch_to_new'];
+
+        $maintenanceActions = $this->operations->getMaintenanceActions($pma_table);
+
+        $partitions = [];
+        $partitionsChoices = [];
 
         if (Partition::havePartitioning()) {
-            $partition_names = Partition::getPartitionNames($db, $table);
-            // show the Partition maintenance section only if we detect a partition
-            if ($partition_names[0] !== null) {
-                $this->response->addHTML(
-                    $this->operations->getHtmlForPartitionMaintenance($partition_names, $url_params)
-                );
+            $partitionNames = Partition::getPartitionNames($db, $table);
+            if ($partitionNames[0] !== null) {
+                $partitions = $partitionNames;
+                $partitionsChoices = $this->operations->getPartitionMaintenanceChoices();
             }
         }
 
-        // Referential integrity check
-        if ($cfgRelation['relwork']) {
-            $this->dbi->selectDb($db);
-            $foreign = $this->relation->getForeigners($db, $table, '', 'internal');
+        $foreigners = $this->operations->getForeignersForReferentialIntegrityCheck(
+            $url_params,
+            (bool) $cfgRelation['relwork']
+        );
 
-            if (! empty($foreign)) {
-                $this->response->addHTML(
-                    $this->operations->getHtmlForReferentialIntegrityCheck($foreign, $url_params)
-                );
-            }
-        }
+        $this->response->addHTML($this->template->render('table/operations/index', [
+            'db' => $db,
+            'table' => $table,
+            'url_params' => $url_params,
+            'columns' => $columns,
+            'hide_order_table' => $hideOrderTable,
+            'table_comment' => $comment,
+            'storage_engine' => $tbl_storage_engine,
+            'storage_engines' => $storageEngines,
+            'charsets' => $charsets,
+            'collations' => $collations,
+            'tbl_collation' => $tbl_collation,
+            'row_formats' => $possibleRowFormats[$tbl_storage_engine] ?? [],
+            'row_format_current' => $GLOBALS['showtable']['Row_format'],
+            'has_auto_increment' => $hasAutoIncrement,
+            'auto_increment' => $auto_increment,
+            'has_pack_keys' => $hasPackKeys,
+            'pack_keys' => $create_options['pack_keys'] ?? '',
+            'has_transactional_and_page_checksum' => $hasTransactionalAndPageChecksum,
+            'has_checksum_and_delay_key_write' => $hasChecksumAndDelayKeyWrite,
+            'delay_key_write' => empty($create_options['delay_key_write']) ? '0' : '1',
+            'transactional' => ($create_options['transactional'] ?? '') == '0' ? '0' : '1',
+            'page_checksum' => $create_options['page_checksum'] ?? '',
+            'checksum' => empty($create_options['checksum']) ? '0' : '1',
+            'database_list' => $databaseList,
+            'has_foreign_keys' => $hasForeignKeys,
+            'has_privileges' => $hasPrivileges,
+            'switch_to_new' => $switchToNew,
+            'maintenance_actions' => $maintenanceActions,
+            'is_system_schema' => isset($db_is_system_schema) && $db_is_system_schema,
+            'is_view' => $tbl_is_view,
+            'partitions' => $partitions,
+            'partitions_choices' => $partitionsChoices,
+            'foreigners' => $foreigners,
+        ]));
     }
 }

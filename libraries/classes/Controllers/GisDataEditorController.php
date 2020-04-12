@@ -1,8 +1,6 @@
 <?php
 /**
  * Editor for Geometry data types.
- *
- * @package PhpMyAdmin\Controllers
  */
 declare(strict_types=1);
 
@@ -11,24 +9,27 @@ namespace PhpMyAdmin\Controllers;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Gis\GisFactory;
 use PhpMyAdmin\Gis\GisVisualization;
+use function array_merge;
+use function in_array;
+use function intval;
+use function mb_strpos;
+use function mb_strtoupper;
+use function mb_substr;
+use function substr;
+use function trim;
 
 /**
  * Editor for Geometry data types.
- *
- * @package PhpMyAdmin\Controllers
  */
 class GisDataEditorController extends AbstractController
 {
-    /**
-     * @return array
-     */
-    public function index(): array
+    public function index(): void
     {
         global $gis_data, $gis_types, $start, $geom_type, $gis_obj, $srid, $wkt, $wkt_with_zero;
         global $result, $visualizationSettings, $data, $visualization, $open_layers, $geom_count;
 
         if (! isset($_POST['field'])) {
-            return [];
+            return;
         }
 
         // Get data if any posted
@@ -105,12 +106,12 @@ class GisDataEditorController extends AbstractController
 
         // If the call is to update the WKT and visualization make an AJAX response
         if (isset($_POST['generate']) && $_POST['generate'] == true) {
-            $extra_data = [
-                'result'        => $result,
+            $this->response->addJSON([
+                'result' => $result,
                 'visualization' => $visualization,
-                'openLayers'    => $open_layers,
-            ];
-            return $extra_data;
+                'openLayers' => $open_layers,
+            ]);
+            return;
         }
 
         $geom_count = 1;
@@ -137,6 +138,7 @@ class GisDataEditorController extends AbstractController
             'gis_data' => $gis_data,
             'result' => $result,
         ]);
-        return ['gis_editor' => $templateOutput];
+
+        $this->response->addJSON(['gis_editor' => $templateOutput]);
     }
 }

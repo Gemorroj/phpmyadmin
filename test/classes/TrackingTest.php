@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Tracking
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -15,23 +13,19 @@ use PhpMyAdmin\Template;
 use PhpMyAdmin\Tracking;
 use PhpMyAdmin\Url;
 use PHPUnit\Framework\TestCase;
+use function htmlspecialchars;
+use function sprintf;
 
 /**
  * Tests for PhpMyAdmin\Tracking
- *
- * @package PhpMyAdmin-test
  */
 class TrackingTest extends TestCase
 {
-    /**
-     * @var Tracking $tracking
-     */
+    /** @var Tracking $tracking */
     private $tracking;
 
     /**
      * Setup function for test cases
-     *
-     * @return void
      *
      * @access protected
      */
@@ -809,7 +803,6 @@ class TrackingTest extends TestCase
             $tracking_set
         );
     }
-
 
     /**
      * Tests for getEntries() method.

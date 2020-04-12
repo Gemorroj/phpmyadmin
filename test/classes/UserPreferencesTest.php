@@ -1,8 +1,6 @@
 <?php
 /**
  * tests for methods under PhpMyAdmin\UserPreferences class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,26 +9,21 @@ namespace PhpMyAdmin\Tests;
 use PhpMyAdmin\Config\ConfigFile;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Message;
-use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\UserPreferences;
+use function json_encode;
+use function time;
 
 /**
  * tests for methods under PhpMyAdmin\UserPreferences class
- *
- * @package PhpMyAdmin-test
  */
 class UserPreferencesTest extends PmaTestCase
 {
-    /**
-     * @var UserPreferences
-     */
+    /** @var UserPreferences */
     private $userPreferences;
 
     /**
      * Setup various pre conditions
-     *
-     * @return void
      */
     protected function setUp(): void
     {

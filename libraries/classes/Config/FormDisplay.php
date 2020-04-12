@@ -8,8 +8,6 @@
  *                 eg. Servers/1/verbose
  * o translated_path - work_path modified for HTML field name, a path with
  *                     slashes changed to hyphens, eg. Servers-4-verbose
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -19,11 +17,28 @@ use PhpMyAdmin\Config\Forms\User\UserFormList;
 use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\Util;
+use function array_flip;
+use function array_keys;
+use function array_search;
+use function count;
+use function explode;
+use function function_exists;
+use function gettype;
+use function implode;
+use function is_array;
+use function is_bool;
+use function is_numeric;
+use function mb_substr;
+use function preg_match;
+use function settype;
+use function sprintf;
+use function str_replace;
+use function trigger_error;
+use function trim;
+use const E_USER_WARNING;
 
 /**
  * Form management class, displays and processes forms
- *
- * @package PhpMyAdmin
  */
 class FormDisplay
 {
@@ -94,14 +109,10 @@ class FormDisplay
      */
     private $_userprefsDisallow;
 
-    /**
-     * @var FormDisplayTemplate
-     */
+    /** @var FormDisplayTemplate */
     private $formDisplayTemplate;
 
     /**
-     * Constructor
-     *
      * @param ConfigFile $cf Config file instance
      */
     public function __construct(ConfigFile $cf)
@@ -163,7 +174,7 @@ class FormDisplay
      *                               on failed validation
      * @param bool $checkFormSubmit  whether check for $_POST['submit_save']
      *
-     * @return boolean whether processing was successful
+     * @return bool whether processing was successful
      */
     public function process($allowPartialSave = true, $checkFormSubmit = true)
     {
@@ -608,7 +619,7 @@ class FormDisplay
      * @param bool         $allowPartialSave allows for partial form saving on
      *                                       failed validation
      *
-     * @return boolean true on success (no errors and all saved)
+     * @return bool true on success (no errors and all saved)
      */
     public function save($forms, $allowPartialSave = true)
     {
@@ -624,8 +635,8 @@ class FormDisplay
 
         $this->_errors = [];
         foreach ($forms as $formName) {
-            /** @var Form $form */
             if (isset($this->_forms[$formName])) {
+                /** @var Form $form */
                 $form = $this->_forms[$formName];
             } else {
                 continue;
@@ -773,13 +784,12 @@ class FormDisplay
     /**
      * Tells whether form validation failed
      *
-     * @return boolean
+     * @return bool
      */
     public function hasErrors()
     {
         return count($this->_errors) > 0;
     }
-
 
     /**
      * Returns link to documentation
@@ -828,7 +838,7 @@ class FormDisplay
         $userPrefsDisallow = $GLOBALS['PMA_Config']->get('is_setup')
             ? $this->_configFile->get('UserprefsDisallow', [])
             : $GLOBALS['cfg']['UserprefsDisallow'];
-        $this->_userprefsDisallow = array_flip($userPrefsDisallow);
+        $this->_userprefsDisallow = array_flip($userPrefsDisallow ?? []);
     }
 
     /**

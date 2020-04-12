@@ -1,8 +1,6 @@
 <?php
 /**
  * Contract for every database extension supported by phpMyAdmin
- *
- * @package PhpMyAdmin-DBI
  */
 declare(strict_types=1);
 
@@ -10,8 +8,6 @@ namespace PhpMyAdmin\Dbal;
 
 /**
  * Contract for every database extension supported by phpMyAdmin
- *
- * @package PhpMyAdmin-DBI
  */
 interface DbiExtension
 {
@@ -36,7 +32,7 @@ interface DbiExtension
      * @param string $dbname database name to select
      * @param object $link   connection object
      *
-     * @return boolean
+     * @return bool
      */
     public function selectDb($dbname, $link);
 
@@ -91,8 +87,8 @@ interface DbiExtension
     /**
      * Adjusts the result pointer to an arbitrary row in the result
      *
-     * @param object  $result database result
-     * @param integer $offset offset to seek
+     * @param object $result database result
+     * @param int    $offset offset to seek
      *
      * @return bool true on success, false on failure
      */

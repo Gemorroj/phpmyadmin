@@ -1,30 +1,36 @@
 <?php
 /**
  * Interface for the zip extension
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
 use ZipArchive;
+use function array_combine;
+use function count;
+use function crc32;
+use function getdate;
+use function gzcompress;
+use function implode;
+use function is_array;
+use function is_string;
+use function pack;
+use function preg_match;
+use function str_replace;
+use function strcmp;
+use function strlen;
+use function strpos;
+use function substr;
 
 /**
  * Transformations class
- *
- * @package PhpMyAdmin
  */
 class ZipExtension
 {
-    /**
-     * @var ZipArchive
-     */
+    /** @var ZipArchive */
     private $zip;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         $this->zip = new ZipArchive();
@@ -176,7 +182,7 @@ class ZipExtension
      *
      * @param array|string $data contents of the file/files
      * @param array|string $name name of the file/files in the archive
-     * @param integer      $time the current timestamp
+     * @param int          $time the current timestamp
      *
      * @return string|bool the ZIP file contents, or false if there was an error.
      */

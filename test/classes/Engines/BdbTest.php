@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Engines\Bdb
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -13,21 +11,15 @@ use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Bdb
- *
- * @package PhpMyAdmin-test
  */
 class BdbTest extends PmaTestCase
 {
-    /**
-     * @access protected
-     */
+    /** @access protected */
     protected $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */
@@ -40,8 +32,6 @@ class BdbTest extends PmaTestCase
     /**
      * Tears down the fixture, for example, closes a network connection.
      * This method is called after a test is executed.
-     *
-     * @return void
      *
      * @access protected
      */

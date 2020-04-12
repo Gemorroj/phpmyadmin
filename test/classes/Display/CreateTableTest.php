@@ -1,8 +1,6 @@
 <?php
 /**
  * tests for PhpMyAdmin\Display\CreateTable
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -17,15 +15,11 @@ use PHPUnit\Framework\TestCase;
  * PhpMyAdmin\Tests\Display\CreateTableTest class
  *
  * this class is for testing PhpMyAdmin\Display\CreateTable methods
- *
- * @package PhpMyAdmin-test
  */
 class CreateTableTest extends TestCase
 {
     /**
      * Test for setUp
-     *
-     * @return void
      */
     protected function setUp(): void
     {

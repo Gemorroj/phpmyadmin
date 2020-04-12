@@ -431,7 +431,7 @@ Functions.sprintf = function () {
  */
 Functions.hideShowDefaultValue = function ($defaultType) {
     if ($defaultType.val() === 'USER_DEFINED') {
-        $defaultType.siblings('.default_value').show().focus();
+        $defaultType.siblings('.default_value').show().trigger('focus');
     } else {
         $defaultType.siblings('.default_value').hide();
         if ($defaultType.val() === 'NULL') {
@@ -589,7 +589,7 @@ Functions.parseVersionString = function (str) {
     var min = parseInt(x[1], 10) || 0;
     var pat = parseInt(x[2], 10) || 0;
     var hotfix = parseInt(x[3], 10) || 0;
-    return  maj * 100000000 + min * 1000000 + pat * 10000 + hotfix * 100 + add;
+    return maj * 100000000 + min * 1000000 + pat * 10000 + hotfix * 100 + add;
 };
 
 /**
@@ -956,7 +956,7 @@ Functions.checkTableEditForm = function (theForm, fieldsCnt) {
     var $input = $('input.textfield[name=\'table\']');
     if ($input.val() === '') {
         alert(Messages.strFormEmpty);
-        $input.focus();
+        $input.trigger('focus');
         return false;
     }
 
@@ -1223,7 +1223,7 @@ Functions.handleSimulateQueryButton = function () {
         if (! $simulateDml.length) {
             $('#button_submit_query')
                 .before('<input type="button" id="simulate_dml"' +
-                'tabindex="199" value="' +
+                'tabindex="199" class="btn btn-primary" value="' +
                 Messages.strSimulateDML +
                 '">');
         }
@@ -1769,9 +1769,8 @@ Functions.loadForeignKeyCheckbox = function () {
     var params = {
         'ajax_request': true,
         'server': CommonParams.get('server'),
-        'get_default_fk_check_value': true
     };
-    $.get('index.php?route=/sql', params, function (data) {
+    $.get('index.php?route=/sql/get-default-fk-check-value', params, function (data) {
         var html = '<input type="hidden" name="fk_checks" value="0">' +
             '<input type="checkbox" name="fk_checks" id="fk_checks"' +
             (data.default_fk_check_value ? ' checked="checked"' : '') + '>' +
@@ -2267,8 +2266,8 @@ Functions.ajaxShowMessage = function (message, timeout, type) {
     // Remove all old messages, if any
     $('span.ajax_notification[id^=ajax_message_num]').remove();
     /**
-     * @var    $retval    a jQuery object containing the reference
-     *                    to the created AJAX message
+     * @var $retval    a jQuery object containing the reference
+     *                 to the created AJAX message
      */
     var $retval = $(
         '<span class="ajax_notification" id="ajax_message_num_' +
@@ -2304,6 +2303,10 @@ Functions.ajaxShowMessage = function (message, timeout, type) {
             'span',
             Messages.strDismiss
         );
+    }
+    // Hide spinner if this is not a loading message
+    if (msg !== Messages.strLoading) {
+        $retval.css('background-image', 'none');
     }
     Functions.highlightSql($retval);
 
@@ -2463,8 +2466,18 @@ $(function () {
      * Allows the user to dismiss a notification
      * created with Functions.ajaxShowMessage()
      */
-    $(document).on('click', 'span.ajax_notification.dismissable', function () {
-        Functions.ajaxRemoveMessage($(this));
+    var holdStarter = null;
+    $(document).on('mousedown', 'span.ajax_notification.dismissable', function () {
+        holdStarter = setTimeout(function () {
+            holdStarter = null;
+        }, 250);
+    });
+
+    $(document).on('mouseup', 'span.ajax_notification.dismissable', function () {
+        if (holdStarter && event.which === 1) {
+            clearTimeout(holdStarter);
+            Functions.ajaxRemoveMessage($(this));
+        }
     });
     /**
      * The below two functions hide the "Dismiss notification" tooltip when a user
@@ -2938,7 +2951,7 @@ AJAX.registerOnload('functions.js', function () {
                             /**
                              * @var curr_last_row   Object referring to the last <tr> element in {@link tablesTable}
                              */
-                            var currLastRow = $(tablesTable).find('tr:last');
+                            var currLastRow = $(tablesTable).find('tr').last();
                             /**
                              * @var curr_last_row_index_string   String containing the index of {@link currLastRow}
                              */
@@ -3047,7 +3060,7 @@ AJAX.registerOnload('functions.js', function () {
         if ($form.is('.create_table_form.ajax')) {
             submitChangesInCreateTableForm('submit_partition_change=1');
         } else {
-            $form.submit();
+            $form.trigger('submit');
         }
     });
 
@@ -3075,7 +3088,7 @@ AJAX.registerOnload('functions.js', function () {
  *
  * @see    Messages.strPasswordEmpty
  * @see    Messages.strPasswordNotSame
- * @param  object $the_form The form to be validated
+ * @param {object} $theForm The form to be validated
  * @return bool
  */
 Functions.checkPassword = function ($theForm) {
@@ -3141,7 +3154,7 @@ AJAX.registerOnload('functions.js', function () {
             $('#pma_username').val('').prop('required', false);
             $('#user_exists_warning').css('display', 'none');
         } else if (this.value === 'userdefined') {
-            $('#pma_username').trigger('focus').select().prop('required', true);
+            $('#pma_username').trigger('focus').trigger('select').prop('required', true);
         }
     });
 
@@ -3158,7 +3171,7 @@ AJAX.registerOnload('functions.js', function () {
             $('#text_pma_pw').prop('required', false).val('');
         } else if (this.value === 'userdefined') {
             $('#text_pma_pw2').prop('required', true);
-            $('#text_pma_pw').prop('required', true).trigger('focus').select();
+            $('#text_pma_pw').prop('required', true).trigger('focus').trigger('select');
         } else {
             $('#text_pma_pw2').prop('required', false);
             $('#text_pma_pw').prop('required', false);
@@ -3316,7 +3329,7 @@ AJAX.registerOnload('functions.js', function () {
 Functions.hideShowConnection = function ($engineSelector) {
     var $connection = $('.create_table_form input[name=connection]');
     var index = $connection.parent('td').index() + 1;
-    var $labelTh = $connection.parents('tr').prev('tr').children('th:nth-child(' + index + ')');
+    var $labelTh = $connection.parents('tr').prev('tr').children(document.querySelectorAll('th:nth-child(' + index + ')'));
     if ($engineSelector.val() !== 'FEDERATED') {
         $connection
             .prop('disabled', true)
@@ -3412,7 +3425,7 @@ var $enumEditorDialog = null;
 AJAX.registerOnload('functions.js', function () {
     $(document).on('click', 'a.open_enum_editor', function () {
         // Get the name of the column that is being edited
-        var colname = $(this).closest('tr').find('input:first').val();
+        var colname = $(this).closest('tr').find('input').first().val();
         var title;
         var i;
         // And use it to make up a title for the page
@@ -3491,7 +3504,7 @@ AJAX.registerOnload('functions.js', function () {
                     '<table class=\'add\'><tr><td>' +
                     '<div class=\'slider\'></div>' +
                     '</td><td>' +
-                    '<form><div><input type=\'submit\' class=\'add_value\' value=\'' +
+                    '<form><div><input type=\'submit\' class=\'add_value btn btn-primary\' value=\'' +
                     Functions.sprintf(Messages.enum_addValue, 1) +
                     '\'></div></form>' +
                     '</td></tr></table>' +
@@ -3501,7 +3514,7 @@ AJAX.registerOnload('functions.js', function () {
                     '</fieldset>' +
                     '</div>';
         /**
-         * @var  Defines functions to be called when the buttons in
+         * @var {object} buttonOptions Defines functions to be called when the buttons in
          * the buttonOptions jQuery dialog bar are pressed
          */
         var buttonOptions = {};
@@ -3537,7 +3550,7 @@ AJAX.registerOnload('functions.js', function () {
             buttons: buttonOptions,
             open: function () {
                 // Focus the "Go" button after opening the dialog
-                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:first').trigger('focus');
+                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button').first().trigger('focus');
             },
             close: function () {
                 $(this).remove();
@@ -3586,7 +3599,7 @@ AJAX.registerOnload('functions.js', function () {
                 url: href,
                 data: params,
                 success: function (data) {
-                    centralColumnList[db + '_' + table] = JSON.parse(data.message);
+                    centralColumnList[db + '_' + table] = data.message;
                 },
                 async:false
             });
@@ -3679,11 +3692,11 @@ AJAX.registerOnload('functions.js', function () {
                     $('#col_list').append(fields);
                     resultPointer = i;
                     if (resultPointer === listSize) {
-                        $('.tblFooters').hide();
+                        $('#seeMore').hide();
                     }
                     return false;
                 });
-                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:first').trigger('focus');
+                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button').first().trigger('focus');
             },
             close: function () {
                 $('#col_list').off('click', '.pick');
@@ -3710,7 +3723,7 @@ AJAX.registerOnload('functions.js', function () {
                     Functions.getImage('b_drop') +
                     '</td></tr>'
                 )
-                .find('tr:last')
+                .find('tr').last()
                 .show('fast');
         }
     });
@@ -3781,7 +3794,7 @@ AJAX.registerOnload('functions.js', function () {
         while (rowsToAdd--) {
             var $indexColumns = $('#index_columns');
             var $newrow = $indexColumns
-                .find('tbody > tr:first')
+                .find('tbody > tr').first()
                 .clone()
                 .appendTo(
                     $indexColumns.find('tbody')
@@ -3808,7 +3821,7 @@ Functions.indexEditorDialog = function (url, title, callbackSuccess, callbackFai
     var buttonOptions = {};
     buttonOptions[Messages.strGo] = function () {
         /**
-         * @var    the_form    object referring to the export form
+         * @var the_form object referring to the export form
          */
         var $form = $('#index_frm');
         Functions.ajaxShowMessage(Messages.strProcessingRequest);
@@ -4022,7 +4035,7 @@ Functions.toggleButton = function ($obj) {
     var w = parseInt(($('img', $obj).height() / 16) * 22, 10);
     // Resize the central part of the switch on the top
     // layer to match the background
-    $('table td:nth-child(2) > div', $obj).width(w);
+    $(document.querySelectorAll('table td:nth-child(2) > div'), $obj).width(w);
     /**
      *  var  imgw    Width of the background image
      *  var  tblw    Width of the foreground layer
@@ -4039,7 +4052,7 @@ Functions.toggleButton = function ($obj) {
      *  var  btnw    Outer width of the central part of the switch
      */
     var offw = $('td.toggleOff', $obj).outerWidth();
-    var btnw = $('table td:nth-child(2)', $obj).outerWidth();
+    var btnw = $(document.querySelectorAll('table td:nth-child(2)'), $obj).outerWidth();
     // Resize the main div so that exactly one side of
     // the switch plus the central part fit into it.
     $obj.width(offw + btnw + 2);
@@ -4154,7 +4167,7 @@ AJAX.registerOnload('functions.js', function () {
         // Check where to load the new content
         if ($(this).closest('#pma_navigation').length === 0) {
             // For the main page we don't need to do anything,
-            $(this).closest('form').submit();
+            $(this).closest('form').trigger('submit');
         } else {
             // but for the navigation we need to manually replace the content
             Navigation.treePagination($(this));
@@ -4507,6 +4520,7 @@ Functions.createPrintAndBackButtons = function () {
     var backButton = $('<input>',{
         type: 'button',
         value: Messages.back,
+        class: 'btn btn-secondary',
         id: 'back_button_print_view'
     });
     backButton.on('click', Functions.removePrintAndBackButton);
@@ -4514,6 +4528,7 @@ Functions.createPrintAndBackButtons = function () {
     var printButton = $('<input>',{
         type: 'button',
         value: Messages.print,
+        class: 'btn btn-primary',
         id: 'print_button_print_view'
     });
     printButton.on('click', Functions.printPage);
@@ -4581,7 +4596,7 @@ AJAX.registerOnload('functions.js', function () {
                 // was also prevented in IE
                 $(this).trigger('blur');
 
-                $(this).closest('.ui-dialog').find('.ui-button:first').trigger('click');
+                $(this).closest('.ui-dialog').find('.ui-button').first().trigger('click');
             }
         }); // end $(document).on()
     }
@@ -4777,7 +4792,7 @@ AJAX.registerOnload('functions.js', function () {
     /* Trigger filtering of the list based on incoming database name */
     var $filter = $('#filterText');
     if ($filter.val()) {
-        $filter.trigger('keyup').select();
+        $filter.trigger('keyup').trigger('select');
     }
 });
 
@@ -4891,7 +4906,7 @@ Functions.ignorePhpErrors = function (clearPrevErrors) {
     if (clearPrevious) {
         var $pmaReportErrorsForm = $('#pma_report_errors_form');
         $pmaReportErrorsForm.find('input[name="send_error_report"]').val(0); // change send_error_report to '0'
-        $pmaReportErrorsForm.submit();
+        $pmaReportErrorsForm.trigger('submit');
     }
 
     // remove displayed errors
@@ -4950,8 +4965,8 @@ AJAX.registerOnload('functions.js', function () {
 
             // There could be multiple submit buttons on the same form,
             // we assume all of them behave identical and just click one.
-            if (! $form.find('input[type="submit"]:first') ||
-                ! $form.find('input[type="submit"]:first').trigger('click')
+            if (! $form.find('input[type="submit"]').first() ||
+                ! $form.find('input[type="submit"]').first().trigger('click')
             ) {
                 $form.trigger('submit');
             }
@@ -5082,8 +5097,8 @@ Functions.getImage = function (image, alternate, attributes) {
  * NOTE: Depending on server's configuration, the configuration table may be or
  * not persistent.
  *
- * @param  {string}     key         Configuration key.
- * @param  {object}     value       Configuration value.
+ * @param {string}     key         Configuration key.
+ * @param {object}     value       Configuration value.
  */
 Functions.configSet = function (key, value) {
     var serialized = JSON.stringify(value);
@@ -5120,10 +5135,10 @@ Functions.configSet = function (key, value) {
  * If value should not be cached and the up-to-date configuration value from
  * right from the server is required, the third parameter should be `false`.
  *
- * @param  {string}     key         Configuration key.
- * @param  {boolean}    cached      Configuration type.
+ * @param {string}     key         Configuration key.
+ * @param {boolean}    cached      Configuration type.
  *
- * @return {object}                 Configuration value.
+ * @return {object}                Configuration value.
  */
 Functions.configGet = function (key, cached) {
     var isCached = (typeof cached !== 'undefined') ? cached : true;

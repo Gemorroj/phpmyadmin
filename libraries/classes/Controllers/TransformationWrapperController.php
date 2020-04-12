@@ -1,18 +1,18 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers;
 
 use PhpMyAdmin\Core;
 use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\DbTableExists;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Util;
+use function define;
+use function htmlspecialchars;
 use function imagecopyresampled;
 use function imagecreatefromstring;
 use function imagecreatetruecolor;
@@ -21,11 +21,14 @@ use function imagejpeg;
 use function imagepng;
 use function imagesx;
 use function imagesy;
+use function in_array;
+use function intval;
+use function str_replace;
+use function stripos;
+use function substr;
 
 /**
  * Wrapper script for rendering transformations
- *
- * @package PhpMyAdmin\Controllers
  */
 class TransformationWrapperController extends AbstractController
 {
@@ -54,9 +57,6 @@ class TransformationWrapperController extends AbstractController
         $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $cn, $db, $table, $transform_key, $request_params, $size_params, $where_clause, $row;
@@ -67,10 +67,7 @@ class TransformationWrapperController extends AbstractController
 
         $cfgRelation = $this->relation->getRelationsParam();
 
-        /**
-         * Ensures db and table are valid, else moves to the "parent" script
-         */
-        require_once ROOT_PATH . 'libraries/db_table_exists.inc.php';
+        DbTableExists::check();
 
         /**
          * Sets globals from $_REQUEST

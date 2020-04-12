@@ -1,32 +1,44 @@
 <?php
 /**
  * This class includes various sanitization methods that can be called statically
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Core;
 use PhpMyAdmin\Html\MySQLDocumentation;
-use PhpMyAdmin\Util;
+use function array_keys;
+use function array_merge;
+use function count;
+use function htmlspecialchars;
+use function in_array;
+use function is_array;
+use function is_bool;
+use function is_int;
+use function is_string;
+use function preg_match;
+use function preg_replace;
+use function preg_replace_callback;
+use function str_replace;
+use function strlen;
+use function strncmp;
+use function strtolower;
+use function strtr;
+use function substr;
 
 /**
  * This class includes various sanitization methods that can be called statically
- *
- * @package PhpMyAdmin
  */
 class Sanitize
 {
     /**
      * Checks whether given link is valid
      *
-     * @param string  $url   URL to check
-     * @param boolean $http  Whether to allow http links
-     * @param boolean $other Whether to allow ftp and mailto links
+     * @param string $url   URL to check
+     * @param bool   $http  Whether to allow http links
+     * @param bool   $other Whether to allow ftp and mailto links
      *
-     * @return boolean True if string can be used as link
+     * @return bool True if string can be used as link
      */
     public static function checkLink($url, $http = false, $other = false)
     {
@@ -141,9 +153,9 @@ class Sanitize
      *
      * <a title="<?php echo Sanitize::sanitizeMessage($foo, true); ?>">bar</a>
      *
-     * @param string  $message the message
-     * @param boolean $escape  whether to escape html in result
-     * @param boolean $safe    whether string is safe (can keep < and > chars)
+     * @param string $message the message
+     * @param bool   $escape  whether to escape html in result
+     * @param bool   $safe    whether string is safe (can keep < and > chars)
      *
      * @return string   the sanitized message
      */
@@ -201,7 +213,6 @@ class Sanitize
         return $message;
     }
 
-
     /**
      * Sanitize a filename by removing anything besides legit characters
      *
@@ -211,8 +222,8 @@ class Sanitize
      *
      *    When exporting, avoiding generation of an unexpected double-extension file
      *
-     * @param string  $filename    The filename
-     * @param boolean $replaceDots Whether to also replace dots
+     * @param string $filename    The filename
+     * @param bool   $replaceDots Whether to also replace dots
      *
      * @return string  the sanitized filename
      */
@@ -235,12 +246,12 @@ class Sanitize
      * This function is used to displays a javascript confirmation box for
      * "DROP/DELETE/ALTER" queries.
      *
-     * @param string  $a_string       the string to format
-     * @param boolean $add_backquotes whether to add backquotes to the string or not
+     * @param string $a_string       the string to format
+     * @param bool   $add_backquotes whether to add backquotes to the string or not
      *
      * @return string   the formatted string
      *
-     * @access  public
+     * @access public
      */
     public static function jsFormat($a_string = '', $add_backquotes = true)
     {
@@ -342,8 +353,6 @@ class Sanitize
      * Removes all variables from request except whitelisted ones.
      *
      * @param string[] $whitelist list of variables to allow
-     *
-     * @return void
      *
      * @access public
      */

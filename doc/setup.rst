@@ -95,8 +95,8 @@ In order to install from Git, you'll need a few supporting applications:
 
 * `Git <https://git-scm.com/downloads>`_ to download the source, or you can download the most recent source directly from `Github <https://codeload.github.com/phpmyadmin/phpmyadmin/zip/master>`_
 * `Composer <https://getcomposer.org/download/>`__
-* `Node.js <https://nodejs.org/en/download/>`_ (version 8 or higher)
-* `Yarn <https://yarnpkg.com/lang/en/docs/install>`_
+* `Node.js <https://nodejs.org/en/download/>`_ (version 10 or higher)
+* `Yarn <https://legacy.yarnpkg.com/en/docs/install>`_
 
 You can clone current phpMyAdmin source from
 ``https://github.com/phpmyadmin/phpmyadmin.git``:
@@ -788,9 +788,30 @@ You will also need to have a controluser
 with the proper rights to those tables. For example you can create it
 using following statement:
 
+And for any MariaDB version:
+
 .. code-block:: mysql
 
-   GRANT SELECT, INSERT, UPDATE, DELETE ON <pma_db>.* TO 'pma'@'localhost'  IDENTIFIED BY 'pmapass';
+   CREATE USER 'pma'@'localhost' IDENTIFIED VIA mysql_native_password USING 'pmapass';
+   GRANT SELECT, INSERT, UPDATE, DELETE ON `<pma_db>`.* TO 'pma'@'localhost';
+
+For MySQL 8.0 and newer:
+
+.. code-block:: mysql
+
+   CREATE USER 'pma'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'pmapass';
+   GRANT SELECT, INSERT, UPDATE, DELETE ON <pma_db>.* TO 'pma'@'localhost';
+
+For MySQL older than 8.0:
+
+.. code-block:: mysql
+
+   CREATE USER 'pma'@'localhost' IDENTIFIED WITH mysql_native_password AS 'pmapass';
+   GRANT SELECT, INSERT, UPDATE, DELETE ON <pma_db>.* TO 'pma'@'localhost';
+
+Note that MySQL installations with PHP older than 7.4 and MySQL newer than 8.0 may require
+using the mysql_native_password authentication as a workaround, see
+:ref:`faq1_45` for details.
 
 .. _upgrading:
 

@@ -1,8 +1,6 @@
 <?php
 /**
  * Test for \PhpMyAdmin\Html\MySQLDocumentation class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -13,15 +11,11 @@ use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Test for \PhpMyAdmin\Html\MySQLDocumentation class
- *
- * @package PhpMyAdmin-test
  */
 class MySQLDocumentationTest extends PmaTestCase
 {
     /**
      * Test for \PhpMyAdmin\Html\MySQLDocumentation::showDocumentation
-     *
-     * @return void
      *
      * @covers \PhpMyAdmin\Html\MySQLDocumentation::showDocumentation
      */

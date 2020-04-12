@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeTable class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -13,15 +11,11 @@ use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeTable class
- *
- * @package PhpMyAdmin-test
  */
 class NodeTableTest extends PmaTestCase
 {
     /**
      * SetUp for test cases
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -35,7 +29,6 @@ class NodeTableTest extends PmaTestCase
         $GLOBALS['cfg']['NavigationTreeTableSeparator'] = '__';
         $GLOBALS['cfg']['NavigationTreeTableLevel'] = 1;
     }
-
 
     /**
      * Test for __construct
@@ -61,8 +54,6 @@ class NodeTableTest extends PmaTestCase
      *
      * @param string $target    target of the icon
      * @param string $imageName name of the image that should be set
-     *
-     * @return void
      *
      * @dataProvider providerForTestIcon
      */

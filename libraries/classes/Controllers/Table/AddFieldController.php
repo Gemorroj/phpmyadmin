@@ -1,26 +1,28 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
 
+use PhpMyAdmin\Common;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\CreateAddField;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Message;
+use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
+use PhpMyAdmin\Table\ColumnsDefinition;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function intval;
+use function is_array;
+use function min;
+use function strlen;
 
 /**
  * Displays add field form and handles it.
- *
- * @package PhpMyAdmin\Controllers\Table
  */
 class AddFieldController extends AbstractController
 {
@@ -30,6 +32,9 @@ class AddFieldController extends AbstractController
     /** @var Config */
     private $config;
 
+    /** @var Relation */
+    private $relation;
+
     /**
      * @param Response          $response        A Response instance.
      * @param DatabaseInterface $dbi             A DatabaseInterface instance.
@@ -38,6 +43,7 @@ class AddFieldController extends AbstractController
      * @param string            $table           Table name.
      * @param Transformations   $transformations A Transformations instance.
      * @param Config            $config          A Config instance.
+     * @param Relation          $relation        A Relation instance.
      */
     public function __construct(
         $response,
@@ -46,16 +52,15 @@ class AddFieldController extends AbstractController
         $db,
         $table,
         Transformations $transformations,
-        Config $config
+        Config $config,
+        Relation $relation
     ) {
         parent::__construct($response, $dbi, $template, $db, $table);
         $this->transformations = $transformations;
         $this->config = $config;
+        $this->relation = $relation;
     }
 
-    /**
-     * @return void
-     */
     public function index(): void
     {
         global $err_url, $message, $action, $active_page, $sql_query;
@@ -166,14 +171,24 @@ class AddFieldController extends AbstractController
             /**
              * Gets tables information
              */
-            include_once ROOT_PATH . 'libraries/tbl_common.inc.php';
+            Common::table();
 
             $active_page = Url::getFromRoute('/table/structure');
             /**
              * Display the form
              */
             $action = Url::getFromRoute('/table/add-field');
-            include_once ROOT_PATH . 'libraries/tbl_columns_definition_form.inc.php';
+
+            ColumnsDefinition::displayForm(
+                $this->response,
+                $this->template,
+                $this->transformations,
+                $this->relation,
+                $this->dbi,
+                $action,
+                $num_fields,
+                $regenerate
+            );
         }
     }
 }

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Controllers\Table\IndexesController
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -18,18 +16,15 @@ use PhpMyAdmin\Template;
 use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Url;
+use function sprintf;
 
 /**
  * Tests for PhpMyAdmin\Controllers\Table\IndexesController
- *
- * @package PhpMyAdmin-test
  */
 class IndexesControllerTest extends PmaTestCase
 {
     /**
      * Setup function for test cases
-     *
-     * @return void
      *
      * @access protected
      */
@@ -196,12 +191,6 @@ class IndexesControllerTest extends PmaTestCase
 
         $this->assertStringContainsString(
             MySQLDocumentation::show('ALTER_TABLE'),
-            $html
-        );
-
-        // generateIndexSelector
-        $this->assertStringContainsString(
-            $index->generateIndexChoiceSelector(false),
             $html
         );
 

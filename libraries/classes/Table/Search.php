@@ -1,17 +1,23 @@
 <?php
-/**
- * @package PhpMyAdmin\Table
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Table;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Util;
+use function count;
+use function explode;
+use function implode;
+use function in_array;
+use function is_array;
+use function mb_strpos;
+use function preg_match;
+use function str_replace;
+use function strlen;
+use function strncasecmp;
+use function strpos;
+use function trim;
 
-/**
- * @package PhpMyAdmin\Table
- */
 final class Search
 {
     /** @var DatabaseInterface */
@@ -175,10 +181,10 @@ final class Search
                 $criteriaValues = '^' . $criteriaValues . '$';
             }
 
-            if ('IN (...)' != $func_type
-                && 'NOT IN (...)' != $func_type
-                && 'BETWEEN' != $func_type
-                && 'NOT BETWEEN' != $func_type
+            if ($func_type != 'IN (...)'
+                && $func_type != 'NOT IN (...)'
+                && $func_type != 'BETWEEN'
+                && $func_type != 'NOT BETWEEN'
             ) {
                 return $backquoted_name . ' ' . $func_type . ' ' . $quot
                     . $this->dbi->escapeString($criteriaValues) . $quot;
@@ -195,7 +201,7 @@ final class Search
             // quote values one by one
             $emptyKey = false;
             foreach ($values as $key => &$value) {
-                if ('' === $value) {
+                if ($value === '') {
                     $emptyKey = $key;
                     $value = 'NULL';
                     continue;
@@ -204,12 +210,12 @@ final class Search
                     . $quot;
             }
 
-            if ('BETWEEN' == $func_type || 'NOT BETWEEN' == $func_type) {
+            if ($func_type == 'BETWEEN' || $func_type == 'NOT BETWEEN') {
                 $where = $backquoted_name . ' ' . $func_type . ' '
                     . ($values[0] ?? '')
                     . ' AND ' . ($values[1] ?? '');
             } else { //[NOT] IN
-                if (false !== $emptyKey) {
+                if ($emptyKey !== false) {
                     unset($values[$emptyKey]);
                 }
                 $wheres = [];
@@ -217,7 +223,7 @@ final class Search
                     $wheres[] = $backquoted_name . ' ' . $func_type
                         . ' (' . implode(',', $values) . ')';
                 }
-                if (false !== $emptyKey) {
+                if ($emptyKey !== false) {
                     $wheres[] = $backquoted_name . ' IS NULL';
                 }
                 $where = implode(' OR ', $wheres);

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PMA_TableSearch
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -19,25 +17,17 @@ use stdClass;
 
 /**
  * Tests for PMA_TableSearch
- *
- * @package PhpMyAdmin-test
  */
 class SearchControllerTest extends PmaTestCase
 {
-    /**
-     * @var ResponseStub
-     */
+    /** @var ResponseStub */
     private $_response;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     private $template;
 
     /**
      * Setup function for test cases
-     *
-     * @return void
      *
      * @access protected
      */

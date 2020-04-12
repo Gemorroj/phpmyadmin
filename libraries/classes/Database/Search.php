@@ -1,8 +1,6 @@
 <?php
 /**
  * Handles Database Search
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -13,11 +11,19 @@ use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
+use function array_intersect;
+use function array_key_exists;
+use function count;
+use function explode;
+use function htmlspecialchars;
+use function implode;
+use function intval;
+use function is_array;
+use function is_string;
+use function strlen;
 
 /**
  * Class to handle database search
- *
- * @package PhpMyAdmin
  */
 class Search
 {
@@ -49,7 +55,7 @@ class Search
      * Already set search type
      *
      * @access private
-     * @var integer
+     * @var int
      */
     private $criteriaSearchType;
 
@@ -85,19 +91,13 @@ class Search
      */
     private $criteriaColumnName;
 
-    /**
-     * @var DatabaseInterface
-     */
+    /** @var DatabaseInterface */
     private $dbi;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
     /**
-     * Public Constructor
-     *
      * @param DatabaseInterface $dbi      DatabaseInterface object
      * @param string            $db       Database name
      * @param Template          $template Template object
@@ -321,22 +321,8 @@ class Search
      */
     public function getMainHtml()
     {
-        $choices = [
-            '1' => $this->searchTypes[1] . ' '
-                . Generator::showHint(
-                    __('Words are separated by a space character (" ").')
-                ),
-            '2' => $this->searchTypes[2] . ' '
-                . Generator::showHint(
-                    __('Words are separated by a space character (" ").')
-                ),
-            '3' => $this->searchTypes[3],
-            '4' => $this->searchTypes[4],
-            '5' => $this->searchTypes[5] . ' ' . MySQLDocumentation::show('Regexp'),
-        ];
         return $this->template->render('database/search/main', [
             'db' => $this->db,
-            'choices' => $choices,
             'criteria_search_string' => $this->criteriaSearchString,
             'criteria_search_type' => $this->criteriaSearchType,
             'criteria_tables' => $this->criteriaTables,

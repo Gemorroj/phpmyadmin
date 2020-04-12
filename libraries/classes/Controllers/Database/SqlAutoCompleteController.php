@@ -1,22 +1,16 @@
 <?php
-/**
- * @package PhpMyAdmin\Controllers\Database
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Database;
 
+use function json_encode;
+
 /**
  * Table/Column autocomplete in SQL editors.
- *
- * @package PhpMyAdmin\Controllers\Database
  */
 class SqlAutoCompleteController extends AbstractController
 {
-    /**
-     * @return array JSON
-     */
-    public function index(): array
+    public function index(): void
     {
         global $cfg, $db, $sql_autocomplete;
 
@@ -34,6 +28,6 @@ class SqlAutoCompleteController extends AbstractController
                 }
             }
         }
-        return ['tables' => json_encode($sql_autocomplete)];
+        $this->response->addJSON(['tables' => json_encode($sql_autocomplete)]);
     }
 }

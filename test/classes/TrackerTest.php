@@ -1,15 +1,12 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Tracker
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tracker;
 use PhpMyAdmin\Util;
 use ReflectionClass;
@@ -18,15 +15,11 @@ use ReflectionProperty;
 
 /**
  * Tests for PhpMyAdmin\Tracker
- *
- * @package PhpMyAdmin-test
  */
 class TrackerTest extends PmaTestCase
 {
     /**
      * Setup function for test cases
-     *
-     * @return void
      *
      * @access protected
      */
@@ -57,6 +50,7 @@ class TrackerTest extends PmaTestCase
 
         $cfg['dbi'] = $dbi;
     }
+
     /**
      * Test for Tracker::enable
      *
@@ -120,8 +114,6 @@ class TrackerTest extends PmaTestCase
      *
      * @param string $string   String to test against
      * @param string $expected Expected Table Name
-     *
-     * @return void
      *
      * @test
      * @dataProvider getTableNameData
@@ -599,8 +591,6 @@ class TrackerTest extends PmaTestCase
      *
      * @param array $fetchArrayReturn Value to be returned by mocked fetchArray
      * @param array $expectedArray    Expected array
-     *
-     * @return void
      *
      * @test
      * @dataProvider getTrackedDataProvider

@@ -1,9 +1,5 @@
 <?php
-/**
- * Holds the PhpMyAdmin\Controllers\Server\Status\AdvisorController
- *
- * @package PhpMyAdmin\Controllers
- */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server\Status;
@@ -16,14 +12,10 @@ use PhpMyAdmin\Template;
 
 /**
  * Displays the advisor feature
- *
- * @package PhpMyAdmin\Controllers
  */
 class AdvisorController extends AbstractController
 {
-    /**
-     * @var Advisor
-     */
+    /** @var Advisor */
     private $advisor;
 
     /**
@@ -39,21 +31,15 @@ class AdvisorController extends AbstractController
         $this->advisor = $advisor;
     }
 
-    /**
-     * @return string
-     */
-    public function index(): string
+    public function index(): void
     {
-        $scripts = $this->response->getHeader()->getScripts();
-        $scripts->addFile('server/status/advisor.js');
-
-        $data = '';
+        $data = [];
         if ($this->data->dataLoaded) {
-            $data = json_encode($this->advisor->run());
+            $data = $this->advisor->run();
         }
 
-        return $this->template->render('server/status/advisor/index', [
+        $this->response->addHTML($this->template->render('server/status/advisor/index', [
             'data' => $data,
-        ]);
+        ]));
     }
 }

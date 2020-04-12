@@ -1,9 +1,6 @@
 <?php
 /**
  * Selenium TestCase for export related tests
- *
- * @package    PhpMyAdmin-test
- * @subpackage Selenium
  */
 declare(strict_types=1);
 
@@ -12,16 +9,12 @@ namespace PhpMyAdmin\Tests\Selenium;
 /**
  * ExportTest class
  *
- * @package    PhpMyAdmin-test
- * @subpackage Selenium
  * @group      selenium
  */
 class ExportTest extends TestBase
 {
     /**
      * Setup the browser environment to run the selenium test case
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -46,8 +39,6 @@ class ExportTest extends TestBase
      * @param string $plugin   Export format
      * @param array  $expected Array of expected strings
      *
-     * @return void
-     *
      * @dataProvider exportDataProvider
      * @group large
      */
@@ -65,8 +56,6 @@ class ExportTest extends TestBase
      *
      * @param string $plugin   Export format
      * @param array  $expected Array of expected strings
-     *
-     * @return void
      *
      * @dataProvider exportDataProvider
      * @group large
@@ -88,8 +77,6 @@ class ExportTest extends TestBase
      * @param string $plugin   Export format
      * @param array  $expected Array of expected strings
      *
-     * @return void
-     *
      * @dataProvider exportDataProvider
      * @group large
      */
@@ -105,7 +92,6 @@ class ExportTest extends TestBase
             $this->assertStringContainsString($str, $text);
         }
     }
-
 
     /**
      * Data provider for testServerExport
