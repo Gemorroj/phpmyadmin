@@ -89,6 +89,16 @@ return [
                 '@template',
             ],
         ],
+        'events' =>
+            [
+                'class' => PhpMyAdmin\Database\Events::class,
+                'arguments' =>
+                    [
+                        '@dbi',
+                        '@template',
+                        '@response',
+                    ],
+            ],
         'export' =>
         [
             'class' => PhpMyAdmin\Export::class,
@@ -124,18 +134,6 @@ return [
             [
                 '@service_container',
             ],
-        ],
-        'mult_submits' =>
-        [
-            'class' => PhpMyAdmin\MultSubmits::class,
-            'arguments' =>
-                [
-                    'dbi' => '@dbi',
-                    'template' => '@template',
-                    'transformations' => '@transformations',
-                    'relationCleanup' => '@relation_cleanup',
-                    'operations' => '@operations',
-                ],
         ],
         'navigation' =>
         [

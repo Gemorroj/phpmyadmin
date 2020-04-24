@@ -1,22 +1,17 @@
 <?php
-/**
- * Tests for PhpMyAdmin\Rte\Routines
- */
+
 declare(strict_types=1);
 
-namespace PhpMyAdmin\Tests\Rte;
+namespace PhpMyAdmin\Tests\Database;
 
 use PhpMyAdmin\Config;
+use PhpMyAdmin\Database\Routines;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Rte\Routines;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Types;
 use PHPUnit\Framework\TestCase;
 
-/**
- * This class is for testing PhpMyAdmin\Rte\Routines methods
- */
 class RoutinesTest extends TestCase
 {
     /** @var Routines */
@@ -61,7 +56,6 @@ class RoutinesTest extends TestCase
                 $_REQUEST[$key] = $value;
             }
         }
-        $this->routines->setGlobals();
         $this->assertEquals($out, $this->routines->getDataFromRequest());
     }
 
@@ -302,7 +296,6 @@ class RoutinesTest extends TestCase
      */
     public function testGetParameterRowEmpty()
     {
-        $this->routines->setGlobals();
         $this->assertEquals('', $this->routines->getParameterRow([], 0));
     }
 
@@ -318,7 +311,6 @@ class RoutinesTest extends TestCase
      */
     public function testGetParameterRow($data, $index, $matcher): void
     {
-        $this->routines->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->routines->getParameterRow($data, $index)
@@ -399,7 +391,6 @@ class RoutinesTest extends TestCase
     public function testGetParameterRowAjax($data, $matcher): void
     {
         Response::getInstance()->setAjax(true);
-        $this->routines->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->routines->getParameterRow($data)
@@ -477,7 +468,6 @@ class RoutinesTest extends TestCase
      */
     public function testGetEditorForm1($data, $matcher)
     {
-        $this->routines->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->routines->getEditorForm('add', '', $data)
@@ -598,7 +588,6 @@ class RoutinesTest extends TestCase
      */
     public function testGetEditorForm2($data, $matcher)
     {
-        $this->routines->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->routines->getEditorForm('edit', 'change', $data)
@@ -720,7 +709,6 @@ class RoutinesTest extends TestCase
     public function testGetEditorForm3($data, $matcher)
     {
         Response::getInstance()->setAjax(true);
-        $this->routines->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->routines->getEditorForm('edit', 'remove', $data)
@@ -842,7 +830,6 @@ class RoutinesTest extends TestCase
      */
     public function testGetEditorForm4($data, $matcher)
     {
-        $this->routines->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->routines->getEditorForm('edit', 'change', $data)
@@ -902,7 +889,6 @@ class RoutinesTest extends TestCase
      */
     public function testGetExecuteForm1($data, $matcher)
     {
-        $this->routines->setGlobals();
         $GLOBALS['cfg']['ShowFunctionFields'] = true;
 
         $this->assertStringContainsString(
@@ -1046,7 +1032,6 @@ class RoutinesTest extends TestCase
     public function testGetExecuteForm2($data, $matcher)
     {
         Response::getInstance()->setAjax(true);
-        $this->routines->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->routines->getExecuteForm($data)
@@ -1168,7 +1153,6 @@ class RoutinesTest extends TestCase
         $cfg['ShowFunctionFields'] = false;
 
         $errors = [];
-        $this->routines->setGlobals();
 
         $old_dbi = $GLOBALS['dbi'] ?? null;
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')

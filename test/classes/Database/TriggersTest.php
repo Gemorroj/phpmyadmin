@@ -1,20 +1,15 @@
 <?php
-/**
- * Tests for PhpMyAdmin\Rte\Triggers
- */
+
 declare(strict_types=1);
 
-namespace PhpMyAdmin\Tests\Rte;
+namespace PhpMyAdmin\Tests\Database;
 
 use PhpMyAdmin\Config;
+use PhpMyAdmin\Database\Triggers;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Rte\Triggers;
 use PhpMyAdmin\Template;
 use PHPUnit\Framework\TestCase;
 
-/**
- * This class is for testing PhpMyAdmin\Rte\Triggers methods
- */
 class TriggersTest extends TestCase
 {
     /** @var Triggers */
@@ -121,7 +116,6 @@ class TriggersTest extends TestCase
     public function testGetEditorFormAdd($data, $matcher): void
     {
         $GLOBALS['server'] = 1;
-        $this->triggers->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->triggers->getEditorForm('add', $data)
@@ -193,7 +187,6 @@ class TriggersTest extends TestCase
     public function testGetEditorFormEdit($data, $matcher): void
     {
         $GLOBALS['server'] = 1;
-        $this->triggers->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->triggers->getEditorForm('edit', $data)
@@ -265,7 +258,6 @@ class TriggersTest extends TestCase
     {
         $GLOBALS['server'] = 1;
         Response::getInstance()->setAjax(true);
-        $this->triggers->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->triggers->getEditorForm('edit', $data)
@@ -331,7 +323,6 @@ class TriggersTest extends TestCase
         global $errors;
 
         $errors = [];
-        $this->triggers->setGlobals();
 
         $_POST['item_definer']    = $definer;
         $_POST['item_name']       = $name;

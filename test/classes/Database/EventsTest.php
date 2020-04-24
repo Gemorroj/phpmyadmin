@@ -1,20 +1,15 @@
 <?php
-/**
- * Tests for PhpMyAdmin\Rte\Events
- */
+
 declare(strict_types=1);
 
-namespace PhpMyAdmin\Tests\Rte;
+namespace PhpMyAdmin\Tests\Database;
 
 use PhpMyAdmin\Config;
+use PhpMyAdmin\Database\Events;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Rte\Events;
 use PhpMyAdmin\Template;
 use PHPUnit\Framework\TestCase;
 
-/**
- * This class is for testing PhpMyAdmin\Rte\Events methods
- */
 class EventsTest extends TestCase
 {
     /** @var Events */
@@ -158,7 +153,6 @@ class EventsTest extends TestCase
      */
     public function testGetEditorFormAdd($data, $matcher): void
     {
-        $this->events->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->events->getEditorForm('add', 'change', $data)
@@ -192,43 +186,43 @@ class EventsTest extends TestCase
         return [
             [
                 $data,
-                "<input name='add_item'",
+                '<input name="add_item"',
             ],
             [
                 $data,
-                "<input type='text' name='item_name'",
+                '<input type="text" name="item_name"',
             ],
             [
                 $data,
-                "<select name='item_status'",
+                '<select name="item_status"',
             ],
             [
                 $data,
-                "<input name='item_type'",
+                '<input name="item_type"',
             ],
             [
                 $data,
-                "<input type='text' name='item_execute_at'",
+                '<input type="text" name="item_execute_at"',
             ],
             [
                 $data,
-                "<input type='text' name='item_ends'",
+                '<input type="text" name="item_ends"',
             ],
             [
                 $data,
-                "<textarea name='item_definition'",
+                '<textarea name="item_definition"',
             ],
             [
                 $data,
-                "<input type='text' name='item_definer'",
+                '<input type="text" name="item_definer"',
             ],
             [
                 $data,
-                "<input type='text' name='item_comment'",
+                '<input type="text" name="item_comment"',
             ],
             [
                 $data,
-                "<input type='submit' name='editor_process_add'",
+                '<input type="submit" name="editor_process_add"',
             ],
         ];
     }
@@ -243,7 +237,6 @@ class EventsTest extends TestCase
      */
     public function testGetEditorFormEdit($data, $matcher): void
     {
-        $this->events->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->events->getEditorForm('edit', 'change', $data)
@@ -277,43 +270,43 @@ class EventsTest extends TestCase
         return [
             [
                 $data,
-                "<input name='edit_item'",
+                '<input name="edit_item"',
             ],
             [
                 $data,
-                "<input type='text' name='item_name'",
+                '<input type="text" name="item_name"',
             ],
             [
                 $data,
-                "<select name='item_status'",
+                '<select name="item_status"',
             ],
             [
                 $data,
-                "<input name='item_type'",
+                '<input name="item_type"',
             ],
             [
                 $data,
-                "<input type='text' name='item_execute_at'",
+                '<input type="text" name="item_execute_at"',
             ],
             [
                 $data,
-                "<input type='text' name='item_ends'",
+                '<input type="text" name="item_ends"',
             ],
             [
                 $data,
-                "<textarea name='item_definition'",
+                '<textarea name="item_definition"',
             ],
             [
                 $data,
-                "<input type='text' name='item_definer'",
+                '<input type="text" name="item_definer"',
             ],
             [
                 $data,
-                "<input type='text' name='item_comment'",
+                '<input type="text" name="item_comment"',
             ],
             [
                 $data,
-                "<input type='submit' name='editor_process_edit'",
+                '<input type="submit" name="editor_process_edit"',
             ],
         ];
     }
@@ -329,7 +322,6 @@ class EventsTest extends TestCase
     public function testGetEditorFormAjax($data, $matcher): void
     {
         Response::getInstance()->setAjax(true);
-        $this->events->setGlobals();
         $this->assertStringContainsString(
             $matcher,
             $this->events->getEditorForm('edit', 'change', $data)
@@ -364,15 +356,15 @@ class EventsTest extends TestCase
         return [
             [
                 $data,
-                "<select name='item_type'",
+                '<select name="item_type"',
             ],
             [
                 $data,
-                "<input type='hidden' name='editor_process_edit'",
+                '<input type="hidden" name="editor_process_edit"',
             ],
             [
                 $data,
-                "<input type='hidden' name='ajax_request'",
+                '<input type="hidden" name="ajax_request"',
             ],
         ];
     }
@@ -391,7 +383,6 @@ class EventsTest extends TestCase
         global $errors;
 
         $errors = [];
-        $this->events->setGlobals();
 
         unset($_POST);
         $_POST = $request;

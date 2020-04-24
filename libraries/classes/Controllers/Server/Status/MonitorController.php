@@ -55,7 +55,7 @@ class MonitorController extends AbstractController
         $scripts->addFile('server/status/sorter.js');
 
         $form = [
-            'server_time' => microtime(true) * 1000,
+            'server_time' => (int) (microtime(true) * 1000),
             'server_os' => SysInfo::getOs(),
             'is_superuser' => $this->dbi->isSuperuser(),
             'server_db_isLocal' => $this->data->db_isLocal,
@@ -68,11 +68,11 @@ class MonitorController extends AbstractController
             }
         }
 
-        $this->response->addHTML($this->template->render('server/status/monitor/index', [
+        $this->render('server/status/monitor/index', [
             'image_path' => $GLOBALS['pmaThemeImage'],
             'javascript_variable_names' => $javascriptVariableNames,
             'form' => $form,
-        ]));
+        ]);
     }
 
     public function chartingData(): void

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpMyAdmin\Rte;
+namespace PhpMyAdmin\Database;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
@@ -13,20 +13,46 @@ use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 use function count;
 use function explode;
-use function htmlentities;
 use function htmlspecialchars;
 use function in_array;
 use function intval;
 use function mb_strpos;
 use function mb_strtoupper;
 use function sprintf;
-use const ENT_QUOTES;
 
 /**
  * Functions for event management.
  */
 class Events
 {
+    /** @var array<string, array<int, string>> */
+    private $status = [
+        'query' => ['ENABLE', 'DISABLE', 'DISABLE ON SLAVE'],
+        'display' => ['ENABLED', 'DISABLED', 'SLAVESIDE_DISABLED'],
+    ];
+
+    /** @var array<int, string> */
+    private $type = ['RECURRING', 'ONE TIME'];
+
+    /** @var array<int, string> */
+    private $interval = [
+        'YEAR',
+        'QUARTER',
+        'MONTH',
+        'DAY',
+        'HOUR',
+        'MINUTE',
+        'WEEK',
+        'SECOND',
+        'YEAR_MONTH',
+        'DAY_HOUR',
+        'DAY_MINUTE',
+        'DAY_SECOND',
+        'HOUR_MINUTE',
+        'HOUR_SECOND',
+        'MINUTE_SECOND',
+    ];
+
     /** @var DatabaseInterface */
     private $dbi;
 
@@ -49,102 +75,6 @@ class Events
     }
 
     /**
-     * Sets required globals
-     *
-     * @return void
-     */
-    public function setGlobals()
-    {
-        global $event_status, $event_type, $event_interval;
-
-        $event_status = [
-            'query' => [
-                'ENABLE',
-                'DISABLE',
-                'DISABLE ON SLAVE',
-            ],
-            'display' => [
-                'ENABLED',
-                'DISABLED',
-                'SLAVESIDE_DISABLED',
-            ],
-        ];
-        $event_type = [
-            'RECURRING',
-            'ONE TIME',
-        ];
-        $event_interval = [
-            'YEAR',
-            'QUARTER',
-            'MONTH',
-            'DAY',
-            'HOUR',
-            'MINUTE',
-            'WEEK',
-            'SECOND',
-            'YEAR_MONTH',
-            'DAY_HOUR',
-            'DAY_MINUTE',
-            'DAY_SECOND',
-            'HOUR_MINUTE',
-            'HOUR_SECOND',
-            'MINUTE_SECOND',
-        ];
-    }
-
-    /**
-     * Main function for the events functionality
-     *
-     * @return void
-     */
-    public function main()
-    {
-        global $db, $table, $pmaThemeImage, $text_dir;
-
-        $this->setGlobals();
-        /**
-         * Process all requests
-         */
-        $this->handleEditor();
-        $this->export();
-
-        $items = $this->dbi->getEvents($db);
-        $hasPrivilege = Util::currentUserHasPrivilege('EVENT', $db);
-        $isAjax = $this->response->isAjax() && empty($_REQUEST['ajax_page_request']);
-
-        $rows = '';
-        foreach ($items as $item) {
-            $sqlDrop = sprintf(
-                'DROP EVENT IF EXISTS %s',
-                Util::backquote($item['name'])
-            );
-            $rows .= $this->template->render('rte/events/row', [
-                'db' => $db,
-                'table' => $table,
-                'event' => $item,
-                'has_privilege' => $hasPrivilege,
-                'sql_drop' => $sqlDrop,
-                'row_class' => $isAjax ? 'ajaxInsert hide' : '',
-            ]);
-        }
-
-        echo $this->template->render('rte/events/list', [
-            'db' => $db,
-            'table' => $table,
-            'items' => $items,
-            'rows' => $rows,
-            'select_all_arrow_src' => $pmaThemeImage . 'arrow_' . $text_dir . '.png',
-        ]);
-
-        echo $this->template->render('rte/events/footer', [
-            'db' => $db,
-            'table' => $table,
-            'has_privilege' => Util::currentUserHasPrivilege('EVENT', $db, $table),
-            'toggle_button' => $this->getFooterToggleButton(),
-        ]);
-    }
-
-    /**
      * Handles editor requests for adding or editing an item
      *
      * @return void
@@ -160,7 +90,8 @@ class Events
 
             $item_query = $this->getQueryFromRequest();
 
-            if (! count($errors)) { // set by PhpMyAdmin\Rte\Routines::getQueryFromRequest()
+            // set by getQueryFromRequest()
+            if (! count($errors)) {
                 // Execute the created query
                 if (! empty($_POST['editor_process_edit'])) {
                     // Backup the old trigger, in case something goes wrong
@@ -259,7 +190,7 @@ class Events
                         );
                         $this->response->addJSON(
                             'new_row',
-                            $this->template->render('rte/events/row', [
+                            $this->template->render('database/events/row', [
                                 'db' => $db,
                                 'table' => $table,
                                 'event' => $event,
@@ -416,32 +347,8 @@ class Events
      */
     public function getEditorForm($mode, $operation, array $item)
     {
-        global $db, $table, $event_status, $event_type, $event_interval;
+        global $db;
 
-        $modeToUpper = mb_strtoupper($mode);
-
-        // Escape special characters
-        $need_escape = [
-            'item_original_name',
-            'item_name',
-            'item_type',
-            'item_execute_at',
-            'item_interval_value',
-            'item_starts',
-            'item_ends',
-            'item_definition',
-            'item_definer',
-            'item_comment',
-        ];
-        foreach ($need_escape as $index) {
-            $item[$index] = htmlentities((string) $item[$index], ENT_QUOTES);
-        }
-        $original_data = '';
-        if ($mode == 'edit') {
-            $original_data = "<input name='item_original_name' "
-                           . "type='hidden' value='" . $item['item_original_name'] . "'>\n";
-        }
-        // Handle some logic first
         if ($operation == 'change') {
             if ($item['item_type'] == 'RECURRING') {
                 $item['item_type']         = 'ONE TIME';
@@ -451,152 +358,16 @@ class Events
                 $item['item_type_toggle']  = 'ONE TIME';
             }
         }
-        if ($item['item_type'] == 'ONE TIME') {
-            $isrecurring_class = ' hide';
-            $isonetime_class   = '';
-        } else {
-            $isrecurring_class = '';
-            $isonetime_class   = ' hide';
-        }
-        // Create the output
-        $retval  = '';
-        $retval .= '<!-- START ' . $modeToUpper . " EVENT FORM -->\n\n";
-        $retval .= '<form class="rte_form" action="' . Url::getFromRoute('/database/events') . '" method="post">' . "\n";
-        $retval .= "<input name='" . $mode . "_item' type='hidden' value='1'>\n";
-        $retval .= $original_data;
-        $retval .= Url::getHiddenInputs($db, $table) . "\n";
-        $retval .= "<fieldset>\n";
-        $retval .= '<legend>' . __('Details') . "</legend>\n";
-        $retval .= "<table class='rte_table'>\n";
-        $retval .= "<tr>\n";
-        $retval .= '    <td>' . __('Event name') . "</td>\n";
-        $retval .= "    <td><input type='text' name='item_name' \n";
-        $retval .= "               value='" . $item['item_name'] . "'\n";
-        $retval .= "               maxlength='64'></td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr>\n";
-        $retval .= '    <td>' . __('Status') . "</td>\n";
-        $retval .= "    <td>\n";
-        $retval .= "        <select name='item_status'>\n";
-        foreach ($event_status['display'] as $key => $value) {
-            $selected = '';
-            if (! empty($item['item_status']) && $item['item_status'] == $value) {
-                $selected = " selected='selected'";
-            }
-            $retval .= '<option' . $selected . '>' . $value . '</option>';
-        }
-        $retval .= "        </select>\n";
-        $retval .= "    </td>\n";
-        $retval .= "</tr>\n";
 
-        $retval .= "<tr>\n";
-        $retval .= '    <td>' . __('Event type') . "</td>\n";
-        $retval .= "    <td>\n";
-        if ($this->response->isAjax()) {
-            $retval .= "        <select name='item_type'>";
-            foreach ($event_type as $key => $value) {
-                $selected = '';
-                if (! empty($item['item_type']) && $item['item_type'] == $value) {
-                    $selected = " selected='selected'";
-                }
-                $retval .= '<option' . $selected . '>' . $value . '</option>';
-            }
-            $retval .= "        </select>\n";
-        } else {
-            $retval .= "        <input name='item_type' type='hidden' \n";
-            $retval .= "               value='" . $item['item_type'] . "'>\n";
-            $retval .= "        <div class='font_weight_bold text-center w-50'>\n";
-            $retval .= '            ' . $item['item_type'] . "\n";
-            $retval .= "        </div>\n";
-            $retval .= "        <input type='submit'\n";
-            $retval .= "               name='item_changetype' class='w-50'\n";
-            $retval .= "               value='";
-            $retval .= sprintf(__('Change to %s'), $item['item_type_toggle']);
-            $retval .= "'>\n";
-        }
-        $retval .= "    </td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr class='onetime_event_row " . $isonetime_class . "'>\n";
-        $retval .= '    <td>' . __('Execute at') . "</td>\n";
-        $retval .= "    <td class='nowrap'>\n";
-        $retval .= "        <input type='text' name='item_execute_at'\n";
-        $retval .= "               value='" . $item['item_execute_at'] . "'\n";
-        $retval .= "               class='datetimefield'>\n";
-        $retval .= "    </td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr class='recurring_event_row " . $isrecurring_class . "'>\n";
-        $retval .= '    <td>' . __('Execute every') . "</td>\n";
-        $retval .= "    <td>\n";
-        $retval .= "        <input class='w-50' type='text'\n";
-        $retval .= "               name='item_interval_value'\n";
-        $retval .= "               value='" . $item['item_interval_value'] . "'>\n";
-        $retval .= "        <select class='w-50' name='item_interval_field'>";
-        foreach ($event_interval as $key => $value) {
-            $selected = '';
-            if (! empty($item['item_interval_field'])
-                && $item['item_interval_field'] == $value
-            ) {
-                $selected = " selected='selected'";
-            }
-            $retval .= '<option' . $selected . '>' . $value . '</option>';
-        }
-        $retval .= "        </select>\n";
-        $retval .= "    </td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr class='recurring_event_row" . $isrecurring_class . "'>\n";
-        $retval .= '    <td>' . _pgettext('Start of recurring event', 'Start');
-        $retval .= "    </td>\n";
-        $retval .= "    <td class='nowrap'>\n";
-        $retval .= "        <input type='text'\n name='item_starts'\n";
-        $retval .= "               value='" . $item['item_starts'] . "'\n";
-        $retval .= "               class='datetimefield'>\n";
-        $retval .= "    </td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr class='recurring_event_row" . $isrecurring_class . "'>\n";
-        $retval .= '    <td>' . _pgettext('End of recurring event', 'End') . "</td>\n";
-        $retval .= "    <td class='nowrap'>\n";
-        $retval .= "        <input type='text' name='item_ends'\n";
-        $retval .= "               value='" . $item['item_ends'] . "'\n";
-        $retval .= "               class='datetimefield'>\n";
-        $retval .= "    </td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr>\n";
-        $retval .= '    <td>' . __('Definition') . "</td>\n";
-        $retval .= "    <td><textarea name='item_definition' rows='15' cols='40'>";
-        $retval .= $item['item_definition'];
-        $retval .= "</textarea></td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr>\n";
-        $retval .= '    <td>' . __('On completion preserve') . "</td>\n";
-        $retval .= "    <td><input type='checkbox'\n";
-        $retval .= "             name='item_preserve'" . $item['item_preserve'] . "></td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr>\n";
-        $retval .= '    <td>' . __('Definer') . "</td>\n";
-        $retval .= "    <td><input type='text' name='item_definer'\n";
-        $retval .= "               value='" . $item['item_definer'] . "'></td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "<tr>\n";
-        $retval .= '    <td>' . __('Comment') . "</td>\n";
-        $retval .= "    <td><input type='text' name='item_comment' maxlength='64'\n";
-        $retval .= "               value='" . $item['item_comment'] . "'></td>\n";
-        $retval .= "</tr>\n";
-        $retval .= "</table>\n";
-        $retval .= "</fieldset>\n";
-        if ($this->response->isAjax()) {
-            $retval .= "<input type='hidden' name='editor_process_" . $mode . "'\n";
-            $retval .= "       value='true'>\n";
-            $retval .= "<input type='hidden' name='ajax_request' value='true'>\n";
-        } else {
-            $retval .= "<fieldset class='tblFooters'>\n";
-            $retval .= "    <input type='submit' name='editor_process_" . $mode . "'\n";
-            $retval .= "           value='" . __('Go') . "'>\n";
-            $retval .= "</fieldset>\n";
-        }
-        $retval .= "</form>\n\n";
-        $retval .= '<!-- END ' . $modeToUpper . " EVENT FORM -->\n\n";
-
-        return $retval;
+        return $this->template->render('database/events/editor_form', [
+            'db' => $db,
+            'event' => $item,
+            'mode' => $mode,
+            'is_ajax' => $this->response->isAjax(),
+            'status_display' => $this->status['display'],
+            'event_type' => $this->type,
+            'event_interval' => $this->interval,
+        ]);
     }
 
     /**
@@ -606,7 +377,7 @@ class Events
      */
     public function getQueryFromRequest()
     {
-        global $errors, $event_status, $event_type, $event_interval;
+        global $errors;
 
         $query = 'CREATE ';
         if (! empty($_POST['item_definer'])) {
@@ -627,12 +398,12 @@ class Events
         }
         $query .= 'ON SCHEDULE ';
         if (! empty($_POST['item_type'])
-            && in_array($_POST['item_type'], $event_type)
+            && in_array($_POST['item_type'], $this->type)
         ) {
             if ($_POST['item_type'] == 'RECURRING') {
                 if (! empty($_POST['item_interval_value'])
                     && ! empty($_POST['item_interval_field'])
-                    && in_array($_POST['item_interval_field'], $event_interval)
+                    && in_array($_POST['item_interval_field'], $this->interval)
                 ) {
                     $query .= 'EVERY ' . intval($_POST['item_interval_value']) . ' ';
                     $query .= $_POST['item_interval_field'] . ' ';
@@ -669,9 +440,9 @@ class Events
         }
         $query .= 'PRESERVE ';
         if (! empty($_POST['item_status'])) {
-            foreach ($event_status['display'] as $key => $value) {
+            foreach ($this->status['display'] as $key => $value) {
                 if ($value == $_POST['item_status']) {
-                    $query .= $event_status['query'][$key] . ' ';
+                    $query .= $this->status['query'][$key] . ' ';
                     break;
                 }
             }
@@ -691,26 +462,33 @@ class Events
         return $query;
     }
 
-    private function getFooterToggleButton(): string
+    private function getEventSchedulerStatus(): bool
     {
-        global $db, $table;
-
-        $es_state = $this->dbi->fetchValue(
-            "SHOW GLOBAL VARIABLES LIKE 'event_scheduler'",
+        $state = $this->dbi->fetchValue(
+            'SHOW GLOBAL VARIABLES LIKE \'event_scheduler\'',
             0,
             1
         );
-        $es_state = mb_strtolower($es_state);
+        $state = strtoupper($state);
+
+        return $state === 'ON' || $state === '1';
+    }
+
+    public function getFooterToggleButton(): string
+    {
+        global $db, $table;
+
+        $state = $this->getEventSchedulerStatus();
         $options = [
             0 => [
                 'label' => __('OFF'),
                 'value' => 'SET GLOBAL event_scheduler="OFF"',
-                'selected' => $es_state != 'on',
+                'selected' => ! $state,
             ],
             1 => [
                 'label' => __('ON'),
                 'value' => 'SET GLOBAL event_scheduler="ON"',
-                'selected' => $es_state == 'on',
+                'selected' => $state,
             ],
         ];
 
@@ -796,7 +574,7 @@ class Events
         }
     }
 
-    private function export(): void
+    public function export(): void
     {
         global $db;
 

@@ -105,7 +105,6 @@ final class ExportController extends AbstractController
             . '<tbody>';
         $multi_values .= "\n";
 
-        // when called by libraries/mult_submits.inc.php
         if (! empty($_POST['selected_tbl']) && empty($table_select)) {
             $table_select = $_POST['selected_tbl'];
         }
@@ -172,7 +171,7 @@ final class ExportController extends AbstractController
         if (isset($_POST['raw_query']) || $isReturnBackFromRawExport) {
             $export_type = 'raw';
         } else {
-            $export_type = 'table';
+            $export_type = 'database';
         }
 
         $displayExport = new DisplayExport();
