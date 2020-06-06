@@ -2,6 +2,7 @@
 /**
  * User preferences form
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Config\Forms;
@@ -44,13 +45,14 @@ class BaseFormList
     /**
      * @param string $name Name
      *
-     * @return null|string
+     * @return string|null
      */
     public static function get($name)
     {
         if (static::isValid($name)) {
             return static::$ns . $name . 'Form';
         }
+
         return null;
     }
 
@@ -81,6 +83,7 @@ class BaseFormList
         foreach ($this->_forms as $form) {
             $ret = $ret && $form->process($allowPartialSave, $checkFormSubmit);
         }
+
         return $ret;
     }
 
@@ -95,6 +98,7 @@ class BaseFormList
         foreach ($this->_forms as $form) {
             $ret .= $form->displayErrors();
         }
+
         return $ret;
     }
 
@@ -121,6 +125,7 @@ class BaseFormList
         foreach ($this->_forms as $form) {
             $ret = $ret || $form->hasErrors();
         }
+
         return $ret;
     }
 
@@ -136,6 +141,7 @@ class BaseFormList
             $class = static::get($form);
             $names = array_merge($names, $class::getFields());
         }
+
         return $names;
     }
 }

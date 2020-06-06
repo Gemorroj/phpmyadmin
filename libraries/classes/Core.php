@@ -4,12 +4,17 @@
  * This script is distinct from libraries/common.inc.php because this
  * script is called from /test.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Di\Migration;
 use PhpMyAdmin\Display\Error as DisplayError;
+use const DATE_RFC1123;
+use const E_USER_ERROR;
+use const E_USER_WARNING;
+use const FILTER_VALIDATE_IP;
 use function array_keys;
 use function array_pop;
 use function array_walk_recursive;
@@ -61,10 +66,6 @@ use function trigger_error;
 use function unserialize;
 use function urldecode;
 use function vsprintf;
-use const DATE_RFC1123;
-use const E_USER_ERROR;
-use const E_USER_WARNING;
-use const FILTER_VALIDATE_IP;
 
 /**
  * Core class
@@ -219,6 +220,7 @@ class Core
             if ($is_scalar && $type === 'length') {
                 return strlen((string) $var) > 0;
             }
+
             return $is_scalar;
         }
 
@@ -367,6 +369,7 @@ class Core
         }
         if ($fatal) {
             self::fatalError($message);
+
             return;
         }
 
@@ -631,9 +634,11 @@ class Core
             header('Content-Encoding: gzip');
         }
         header('Content-Transfer-Encoding: binary');
-        if ($length > 0) {
-            header('Content-Length: ' . $length);
+        if ($length <= 0) {
+            return;
         }
+
+        header('Content-Length: ' . $length);
     }
 
     /**
@@ -645,7 +650,7 @@ class Core
      * @param array  $array   the array
      * @param mixed  $default default value
      *
-     * @return array|null|mixed    array element or $default
+     * @return array|mixed|null array element or $default
      */
     public static function arrayRead(string $path, array $array, $default = null)
     {
@@ -657,6 +662,7 @@ class Core
             }
             $value =& $value[$key];
         }
+
         return $value;
     }
 
@@ -713,11 +719,11 @@ class Core
 
         // remove empty nested arrays
         for (; $depth >= 0; $depth--) {
-            if (! isset($path[$depth + 1]) || count($path[$depth + 1]) === 0) {
-                unset($path[$depth][$keys[$depth]]);
-            } else {
+            if (isset($path[$depth + 1]) && count($path[$depth + 1]) !== 0) {
                 break;
             }
+
+            unset($path[$depth][$keys[$depth]]);
         }
     }
 
@@ -821,6 +827,7 @@ class Core
     {
         $buffer = htmlspecialchars($buffer);
         $buffer = str_replace('  ', ' &nbsp;', $buffer);
+
         return preg_replace("@((\015\012)|(\015)|(\012))@", '<br>' . "\n", $buffer);
     }
 
@@ -860,13 +867,17 @@ class Core
         if (is_array($value)) {
             array_walk_recursive(
                 $value,
-                function ($item) use (&$empty) {
+                /**
+                 * @param mixed $item
+                 */
+                static function ($item) use (&$empty) {
                     $empty = $empty && empty($item);
                 }
             );
         } else {
             $empty = empty($value);
         }
+
         return $empty;
     }
 
@@ -879,9 +890,11 @@ class Core
     {
         foreach (array_keys($_POST) as $post_key) {
             foreach ($post_patterns as $one_post_pattern) {
-                if (preg_match($one_post_pattern, $post_key)) {
-                    Migration::getInstance()->setGlobal($post_key, $_POST[$post_key]);
+                if (! preg_match($one_post_pattern, $post_key)) {
+                    continue;
                 }
+
+                Migration::getInstance()->setGlobal($post_key, $_POST[$post_key]);
             }
         }
     }
@@ -985,9 +998,11 @@ class Core
         /**
          * hash is required for cookie authentication.
          */
-        if (! function_exists('hash_hmac')) {
-            self::warnMissingExtension('hash', true);
+        if (function_exists('hash_hmac')) {
+            return;
         }
+
+        self::warnMissingExtension('hash', true);
     }
 
     /**
@@ -1062,6 +1077,7 @@ class Core
         if ($position !== false) {
             return substr($name, 0, $position);
         }
+
         return $name;
     }
 
@@ -1204,14 +1220,16 @@ class Core
          * The ini_set and ini_get functions can be disabled using
          * disable_functions but we're relying quite a lot of them.
          */
-        if (! function_exists('ini_get') || ! function_exists('ini_set')) {
-            self::fatalError(
-                __(
-                    'The ini_get and/or ini_set functions are disabled in php.ini. '
-                    . 'phpMyAdmin requires these functions!'
-                )
-            );
+        if (function_exists('ini_get') && function_exists('ini_set')) {
+            return;
         }
+
+        self::fatalError(
+            __(
+                'The ini_get and/or ini_set functions are disabled in php.ini. '
+                . 'phpMyAdmin requires these functions!'
+            )
+        );
     }
 
     /**
@@ -1226,9 +1244,11 @@ class Core
         /**
          * protect against possible exploits - there is no need to have so much variables
          */
-        if (count($_REQUEST) > 1000) {
-            self::fatalError(__('possible exploit'));
+        if (count($_REQUEST) <= 1000) {
+            return;
         }
+
+        self::fatalError(__('possible exploit'));
     }
 
     /**
@@ -1243,6 +1263,7 @@ class Core
         global $cfg;
 
         $secret = $_SESSION[' HMAC_secret '] ?? '';
+
         return hash_hmac('sha256', $sqlQuery, $secret . $cfg['blowfish_secret']);
     }
 
@@ -1260,6 +1281,7 @@ class Core
 
         $secret = $_SESSION[' HMAC_secret '] ?? '';
         $hmac = hash_hmac('sha256', $sqlQuery, $secret . $cfg['blowfish_secret']);
+
         return hash_equals($hmac, $signature);
     }
 }

@@ -12,6 +12,7 @@
  * Please provide a comment for your function,
  * what it does and what parameters are available.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -58,21 +59,21 @@ class Transformations
      * // }
      * </code>
      *
-     * @param string $option_string comma separated options
+     * @param string $optionString comma separated options
      *
      * @return array options
      */
-    public function getOptions($option_string)
+    public function getOptions($optionString)
     {
-        $result = [];
-
-        if (strlen($option_string) === 0
-            || ! $transform_options = explode(',', $option_string)
-        ) {
-            return $result;
+        if (strlen($optionString) === 0) {
+            return [];
         }
 
-        while (($option = array_shift($transform_options)) !== null) {
+        $transformOptions = explode(',', $optionString);
+
+        $result = [];
+
+        while (($option = array_shift($transformOptions)) !== null) {
             $trimmed = trim($option);
             if (strlen($trimmed) > 1
                 && $trimmed[0] == "'"
@@ -84,7 +85,7 @@ class Transformations
                 // '...,
                 $trimmed = ltrim($option);
                 $rtrimmed = null;
-                while (($option = array_shift($transform_options)) !== null) {
+                while (($option = array_shift($transformOptions)) !== null) {
                     // ...,
                     $trimmed .= ',' . $option;
                     $rtrimmed = rtrim($trimmed);
@@ -174,6 +175,7 @@ class Transformations
                 }
             }
         }
+
         return $stack;
     }
 
@@ -208,6 +210,7 @@ class Transformations
         if (class_exists($class_name)) {
             return $class_name::getInfo();
         }
+
         return '';
     }
 
@@ -226,6 +229,7 @@ class Transformations
         if (class_exists($class_name)) {
             return $class_name::getName();
         }
+
         return '';
     }
 
@@ -254,6 +258,7 @@ class Transformations
             ],
             $value
         );
+
         return str_replace(
             ' ',
             '',

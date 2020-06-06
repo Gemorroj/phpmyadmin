@@ -2,6 +2,7 @@
 /**
  * Holds class Message
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -235,6 +236,7 @@ class Message
         $r = new Message('', $type);
         $r->setMessage($message);
         $r->setBBCode(false);
+
         return $r;
     }
 
@@ -255,6 +257,7 @@ class Message
             _ngettext('%1$d row affected.', '%1$d rows affected.', $rows)
         );
         $message->addParam($rows);
+
         return $message;
     }
 
@@ -275,6 +278,7 @@ class Message
             _ngettext('%1$d row deleted.', '%1$d rows deleted.', $rows)
         );
         $message->addParam($rows);
+
         return $message;
     }
 
@@ -295,6 +299,7 @@ class Message
             _ngettext('%1$d row inserted.', '%1$d rows inserted.', $rows)
         );
         $message->addParam($rows);
+
         return $message;
     }
 
@@ -760,6 +765,7 @@ class Message
         }
 
         $template = new Template();
+
         return $template->render('message', [
             'context' => $context,
             'message' => $this->getMessage(),
@@ -799,6 +805,7 @@ class Message
             $image = 's_notice';
         }
         $message = self::notice(Html\Generator::getImage($image)) . ' ' . $message;
+
         return $message;
     }
 }

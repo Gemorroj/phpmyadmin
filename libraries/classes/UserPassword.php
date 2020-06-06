@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\UserPassword class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -37,23 +38,25 @@ class UserPassword
     public function getChangePassMessage(array $change_password_message, $sql_query = '')
     {
         $response = Response::getInstance();
-        if ($response->isAjax()) {
-            /**
-             * If in an Ajax request, we don't need to show the rest of the page
-             */
-            if ($change_password_message['error']) {
-                $response->addJSON('message', $change_password_message['msg']);
-                $response->setRequestStatus(false);
-            } else {
-                $sql_query = Generator::getMessage(
-                    $change_password_message['msg'],
-                    $sql_query,
-                    'success'
-                );
-                $response->addJSON('message', $sql_query);
-            }
-            exit;
+        if (! $response->isAjax()) {
+            return;
         }
+
+        /**
+         * If in an Ajax request, we don't need to show the rest of the page
+         */
+        if ($change_password_message['error']) {
+            $response->addJSON('message', $change_password_message['msg']);
+            $response->setRequestStatus(false);
+        } else {
+            $sql_query = Generator::getMessage(
+                $change_password_message['msg'],
+                $sql_query,
+                'success'
+            );
+            $response->addJSON('message', $sql_query);
+        }
+        exit;
     }
 
     /**
@@ -80,6 +83,7 @@ class UserPassword
                 $error = true;
             }
         }
+
         return [
             'error' => $error,
             'msg' => $message,
@@ -175,6 +179,7 @@ class UserPassword
         } else {
             $hashing_function = 'PASSWORD';
         }
+
         return $hashing_function;
     }
 

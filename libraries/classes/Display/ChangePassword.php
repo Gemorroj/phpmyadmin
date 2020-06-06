@@ -2,6 +2,7 @@
 /**
  * Displays form for password change
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Display;
@@ -10,7 +11,6 @@ use PhpMyAdmin\Relation;
 use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\Server\Privileges;
 use PhpMyAdmin\Template;
-use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 
 /**
@@ -94,6 +94,7 @@ class ChangePassword
         }
 
         $html .= $template->render('display/change_password/file_e');
+
         return $html;
     }
 }

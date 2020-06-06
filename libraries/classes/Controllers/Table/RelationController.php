@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -102,6 +103,7 @@ final class RelationController extends AbstractController
             } else { // if only the db is selected
                 $this->getDropdownValueForDatabase($storageEngine);
             }
+
             return;
         }
 
@@ -160,12 +162,14 @@ final class RelationController extends AbstractController
         $column_hash_array = [];
         $column_array[''] = '';
         foreach ($columns as $column) {
-            if (strtoupper($storageEngine) == 'INNODB'
-                || ! empty($column['Key'])
+            if (strtoupper($storageEngine) != 'INNODB'
+                && empty($column['Key'])
             ) {
-                $column_array[$column['Field']] = $column['Field'];
-                $column_hash_array[$column['Field']] = md5($column['Field']);
+                continue;
             }
+
+            $column_array[$column['Field']] = $column['Field'];
+            $column_hash_array[$column['Field']] = md5($column['Field']);
         }
         if ($GLOBALS['cfg']['NaturalOrder']) {
             uksort($column_array, 'strnatcasecmp');
@@ -207,18 +211,20 @@ final class RelationController extends AbstractController
      */
     private function updateForDisplayField(Table $table, array $cfgRelation): void
     {
-        if ($table->updateDisplayField(
+        if (! $table->updateDisplayField(
             $_POST['display_field'],
             $cfgRelation
         )) {
-            $this->response->addHTML(
-                Generator::getMessage(
-                    __('Display column was successfully updated.'),
-                    '',
-                    'success'
-                )
-            );
+            return;
         }
+
+        $this->response->addHTML(
+            Generator::getMessage(
+                __('Display column was successfully updated.'),
+                '',
+                'success'
+            )
+        );
     }
 
     /**
@@ -262,16 +268,18 @@ final class RelationController extends AbstractController
             Core::previewSQL($preview_sql_data);
         }
 
-        if (! empty($display_query) && ! $seen_error) {
-            $GLOBALS['display_query'] = $display_query;
-            $this->response->addHTML(
-                Generator::getMessage(
-                    __('Your SQL query has been executed successfully.'),
-                    null,
-                    'success'
-                )
-            );
+        if (empty($display_query) || $seen_error) {
+            return;
         }
+
+        $GLOBALS['display_query'] = $display_query;
+        $this->response->addHTML(
+            Generator::getMessage(
+                __('Your SQL query has been executed successfully.'),
+                null,
+                'success'
+            )
+        );
     }
 
     /**
@@ -285,7 +293,7 @@ final class RelationController extends AbstractController
     {
         $multi_edit_columns_name = $_POST['fields_name'] ?? null;
 
-        if ($table->updateInternalRelations(
+        if (! $table->updateInternalRelations(
             $multi_edit_columns_name,
             $_POST['destination_db'],
             $_POST['destination_table'],
@@ -293,14 +301,16 @@ final class RelationController extends AbstractController
             $cfgRelation,
             $relations
         )) {
-            $this->response->addHTML(
-                Generator::getMessage(
-                    __('Internal relationships were successfully updated.'),
-                    '',
-                    'success'
-                )
-            );
+            return;
         }
+
+        $this->response->addHTML(
+            Generator::getMessage(
+                __('Internal relationships were successfully updated.'),
+                '',
+                'success'
+            )
+        );
     }
 
     /**
@@ -355,11 +365,13 @@ final class RelationController extends AbstractController
             );
 
             while ($row = $this->dbi->fetchArray($tables_rs)) {
-                if (isset($row['Engine'])
-                    && mb_strtoupper($row['Engine']) == $storageEngine
+                if (! isset($row['Engine'])
+                    || mb_strtoupper($row['Engine']) != $storageEngine
                 ) {
-                    $tables[] = htmlspecialchars($row['Name']);
+                    continue;
                 }
+
+                $tables[] = htmlspecialchars($row['Name']);
             }
         } else {
             $query = 'SHOW TABLES FROM '

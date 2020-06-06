@@ -2,6 +2,7 @@
 /**
  * Used to render the header of PMA's pages
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -138,7 +139,7 @@ class Header
         $this->_warningsEnabled = true;
         $this->_isPrintView = false;
         $this->_scripts = new Scripts();
-        $this->_addDefaultScripts();
+        $this->addDefaultScripts();
         $this->_headerIsSent = false;
         // if database storage for user preferences is transient,
         // offer to load exported settings from localStorage
@@ -156,7 +157,7 @@ class Header
     /**
      * Loads common scripts
      */
-    private function _addDefaultScripts(): void
+    private function addDefaultScripts(): void
     {
         // Localised strings
         $this->_scripts->addFile('vendor/jquery/jquery.min.js');
@@ -171,8 +172,8 @@ class Header
         $this->_scripts->addFile('vendor/jquery/jquery.event.drag-2.2.js');
         $this->_scripts->addFile('vendor/jquery/jquery.validate.js');
         $this->_scripts->addFile('vendor/jquery/jquery-ui-timepicker-addon.js');
-        $this->_scripts->addFile('vendor/jquery/jquery.ba-hashchange-1.3.js');
-        $this->_scripts->addFile('vendor/jquery/jquery.debounce-1.0.5.js');
+        $this->_scripts->addFile('vendor/jquery/jquery.ba-hashchange-2.0.js');
+        $this->_scripts->addFile('vendor/jquery/jquery.debounce-1.0.6.js');
         $this->_scripts->addFile('menu_resizer.js');
 
         // Cross-framing protection
@@ -277,6 +278,7 @@ class Header
                 $params[$key] = $key . ':"' . Sanitize::escapeJsString($value) . '"';
             }
         }
+
         return 'CommonParams.setAll({' . implode(',', $params) . '});';
     }
 
@@ -382,7 +384,7 @@ class Header
 
         $recentTable = '';
         if (empty($_REQUEST['recent_table'])) {
-            $recentTable = $this->_addRecentTable($db, $table);
+            $recentTable = $this->addRecentTable($db, $table);
         }
 
         if ($this->_isAjax) {
@@ -494,6 +496,7 @@ class Header
                 $GLOBALS['buffer_message'] = $buffer_message;
             }
         }
+
         return $retval;
     }
 
@@ -636,6 +639,7 @@ class Header
                 $this->_title = 'phpMyAdmin';
             }
         }
+
         return $this->_title;
     }
 
@@ -645,7 +649,7 @@ class Header
      * @param string $db    Database name where the table is located.
      * @param string $table The table name
      */
-    private function _addRecentTable(string $db, string $table): string
+    private function addRecentTable(string $db, string $table): string
     {
         $retval = '';
         if ($this->_menuEnabled
@@ -663,6 +667,7 @@ class Header
                 $retval = $error->getDisplay();
             }
         }
+
         return $retval;
     }
 

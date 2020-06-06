@@ -2,6 +2,7 @@
 /**
  * Second authentication factor handling
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\TwoFactor;
@@ -41,9 +42,11 @@ class Application extends TwoFactorPlugin
             $this->_google2fa = new Google2FA(new SvgImageBackEnd());
         }
         $this->_google2fa->setWindow(8);
-        if (! isset($this->_twofactor->config['settings']['secret'])) {
-            $this->_twofactor->config['settings']['secret'] = '';
+        if (isset($this->_twofactor->config['settings']['secret'])) {
+            return;
         }
+
+        $this->_twofactor->config['settings']['secret'] = '';
     }
 
     public function getGoogle2fa(): Google2FA
@@ -67,6 +70,7 @@ class Application extends TwoFactorPlugin
             return false;
         }
         $this->_provided = true;
+
         return $this->_google2fa->verifyKey(
             $this->_twofactor->config['settings']['secret'],
             $_POST['2fa_code']
@@ -96,6 +100,7 @@ class Application extends TwoFactorPlugin
             $this->_twofactor->user,
             $secret
         );
+
         return $this->template->render('login/twofactor/application_configure', [
             'image' => $inlineUrl,
             'secret' => $secret,
@@ -123,6 +128,7 @@ class Application extends TwoFactorPlugin
         if ($result) {
             unset($_SESSION['2fa_application_key']);
         }
+
         return $result;
     }
 
@@ -143,6 +149,8 @@ class Application extends TwoFactorPlugin
      */
     public static function getDescription()
     {
-        return __('Provides authentication using HOTP and TOTP applications such as FreeOTP, Google Authenticator or Authy.');
+        return __(
+            'Provides authentication using HOTP and TOTP applications such as FreeOTP, Google Authenticator or Authy.'
+        );
     }
 }

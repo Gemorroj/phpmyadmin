@@ -2,6 +2,7 @@
 /**
  * Hold the PhpMyAdmin\Language class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -108,7 +109,7 @@ class Language
      *
      * @return int same as strcmp
      */
-    public function cmp($other)
+    public function cmp(Language $other): int
     {
         return strcmp($this->name, $other->name);
     }
@@ -135,6 +136,7 @@ class Language
         $pattern = '/^('
             . addcslashes($this->regex, '/')
             . ')(;q=[0-9]\\.[0-9])?$/i';
+
         return preg_match($pattern, $header);
     }
 
@@ -150,6 +152,7 @@ class Language
         $pattern = '/(\(|\[|;[[:space:]])('
             . addcslashes($this->regex, '/')
             . ')(;|\]|\))/i';
+
         return preg_match($pattern, $header);
     }
 

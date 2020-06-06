@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -41,6 +42,7 @@ final class GisVisualizationController extends AbstractController
             $this->response->addHTML(
                 Message::error(__('No SQL query was set to fetch data.'))
             );
+
             return;
         }
 
@@ -100,6 +102,7 @@ final class GisVisualizationController extends AbstractController
 
         if (isset($_GET['saveToFile'])) {
             $this->saveToFile($visualizationSettings['spatialColumn'], $_GET['fileFormat']);
+
             return;
         }
 
@@ -123,9 +126,11 @@ final class GisVisualizationController extends AbstractController
         $this->visualization->setUserSpecifiedSettings($visualizationSettings);
         if ($visualizationSettings != null) {
             foreach ($this->visualization->getSettings() as $setting => $val) {
-                if (! isset($visualizationSettings[$setting])) {
-                    $visualizationSettings[$setting] = $val;
+                if (isset($visualizationSettings[$setting])) {
+                    continue;
                 }
+
+                $visualizationSettings[$setting] = $val;
             }
         }
 

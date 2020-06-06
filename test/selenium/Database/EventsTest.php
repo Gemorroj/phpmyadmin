@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for table related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium\Database;
@@ -50,6 +51,7 @@ class EventsTest extends TestBase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         if (isset($this->_mysqli)) {
             $this->dbQuery('SET GLOBAL event_scheduler="OFF"');
         }
@@ -61,7 +63,7 @@ class EventsTest extends TestBase
      *
      * @return void
      */
-    private function _eventSQL()
+    private function eventSQL()
     {
         $start = date('Y-m-d H:i:s', strtotime('-1 day'));
         $end = date('Y-m-d H:i:s', strtotime('+1 day'));
@@ -108,6 +110,14 @@ class EventsTest extends TestBase
         $proc = 'UPDATE ' . $this->database_name . '.`test_table` SET val=val+1';
         $this->typeInTextArea($proc);
 
+        $action = $this->webDriver->action();
+        // Resize the too big text box to access Go button
+        $element = $this->byXPath('//*[@class="ui-resizable-handle ui-resizable-s"]');
+        $action->moveToElement($element)
+                ->clickAndHold()
+                ->moveByOffset(0, -100)
+                ->perform();
+
         $this->byXPath("//button[contains(., 'Go')]")->click();
 
         $this->waitForElement(
@@ -149,11 +159,12 @@ class EventsTest extends TestBase
      *
      * @return void
      *
+     * @depends testAddEvent
      * @group large
      */
     public function testEditEvents()
     {
-        $this->_eventSQL();
+        $this->eventSQL();
         $this->waitForElement('partialLinkText', 'Events')->click();
         $this->waitAjax();
 
@@ -189,11 +200,12 @@ class EventsTest extends TestBase
      *
      * @return void
      *
+     * @depends testAddEvent
      * @group large
      */
     public function testDropEvent()
     {
-        $this->_eventSQL();
+        $this->eventSQL();
         $this->waitForElement('partialLinkText', 'Events')->click();
         $this->waitAjax();
 

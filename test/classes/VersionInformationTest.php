@@ -2,6 +2,7 @@
 /**
  * Tests for methods in PhpMyAdmin\VersionInformation class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -12,8 +13,9 @@ use stdClass;
 /**
  * Tests for methods in PhpMyAdmin\VersionInformation class
  */
-class VersionInformationTest extends PmaTestCase
+class VersionInformationTest extends AbstractTestCase
 {
+    /** @var stdClass[] */
     private $_releases;
 
     /**
@@ -22,6 +24,8 @@ class VersionInformationTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setProxySettings();
         $this->_releases = [];
 
         $release = new stdClass();
@@ -181,7 +185,7 @@ class VersionInformationTest extends PmaTestCase
             [],
         ];
 
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['evaluateVersionCondition'])
             ->getMock();
 
@@ -217,7 +221,7 @@ class VersionInformationTest extends PmaTestCase
             [],
         ];
 
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['evaluateVersionCondition'])
             ->getMock();
 
@@ -248,7 +252,7 @@ class VersionInformationTest extends PmaTestCase
             [],
         ];
 
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['evaluateVersionCondition'])
             ->getMock();
 
@@ -280,14 +284,19 @@ class VersionInformationTest extends PmaTestCase
     /**
      * Tests getLatestCompatibleVersion() with an new PHP version
      *
-     * @dataProvider dataProviderVersionConditions
      * @param array[]     $versions           The versions to use
      * @param array[]     $conditions         The conditions that will be executed
      * @param string|null $matchedLastVersion The version that will be matched
+     *
      * @return void
+     *
+     * @dataProvider dataProviderVersionConditions
      */
-    public function testGetLatestCompatibleVersionWithNewPHPVersion(array $versions, array $conditions, ?string $matchedLastVersion): void
-    {
+    public function testGetLatestCompatibleVersionWithNewPHPVersion(
+        array $versions,
+        array $conditions,
+        ?string $matchedLastVersion
+    ): void {
         $GLOBALS['cfg']['Servers'] = [];
 
         $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
@@ -314,6 +323,7 @@ class VersionInformationTest extends PmaTestCase
     /**
      * Provider for testGetLatestCompatibleVersionWithNewPHPVersion
      * Returns the conditions to be used for mocks
+     *
      * @return array[]
      */
     public function dataProviderVersionConditions(): array
@@ -321,18 +331,18 @@ class VersionInformationTest extends PmaTestCase
         return [
             [
                 [
-                    (object) [
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=5.5,<8.0',
                         'version' => '4.9.3',
                         'mysql_versions' => '>=5.5',
-                    ],
-                    (object) [
+                    ]),
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=7.1,<8.0',
                         'version' => '5.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
+                    ]),
                 ],
                 [
                     [
@@ -356,18 +366,18 @@ class VersionInformationTest extends PmaTestCase
             ],
             [
                 [
-                    (object) [
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=5.5,<7.0',
                         'version' => '6.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
-                    (object) [
+                    ]),
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=7.1,<8.0',
                         'version' => '5.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
+                    ]),
                 ],
                 [
                     [
@@ -387,18 +397,18 @@ class VersionInformationTest extends PmaTestCase
             ],
             [
                 [
-                    (object) [
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=5.5,<7.0',
                         'version' => '6.0.0-rc1',
                         'mysql_versions' => '>=5.5',
-                    ],
-                    (object) [
+                    ]),
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=7.1,<8.0',
                         'version' => '6.0.0-rc2',
                         'mysql_versions' => '>=5.5',
-                    ],
+                    ]),
                 ],
                 [
                     [
@@ -418,18 +428,18 @@ class VersionInformationTest extends PmaTestCase
             ],
             [
                 [
-                    (object) [
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=5.5,<7.0',
                         'version' => '6.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
-                    (object) [
+                    ]),
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=7.1,<8.0',
                         'version' => '5.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
+                    ]),
                 ],
                 [
                     [
@@ -449,18 +459,18 @@ class VersionInformationTest extends PmaTestCase
             ],
             [
                 [
-                    (object) [
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=5.5,<7.0',
                         'version' => '6.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
-                    (object) [
+                    ]),
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=7.1,<8.0',
                         'version' => '5.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
+                    ]),
                 ],
                 [
                     [
@@ -480,18 +490,18 @@ class VersionInformationTest extends PmaTestCase
             ],
             [
                 [
-                    (object) [
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=5.5,<8.0',
                         'version' => '4.9.3',
                         'mysql_versions' => '>=5.5',
-                    ],
-                    (object) [
+                    ]),
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=7.1,<8.0',
                         'version' => '5.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
+                    ]),
                 ],
                 [
                     [
@@ -515,18 +525,18 @@ class VersionInformationTest extends PmaTestCase
             ],
             [
                 [
-                    (object) [
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=7.1,<8.0',
                         'version' => '5.0.0',
                         'mysql_versions' => '>=5.5',
-                    ],
-                    (object) [
+                    ]),
+                    ((object) [
                         'date' => '2019-12-26',
                         'php_versions' => '>=5.5,<8.0',
                         'version' => '4.9.3',
                         'mysql_versions' => '>=5.5',
-                    ],
+                    ]),
                 ],
                 [
                     [
@@ -558,7 +568,7 @@ class VersionInformationTest extends PmaTestCase
      */
     public function testEvaluateVersionCondition()
     {
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['getPHPVersion'])
             ->getMock();
 

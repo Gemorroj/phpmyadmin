@@ -2,6 +2,7 @@
 /**
  * Form templates
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Config;
@@ -105,6 +106,7 @@ class FormDisplayTemplate
             'items' => $items,
         ]);
         $htmlOutput .= '<div class="tabs_contents col">';
+
         return $htmlOutput;
     }
 
@@ -391,6 +393,7 @@ class FormDisplayTemplate
             $htmlOutput .= '<td>&nbsp;</td>';
         }
         $htmlOutput .= '</tr>';
+
         return $htmlOutput;
     }
 
@@ -483,9 +486,7 @@ class FormDisplayTemplate
             return '';
         }
 
-        return $this->template->render('javascript/display', [
-            'js_array' => $jsArray,
-        ]);
+        return $this->template->render('javascript/display', ['js_array' => $jsArray]);
     }
 
     /**

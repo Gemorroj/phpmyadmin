@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers;
@@ -50,6 +51,7 @@ class UserPasswordController extends AbstractController
             Message::error(
                 __('You don\'t have sufficient privileges to be here right now!')
             )->display();
+
             return;
         }
 

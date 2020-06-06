@@ -2,22 +2,11 @@
 /**
  * Hold the PhpMyAdmin\Utils\HttpRequest class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Utils;
 
-use function base64_encode;
-use function curl_exec;
-use function curl_getinfo;
-use function curl_init;
-use function curl_setopt;
-use function file_get_contents;
-use function function_exists;
-use function ini_get;
-use function intval;
-use function preg_match;
-use function stream_context_create;
-use function strlen;
 use const CURL_IPRESOLVE_V4;
 use const CURLINFO_HTTP_CODE;
 use const CURLINFO_SSL_VERIFYRESULT;
@@ -36,6 +25,18 @@ use const CURLOPT_SSL_VERIFYHOST;
 use const CURLOPT_SSL_VERIFYPEER;
 use const CURLOPT_TIMEOUT;
 use const CURLOPT_USERAGENT;
+use function base64_encode;
+use function curl_exec;
+use function curl_getinfo;
+use function curl_init;
+use function curl_setopt;
+use function file_get_contents;
+use function function_exists;
+use function ini_get;
+use function intval;
+use function preg_match;
+use function stream_context_create;
+use function strlen;
 
 /**
  * Handles HTTP requests
@@ -78,6 +79,7 @@ class HttpRequest
                     . $auth . "\r\n";
             }
         }
+
         return $context;
     }
 
@@ -88,7 +90,7 @@ class HttpRequest
      * @param int   $httpStatus       HTTP response status code
      * @param bool  $returnOnlyStatus If set to true, the method would only return response status
      *
-     * @return string|null|bool
+     * @return string|bool|null
      */
     private function response(
         $response,
@@ -104,6 +106,7 @@ class HttpRequest
         if ($returnOnlyStatus) {
             return true;
         }
+
         return $response;
     }
 
@@ -117,7 +120,7 @@ class HttpRequest
      * @param string $header           Header to be set for the HTTP request
      * @param int    $ssl              SSL mode to use
      *
-     * @return string|null|bool
+     * @return string|bool|null
      */
     private function curl(
         $url,
@@ -198,13 +201,17 @@ class HttpRequest
             if (curl_getinfo($curlHandle, CURLINFO_SSL_VERIFYRESULT) != 0) {
                 if ($ssl == 0) {
                     return $this->curl($url, $method, $returnOnlyStatus, $content, $header, CURLOPT_CAINFO);
-                } elseif ($ssl == CURLOPT_CAINFO) {
+                }
+
+                if ($ssl == CURLOPT_CAINFO) {
                     return $this->curl($url, $method, $returnOnlyStatus, $content, $header, CURLOPT_CAPATH);
                 }
             }
+
             return null;
         }
         $httpStatus = curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
+
         return $this->response($response, $httpStatus, $returnOnlyStatus);
     }
 
@@ -217,7 +224,7 @@ class HttpRequest
      * @param mixed  $content          Content to be sent with HTTP request
      * @param string $header           Header to be set for the HTTP request
      *
-     * @return string|null|bool
+     * @return string|bool|null
      */
     private function fopen(
         $url,
@@ -250,8 +257,10 @@ class HttpRequest
         if (isset($http_response_header)) {
             preg_match('#HTTP/[0-9\.]+\s+([0-9]+)#', $http_response_header[0], $out);
             $httpStatus = intval($out[1]);
+
             return $this->response($response, $httpStatus, $returnOnlyStatus);
         }
+
         return null;
     }
 
@@ -264,7 +273,7 @@ class HttpRequest
      * @param mixed  $content          Content to be sent with HTTP request
      * @param string $header           Header to be set for the HTTP request
      *
-     * @return string|null|bool
+     * @return string|bool|null
      */
     public function create(
         $url,
@@ -275,9 +284,12 @@ class HttpRequest
     ) {
         if (function_exists('curl_init')) {
             return $this->curl($url, $method, $returnOnlyStatus, $content, $header);
-        } elseif (ini_get('allow_url_fopen')) {
+        }
+
+        if (ini_get('allow_url_fopen')) {
             return $this->fopen($url, $method, $returnOnlyStatus, $content, $header);
         }
+
         return null;
     }
 }

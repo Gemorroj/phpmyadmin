@@ -2,6 +2,7 @@
 /**
  * Used to render the console of PMA's pages
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -92,11 +93,13 @@ class Console
             } else {
                 $welcomeMessage = __('No bookmarks');
             }
+
             return $template->render('console/bookmark_content', [
                 'welcome_message' => $welcomeMessage,
                 'bookmarks' => $bookmarks,
             ]);
         }
+
         return '';
     }
 
@@ -135,6 +138,7 @@ class Console
                 'bookmark_content' => $bookmarkContent,
             ]);
         }
+
         return '';
     }
 }

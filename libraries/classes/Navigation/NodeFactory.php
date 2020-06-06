@@ -2,16 +2,17 @@
 /**
  * This class is responsible for creating Node objects
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Navigation;
 
 use PhpMyAdmin\Navigation\Nodes\Node;
+use const E_USER_ERROR;
 use function class_exists;
 use function preg_match;
 use function sprintf;
 use function trigger_error;
-use const E_USER_ERROR;
 
 /**
  * Node factory - instantiates Node objects or objects derived from the Node class
@@ -87,6 +88,7 @@ class NodeFactory
         $isGroup = false
     ): Node {
         $class = self::sanitizeClass($class);
+
         return new $class($name, $type, $isGroup);
     }
 
@@ -104,6 +106,7 @@ class NodeFactory
         $node->title = $name;
         $node->isNew = true;
         $node->classes = $classes;
+
         return $node;
     }
 }

@@ -18,19 +18,47 @@ use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function array_merge;
+use function bin2hex;
+use function count;
+use function explode;
+use function in_array;
+use function intval;
+use function is_array;
+use function is_iterable;
+use function mb_strtoupper;
+use function preg_quote;
+use function preg_replace;
+use function rtrim;
+use function stripcslashes;
+use function substr;
+use function trim;
 
 /**
  * Displays the form used to define the structure of the table
  */
 final class ColumnsDefinition
 {
+    /**
+     * @param Response          $response        Response object
+     * @param Template          $template        Template
+     * @param Transformations   $transformations Transformations
+     * @param Relation          $relation        Relation
+     * @param DatabaseInterface $dbi             Database Interface instance
+     * @param string            $action          Action
+     * @param int               $num_fields      The number of fields
+     * @param string|null       $regenerate      Use regeneration
+     * @param array|null        $selected        Selected
+     * @param array|null        $fields_meta     Fields meta
+     * @param array|null        $field_fulltext  Fields full text
+     */
     public static function displayForm(
         Response $response,
         Template $template,
         Transformations $transformations,
         Relation $relation,
         DatabaseInterface $dbi,
-        $action,
+        string $action,
         $num_fields = 0,
         $regenerate = null,
         $selected = null,
@@ -49,9 +77,7 @@ final class ColumnsDefinition
 
         $length_values_input_size = 8;
         $content_cells = [];
-        $form_params = [
-            'db' => $db,
-        ];
+        $form_params = ['db' => $db];
 
         if ($action == Url::getFromRoute('/table/create')) {
             $form_params['reload'] = 1;
@@ -86,7 +112,8 @@ final class ColumnsDefinition
             }
         }
 
-        $is_backup = ($action != Url::getFromRoute('/table/create') && $action != Url::getFromRoute('/table/add-field'));
+        $is_backup = ($action != Url::getFromRoute('/table/create')
+            && $action != Url::getFromRoute('/table/add-field'));
 
         $cfgRelation = $relation->getRelationsParam();
 
@@ -109,13 +136,15 @@ final class ColumnsDefinition
             'transformation',
         ];
         foreach ($mime_types as $mime_type) {
-            if (isset($available_mime[$mime_type]) and is_iterable($available_mime[$mime_type])) {
-                foreach ($available_mime[$mime_type] as $mimekey => $transform) {
-                    $available_mime[$mime_type . '_file_quoted'][$mimekey] = preg_quote(
-                        $available_mime[$mime_type . '_file'][$mimekey],
-                        '@'
-                    );
-                }
+            if (! isset($available_mime[$mime_type]) || ! is_iterable($available_mime[$mime_type])) {
+                continue;
+            }
+
+            foreach ($available_mime[$mime_type] as $mimekey => $transform) {
+                $available_mime[$mime_type . '_file_quoted'][$mimekey] = preg_quote(
+                    $available_mime[$mime_type . '_file'][$mimekey],
+                    '@'
+                );
             }
         }
 

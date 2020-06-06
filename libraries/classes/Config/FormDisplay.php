@@ -9,6 +9,7 @@
  * o translated_path - work_path modified for HTML field name, a path with
  *                     slashes changed to hyphens, eg. Servers-4-verbose
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Config;
@@ -17,6 +18,7 @@ use PhpMyAdmin\Config\Forms\User\UserFormList;
 use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\Util;
+use const E_USER_WARNING;
 use function array_flip;
 use function array_keys;
 use function array_search;
@@ -35,7 +37,6 @@ use function sprintf;
 use function str_replace;
 use function trigger_error;
 use function trim;
-use const E_USER_WARNING;
 
 /**
  * Form management class, displays and processes forms
@@ -186,6 +187,7 @@ class FormDisplay
         if (count($this->_forms) > 0) {
             return $this->save(array_keys($this->_forms), $allowPartialSave);
         }
+
         return false;
     }
 
@@ -194,7 +196,7 @@ class FormDisplay
      *
      * @return void
      */
-    private function _validate()
+    private function validate()
     {
         if ($this->_isValidated) {
             return;
@@ -249,7 +251,7 @@ class FormDisplay
      *
      * @return string
      */
-    private function _displayForms(
+    private function displayForms(
         $showRestoreDefault,
         array &$jsDefault,
         array &$js,
@@ -277,7 +279,7 @@ class FormDisplay
                     ? ! isset($this->_userprefsDisallow[$path])
                     : null;
                 // display input
-                $htmlOutput .= $this->_displayFieldInput(
+                $htmlOutput .= $this->displayFieldInput(
                     $form,
                     $field,
                     $path,
@@ -288,12 +290,15 @@ class FormDisplay
                     $jsDefault
                 );
                 // register JS validators for this field
-                if (isset($validators[$path])) {
-                    $this->formDisplayTemplate->addJsValidate($translatedPath, $validators[$path], $js);
+                if (! isset($validators[$path])) {
+                    continue;
                 }
+
+                $this->formDisplayTemplate->addJsValidate($translatedPath, $validators[$path], $js);
             }
             $htmlOutput .= $this->formDisplayTemplate->displayFieldsetBottom($showButtons);
         }
+
         return $htmlOutput;
     }
 
@@ -344,14 +349,14 @@ class FormDisplay
             }
         }
         if (! $isNewServer) {
-            $this->_validate();
+            $this->validate();
         }
 
         // user preferences
-        $this->_loadUserprefsInfo();
+        $this->loadUserprefsInfo();
 
         // display forms
-        $htmlOutput .= $this->_displayForms(
+        $htmlOutput .= $this->displayForms(
             $showRestoreDefault,
             $jsDefault,
             $js,
@@ -376,9 +381,8 @@ class FormDisplay
 
         $js[] = "$.extend(defaultValues, {\n\t"
             . implode(",\n\t", $jsDefault) . '})';
-        $htmlOutput .= $this->formDisplayTemplate->displayJavascript($js);
 
-        return $htmlOutput;
+        return $htmlOutput . $this->formDisplayTemplate->displayJavascript($js);
     }
 
     /**
@@ -400,7 +404,7 @@ class FormDisplay
      *
      * @return string|null HTML for input field
      */
-    private function _displayFieldInput(
+    private function displayFieldInput(
         Form $form,
         $field,
         $systemPath,
@@ -469,9 +473,11 @@ class FormDisplay
                 } else {
                     $this->formDisplayTemplate->displayGroupFooter();
                 }
+
                 return $htmlOutput;
             case 'NULL':
                 trigger_error('Field ' . $systemPath . ' has no type', E_USER_WARNING);
+
                 return null;
         }
 
@@ -487,12 +493,14 @@ class FormDisplay
         // TrustedProxies requires changes before displaying
         if ($systemPath == 'TrustedProxies') {
             foreach ($value as $ip => &$v) {
-                if (! preg_match('/^-\d+$/', $ip)) {
-                    $v = $ip . ': ' . $v;
+                if (preg_match('/^-\d+$/', $ip)) {
+                    continue;
                 }
+
+                $v = $ip . ': ' . $v;
             }
         }
-        $this->_setComments($systemPath, $opts);
+        $this->setComments($systemPath, $opts);
 
         // send default value to form's JS
         $jsLine = '\'' . $translatedPath . '\': ';
@@ -541,7 +549,7 @@ class FormDisplay
      */
     public function displayErrors()
     {
-        $this->_validate();
+        $this->validate();
         if (count($this->_errors) === 0) {
             return null;
         }
@@ -567,7 +575,7 @@ class FormDisplay
      */
     public function fixErrors()
     {
-        $this->_validate();
+        $this->validate();
         if (count($this->_errors) === 0) {
             return;
         }
@@ -585,12 +593,12 @@ class FormDisplay
     /**
      * Validates select field and casts $value to correct type
      *
-     * @param string $value   Current value
-     * @param array  $allowed List of allowed values
+     * @param string|bool $value   Current value
+     * @param array       $allowed List of allowed values
      *
      * @return bool
      */
-    private function _validateSelect(&$value, array $allowed)
+    private function validateSelect(&$value, array $allowed): bool
     {
         $valueCmp = is_bool($value)
             ? (int) $value
@@ -599,16 +607,21 @@ class FormDisplay
             // equality comparison only if both values are numeric or not numeric
             // (allows to skip 0 == 'string' equalling to true)
             // or identity (for string-string)
-            if (($vk == $value && ! (is_numeric($valueCmp) xor is_numeric($vk)))
-                || $vk === $value
+            if (! (($vk == $value && ! (is_numeric($valueCmp) xor is_numeric($vk)))
+                || $vk === $value)
             ) {
-                // keep boolean value as boolean
-                if (! is_bool($value)) {
-                    settype($value, gettype($vk));
-                }
-                return true;
+                continue;
             }
+
+            // keep boolean value as boolean
+            if (! is_bool($value)) {
+                // phpcs:ignore Generic.PHP.ForbiddenFunctions
+                settype($value, gettype($vk));
+            }
+
+            return true;
         }
+
         return false;
     }
 
@@ -630,17 +643,17 @@ class FormDisplay
         $toSave = [];
         $isSetupScript = $GLOBALS['PMA_Config']->get('is_setup');
         if ($isSetupScript) {
-            $this->_loadUserprefsInfo();
+            $this->loadUserprefsInfo();
         }
 
         $this->_errors = [];
         foreach ($forms as $formName) {
-            if (isset($this->_forms[$formName])) {
-                /** @var Form $form */
-                $form = $this->_forms[$formName];
-            } else {
+            if (! isset($this->_forms[$formName])) {
                 continue;
             }
+
+            /** @var Form $form */
+            $form = $this->_forms[$formName];
             // get current server id
             $changeIndex = $form->index === 0
                 ? $this->_configFile->getServerCount() + 1
@@ -659,9 +672,7 @@ class FormDisplay
                 // ensure the value is set
                 if (! isset($_POST[$key])) {
                     // checkboxes aren't set by browsers if they're off
-                    if ($type == 'boolean') {
-                        $_POST[$key] = false;
-                    } else {
+                    if ($type != 'boolean') {
                         $this->_errors[$form->name][] = sprintf(
                             __('Missing data for %s'),
                             '<i>' . Descriptions::get($systemPath) . '</i>'
@@ -669,6 +680,8 @@ class FormDisplay
                         $result = false;
                         continue;
                     }
+
+                    $_POST[$key] = false;
                 }
 
                 // user preferences allow/disallow
@@ -687,17 +700,19 @@ class FormDisplay
                 switch ($type) {
                     case 'double':
                         $_POST[$key] = Util::requestString($_POST[$key]);
+                        // phpcs:ignore Generic.PHP.ForbiddenFunctions
                         settype($_POST[$key], 'float');
                         break;
                     case 'boolean':
                     case 'integer':
                         if ($_POST[$key] !== '') {
                             $_POST[$key] = Util::requestString($_POST[$key]);
+                            // phpcs:ignore Generic.PHP.ForbiddenFunctions
                             settype($_POST[$key], $type);
                         }
                         break;
                     case 'select':
-                        $successfullyValidated = $this->_validateSelect(
+                        $successfullyValidated = $this->validateSelect(
                             $_POST[$key],
                             $form->getOptionValueList($systemPath)
                         );
@@ -718,7 +733,7 @@ class FormDisplay
                         ? $_POST[$key]
                         : explode("\n", $_POST[$key]);
                         $_POST[$key] = [];
-                        $this->_fillPostArrayParameters($postValues, $key);
+                        $this->fillPostArrayParameters($postValues, $key);
                         break;
                 }
 
@@ -738,7 +753,8 @@ class FormDisplay
         // save forms
         if (! $allowPartialSave && ! empty($this->_errors)) {
             // don't look for non-critical errors
-            $this->_validate();
+            $this->validate();
+
             return $result;
         }
 
@@ -776,7 +792,7 @@ class FormDisplay
         }
 
         // don't look for non-critical errors
-        $this->_validate();
+        $this->validate();
 
         return $result;
     }
@@ -804,9 +820,11 @@ class FormDisplay
         if ($test == 'Import' || $test == 'Export') {
             return '';
         }
+
         return MySQLDocumentation::getDocumentationLink(
             'config',
-            'cfg_' . $this->_getOptName($path)
+            'cfg_' . $this->getOptName($path),
+            Sanitize::isSetup() ? '../' : './'
         );
     }
 
@@ -817,7 +835,7 @@ class FormDisplay
      *
      * @return string
      */
-    private function _getOptName($path)
+    private function getOptName($path)
     {
         return str_replace(['Servers/1/', '/'], ['Servers/', '_'], $path);
     }
@@ -827,7 +845,7 @@ class FormDisplay
      *
      * @return void
      */
-    private function _loadUserprefsInfo()
+    private function loadUserprefsInfo()
     {
         if ($this->_userprefsKeys !== null) {
             return;
@@ -849,7 +867,7 @@ class FormDisplay
      *
      * @return void
      */
-    private function _setComments($systemPath, array &$opts)
+    private function setComments($systemPath, array &$opts)
     {
         // RecodingEngine - mark unavailable types
         if ($systemPath == 'RecodingEngine') {
@@ -913,16 +931,20 @@ class FormDisplay
             $opts['comment'] = $comment;
             $opts['comment_warning'] = true;
         }
-        if (! $GLOBALS['PMA_Config']->get('is_setup')) {
-            if ($systemPath == 'MaxDbList' || $systemPath == 'MaxTableList'
-                || $systemPath == 'QueryHistoryMax'
-            ) {
-                $opts['comment'] = sprintf(
-                    __('maximum %s'),
-                    $GLOBALS['cfg'][$systemPath]
-                );
-            }
+        if ($GLOBALS['PMA_Config']->get('is_setup')) {
+            return;
         }
+
+        if ($systemPath != 'MaxDbList' && $systemPath != 'MaxTableList'
+            && $systemPath != 'QueryHistoryMax'
+        ) {
+            return;
+        }
+
+        $opts['comment'] = sprintf(
+            __('maximum %s'),
+            $GLOBALS['cfg'][$systemPath]
+        );
     }
 
     /**
@@ -933,13 +955,15 @@ class FormDisplay
      *
      * @return void
      */
-    private function _fillPostArrayParameters(array $postValues, $key)
+    private function fillPostArrayParameters(array $postValues, $key)
     {
         foreach ($postValues as $v) {
             $v = Util::requestString($v);
-            if ($v !== '') {
-                $_POST[$key][] = $v;
+            if ($v === '') {
+                continue;
             }
+
+            $_POST[$key][] = $v;
         }
     }
 }

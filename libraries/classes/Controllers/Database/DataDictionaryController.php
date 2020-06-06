@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\Controllers\Database\DataDictionaryController
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Database;
@@ -13,7 +14,6 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Util;
-use function count;
 use function str_replace;
 
 class DataDictionaryController extends AbstractController
@@ -60,11 +60,11 @@ class DataDictionaryController extends AbstractController
                 $tableName
             )->getStatusInfo('TABLE_COMMENT');
 
-            list(, $primaryKeys, , ) = Util::processIndexData(
+            [, $primaryKeys] = Util::processIndexData(
                 $this->dbi->getTableIndexes($this->db, $tableName)
             );
 
-            list($foreigners, $hasRelation) = $this->relation->getRelationsAndStatus(
+            [$foreigners, $hasRelation] = $this->relation->getRelationsAndStatus(
                 ! empty($cfgRelation['relation']),
                 $this->db,
                 $tableName

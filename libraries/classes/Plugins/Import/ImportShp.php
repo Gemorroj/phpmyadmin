@@ -2,6 +2,7 @@
 /**
  * ESRI Shape file import plugin for phpMyAdmin
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Import;
@@ -17,6 +18,7 @@ use PhpMyAdmin\Plugins\ImportPlugin;
 use PhpMyAdmin\Properties\Plugins\ImportPluginProperties;
 use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\ZipExtension;
+use const LOCK_EX;
 use function count;
 use function extension_loaded;
 use function file_exists;
@@ -29,7 +31,6 @@ use function strlen;
 use function substr;
 use function trim;
 use function unlink;
-use const LOCK_EX;
 
 /**
  * Handles the import for ESRI Shape files
@@ -43,9 +44,11 @@ class ImportShp extends ImportPlugin
     {
         parent::__construct();
         $this->setProperties();
-        if (extension_loaded('zip')) {
-            $this->zipExtension = new ZipExtension();
+        if (! extension_loaded('zip')) {
+            return;
         }
+
+        $this->zipExtension = new ZipExtension();
     }
 
     /**
@@ -201,6 +204,7 @@ class ImportShp extends ImportPlugin
                     __('MySQL Spatial Extension does not support ESRI type "%s".')
                 );
                 $message->addParam($shp->getShapeName());
+
                 return;
         }
 

@@ -1,7 +1,6 @@
 <?php
-/**
- * Holds the PhpMyAdmin\Database\Designer\DesignerTable class
- */
+
+declare(strict_types=1);
 
 namespace PhpMyAdmin\Database\Designer;
 
@@ -71,10 +70,8 @@ class DesignerTable
 
     /**
      * Get the displayed field
-     *
-     * @return string
      */
-    public function getDisplayField()
+    public function getDisplayField(): ?string
     {
         return $this->displayField;
     }

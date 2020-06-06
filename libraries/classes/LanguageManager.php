@@ -2,11 +2,13 @@
 /**
  * Hold the PhpMyAdmin\LanguageManager class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Html\MySQLDocumentation;
+use const E_USER_ERROR;
 use function closedir;
 use function count;
 use function explode;
@@ -19,7 +21,6 @@ use function strtolower;
 use function trigger_error;
 use function uasort;
 use function ucfirst;
-use const E_USER_ERROR;
 
 /**
  * Language selection manager
@@ -690,6 +691,7 @@ class LanguageManager
         if (self::$instance === null) {
             self::$instance = new LanguageManager();
         }
+
         return self::$instance;
     }
 
@@ -719,12 +721,14 @@ class LanguageManager
             $path = LOCALE_PATH
                 . '/' . $file
                 . '/LC_MESSAGES/phpmyadmin.mo';
-            if ($file != '.'
-                && $file != '..'
-                && @file_exists($path)
+            if ($file == '.'
+                || $file == '..'
+                || ! @file_exists($path)
             ) {
-                $result[] = $file;
+                continue;
             }
+
+            $result[] = $file;
         }
         /* Close the handle */
         closedir($handle);
@@ -749,6 +753,7 @@ class LanguageManager
                 );
             }
         }
+
         return $this->_available_locales;
     }
 
@@ -794,6 +799,7 @@ class LanguageManager
                 }
             }
         }
+
         return $this->_available_languages;
     }
 
@@ -806,9 +812,10 @@ class LanguageManager
     public function sortedLanguages()
     {
         $this->availableLanguages();
-        uasort($this->_available_languages, function ($a, $b) {
+        uasort($this->_available_languages, static function (Language $a, Language $b) {
             return $a->cmp($b);
         });
+
         return $this->_available_languages;
     }
 
@@ -826,6 +833,7 @@ class LanguageManager
         if (isset($langs[$code])) {
             return $langs[$code];
         }
+
         return false;
     }
 
@@ -926,15 +934,17 @@ class LanguageManager
     public function showWarnings()
     {
         // now, that we have loaded the language strings we can send the errors
-        if ($this->_lang_failed_cfg
-            || $this->_lang_failed_cookie
-            || $this->_lang_failed_request
+        if (! $this->_lang_failed_cfg
+            && ! $this->_lang_failed_cookie
+            && ! $this->_lang_failed_request
         ) {
-            trigger_error(
-                __('Ignoring unsupported language code.'),
-                E_USER_ERROR
-            );
+            return;
         }
+
+        trigger_error(
+            __('Ignoring unsupported language code.'),
+            E_USER_ERROR
+        );
     }
 
     /**

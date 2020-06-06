@@ -2,11 +2,16 @@
 /**
  * Holds the PhpMyAdmin\ErrorReport class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Utils\HttpRequest;
+use const E_USER_WARNING;
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+use const PHP_VERSION;
 use function count;
 use function http_build_query;
 use function json_encode;
@@ -16,10 +21,6 @@ use function parse_str;
 use function parse_url;
 use function preg_match;
 use function str_replace;
-use const E_USER_WARNING;
-use const JSON_PRETTY_PRINT;
-use const JSON_UNESCAPED_SLASHES;
-use const PHP_VERSION;
 
 /**
  * Error reporting functions used to generate and submit error reports
@@ -113,12 +114,12 @@ class ErrorReport
             $exception['stack'] = $this->translateStacktrace($exception['stack']);
 
             if (isset($exception['url'])) {
-                list($uri, $scriptName) = $this->sanitizeUrl($exception['url']);
+                [$uri, $scriptName] = $this->sanitizeUrl($exception['url']);
                 $exception['uri'] = $uri;
                 $report['script_name'] = $scriptName;
                 unset($exception['url']);
             } elseif (isset($_POST['url'])) {
-                list($uri, $scriptName) = $this->sanitizeUrl($_POST['url']);
+                [$uri, $scriptName] = $this->sanitizeUrl($_POST['url']);
                 $exception['uri'] = $uri;
                 $report['script_name'] = $scriptName;
                 unset($_POST['url']);
@@ -146,19 +147,21 @@ class ErrorReport
             }
             foreach ($_SESSION['prev_errors'] as $errorObj) {
                 /** @var Error $errorObj */
-                if ($errorObj->getLine()
-                    && $errorObj->getType()
-                    && $errorObj->getNumber() != E_USER_WARNING
+                if (! $errorObj->getLine()
+                    || ! $errorObj->getType()
+                    || $errorObj->getNumber() == E_USER_WARNING
                 ) {
-                    $errors[$i++] = [
-                        'lineNum' => $errorObj->getLine(),
-                        'file' => $errorObj->getFile(),
-                        'type' => $errorObj->getType(),
-                        'msg' => $errorObj->getOnlyMessage(),
-                        'stackTrace' => $errorObj->getBacktrace(5),
-                        'stackhash' => $errorObj->getHash(),
-                    ];
+                    continue;
                 }
+
+                $errors[$i++] = [
+                    'lineNum' => $errorObj->getLine(),
+                    'file' => $errorObj->getFile(),
+                    'type' => $errorObj->getType(),
+                    'msg' => $errorObj->getOnlyMessage(),
+                    'stackTrace' => $errorObj->getBacktrace(5),
+                    'stackhash' => $errorObj->getHash(),
+                ];
             }
 
             // if there were no 'actual' errors to be submitted.
@@ -215,6 +218,7 @@ class ErrorReport
         }
 
         $uri = $scriptName . '?' . $query;
+
         return [
             $uri,
             $scriptName,
@@ -226,7 +230,7 @@ class ErrorReport
      *
      * @param array $report the report info to be sent
      *
-     * @return string|null|bool the reply of the server
+     * @return string|bool|null the reply of the server
      */
     public function send(array $report)
     {
@@ -251,16 +255,19 @@ class ErrorReport
     {
         foreach ($stack as &$level) {
             foreach ($level['context'] as &$line) {
-                if (mb_strlen($line) > 80) {
-                    $line = mb_substr($line, 0, 75) . '//...';
+                if (mb_strlen($line) <= 80) {
+                    continue;
                 }
+
+                $line = mb_substr($line, 0, 75) . '//...';
             }
-            list($uri, $scriptName) = $this->sanitizeUrl($level['url']);
+            [$uri, $scriptName] = $this->sanitizeUrl($level['url']);
             $level['uri'] = $uri;
             $level['scriptname'] = $scriptName;
             unset($level['url']);
         }
         unset($level);
+
         return $stack;
     }
 

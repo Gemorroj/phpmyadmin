@@ -2,12 +2,13 @@
 /**
  * Test for PhpMyAdmin\Gis\GisGeometry
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Gis;
 
 use PhpMyAdmin\Gis\GisGeometryCollection;
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use TCPDF;
 use function function_exists;
 use function imagecreatetruecolor;
@@ -18,7 +19,7 @@ use function preg_match;
 /**
  * Tests for PhpMyAdmin\Gis\GisGeometryCollection class
  */
-class GisGeometryCollectionTest extends TestCase
+class GisGeometryCollectionTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -31,6 +32,7 @@ class GisGeometryCollectionTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = GisGeometryCollection::singleton();
     }
 
@@ -42,6 +44,7 @@ class GisGeometryCollectionTest extends TestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -217,6 +220,7 @@ class GisGeometryCollectionTest extends TestCase
         if (! function_exists('imagecreatetruecolor')) {
             $this->markTestSkipped('GD extension missing!');
         }
+
         return [
             [
                 'GEOMETRYCOLLECTION(POLYGON((35 10,10 20,15 40,45 45,35 10),'
@@ -291,11 +295,11 @@ class GisGeometryCollectionTest extends TestCase
     /**
      * Test for prepareRowAsSvg
      *
-     * @param string $spatial    string to parse
-     * @param string $label      field label
-     * @param string $line_color line color
-     * @param array  $scale_data scaling parameters
-     * @param string $output     expected output
+     * @param string $spatial   string to parse
+     * @param string $label     field label
+     * @param string $lineColor line color
+     * @param array  $scaleData scaling parameters
+     * @param string $output    expected output
      *
      * @return void
      *
@@ -304,15 +308,15 @@ class GisGeometryCollectionTest extends TestCase
     public function testPrepareRowAsSvg(
         $spatial,
         $label,
-        $line_color,
-        $scale_data,
+        $lineColor,
+        $scaleData,
         $output
     ) {
         $string = $this->object->prepareRowAsSvg(
             $spatial,
             $label,
-            $line_color,
-            $scale_data
+            $lineColor,
+            $scaleData
         );
         $this->assertEquals(1, preg_match($output, $string));
         // assertMatchesRegularExpression added in 9.1
@@ -321,8 +325,8 @@ class GisGeometryCollectionTest extends TestCase
             $this->object->prepareRowAsSvg(
                 $spatial,
                 $label,
-                $line_color,
-                $scale_data
+                $lineColor,
+                $scaleData
             )
         );
     }

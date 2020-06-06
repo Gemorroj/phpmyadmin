@@ -2,6 +2,7 @@
 /**
  * HTML Generator
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Html;
@@ -25,13 +26,10 @@ use Williamdes\MariaDBMySQLKBS\KBException;
 use Williamdes\MariaDBMySQLKBS\Search as KBSearch;
 use function addslashes;
 use function array_key_exists;
-use function array_merge;
-use function basename;
 use function ceil;
 use function count;
 use function explode;
 use function floor;
-use function htmlentities;
 use function htmlspecialchars;
 use function implode;
 use function in_array;
@@ -50,10 +48,8 @@ use function str_replace;
 use function strlen;
 use function strncmp;
 use function strpos;
-use function trigger_error;
 use function trim;
 use function urlencode;
-use const E_USER_NOTICE;
 
 /**
  * HTML Generator
@@ -87,7 +83,7 @@ class Generator
     public static function linkToVarDocumentation(
         string $name,
         bool $useMariaDB = false,
-        string $text = null
+        ?string $text = null
     ): string {
         $html = '';
         try {
@@ -105,6 +101,7 @@ class Generator
         } catch (KBException $e) {
             unset($e);// phpstan workaround
         }
+
         return $html;
     }
 
@@ -122,6 +119,7 @@ class Generator
         } else {
             $classClause = '';
         }
+
         return '<span' . $classClause . '>'
             . self::getImage('b_help')
             . '<span class="hide">' . $message . '</span>'
@@ -174,6 +172,7 @@ class Generator
             $GLOBALS['cfg']['DefaultTabDatabase'],
             'database'
         );
+
         return '<a href="'
             . $scriptName
             . Url::getCommon(['db' => $database], strpos($scriptName, '?') === false ? '?' : '&')
@@ -212,38 +211,8 @@ class Generator
                 )
             );
         }
-        return $ext_but_html;
-    }
 
-    /**
-     * Generates a slider effect (jQjuery)
-     * Takes care of generating the initial <div> and the link
-     * controlling the slider; you have to generate the </div> yourself
-     * after the sliding section.
-     *
-     * @param string      $id              the id of the <div> on which to apply the effect
-     * @param string      $message         the message to show as a link
-     * @param string|null $overrideDefault override InitialSlidersState config
-     *
-     * @return string         html div element
-     *
-     * @throws Throwable
-     * @throws Twig_Error_Loader
-     * @throws Twig_Error_Runtime
-     * @throws Twig_Error_Syntax
-     */
-    public static function getDivForSliderEffect($id = '', $message = '', $overrideDefault = null): string
-    {
-        $template = new Template();
-        return $template->render(
-            'div_for_slider_effect',
-            [
-                'id' => $id,
-                'initial_sliders_state' => $overrideDefault != null ? $overrideDefault
-                    : $GLOBALS['cfg']['InitialSlidersState'],
-                'message' => $message,
-            ]
-        );
+        return $ext_but_html;
     }
 
     /**
@@ -361,10 +330,11 @@ class Generator
             $class = '';
             $message = __('SSL is used');
         }
+
         return '<span class="' . $class . '">' . $message . '</span> ' . MySQLDocumentation::showDocumentation(
-                'setup',
-                'ssl'
-            );
+            'setup',
+            'ssl'
+        );
     }
 
     /**
@@ -480,6 +450,10 @@ class Generator
             $retval .= '>' . $function . '</option>' . "\n";
         } // end for
 
+        $retval .= '<option value="PHP_PASSWORD_HASH" title="';
+        $retval .= __('The PHP function password_hash() with default options.');
+        $retval .= '">' . __('password_hash() PHP function') . '</option>' . "\n";
+
         return $retval;
     }
 
@@ -537,6 +511,7 @@ class Generator
         if ($showText) {
             $retval .= '<br>';
         }
+
         return $retval;
     }
 
@@ -596,7 +571,7 @@ class Generator
      *
      * @return string query resuls
      */
-    private static function _generateRowQueryOutput($sqlQuery): string
+    private static function generateRowQueryOutput($sqlQuery): string
     {
         $ret = '';
         $result = $GLOBALS['dbi']->query($sqlQuery);
@@ -623,6 +598,7 @@ class Generator
             }
             $ret .= $devider;
         }
+
         return $ret;
     }
 
@@ -647,7 +623,6 @@ class Generator
         $type = 'notice'
     ): string {
         global $cfg;
-        $template = new Template();
         $retval = '';
 
         if ($sql_query === null) {
@@ -704,10 +679,10 @@ class Generator
                 // data), the parser chokes; so avoid parsing the query
                 $query_too_big = true;
                 $query_base = mb_substr(
-                        $sql_query,
-                        0,
-                        $cfg['MaxCharactersInDisplayedSQL']
-                    ) . '[...]';
+                    $sql_query,
+                    0,
+                    $cfg['MaxCharactersInDisplayedSQL']
+                ) . '[...]';
             } else {
                 $query_base = $sql_query;
             }
@@ -783,7 +758,7 @@ class Generator
                         ) . ']';
                     $url = 'https://mariadb.org/explain_analyzer/analyze/'
                         . '?client=phpMyAdmin&raw_explain='
-                        . urlencode(self::_generateRowQueryOutput($sql_query));
+                        . urlencode(self::generateRowQueryOutput($sql_query));
                     $explain_link .= ' ['
                         . self::linkOrButton(
                             htmlspecialchars('url.php?url=' . urlencode($url)),
@@ -867,16 +842,9 @@ class Generator
             // be checked, which would reexecute an INSERT, for example
             if (! empty($refresh_link) && Util::profilingSupported()) {
                 $retval .= '<input type="hidden" name="profiling_form" value="1">';
-                $retval .= $template->render(
-                    'checkbox',
-                    [
-                        'html_field_name' => 'profiling',
-                        'label' => __('Profiling'),
-                        'checked' => isset($_SESSION['profiling']),
-                        'onclick' => true,
-                        'html_field_id' => '',
-                    ]
-                );
+                $retval .= '<input type="checkbox" name="profiling" id="profilingCheckbox" class="autosubmit"';
+                $retval .= isset($_SESSION['profiling']) ? ' checked' : '';
+                $retval .= '> <label for="profilingCheckbox">' . __('Profiling') . '</label>';
             }
             $retval .= '</form>';
 
@@ -1031,9 +999,9 @@ class Generator
                 $error_msg .= '<p><strong>' . __('Static analysis:')
                     . '</strong></p>';
                 $error_msg .= '<p>' . sprintf(
-                        __('%d errors were found during analysis.'),
-                        count($errors)
-                    ) . '</p>';
+                    __('%d errors were found during analysis.'),
+                    count($errors)
+                ) . '</p>';
                 $error_msg .= '<p><ol>';
                 $error_msg .= implode(
                     ParserError::format(
@@ -1046,8 +1014,8 @@ class Generator
 
             // Display the SQL query and link to MySQL documentation.
             $error_msg .= '<p><strong>' . __('SQL query:') . '</strong>' . self::showCopyToClipboard(
-                    $sql_query
-                ) . "\n";
+                $sql_query
+            ) . "\n";
             $formattedSqlToLower = mb_strtolower($formatted_sql);
 
             // TODO: Show documentation for all statement types.
@@ -1181,9 +1149,11 @@ class Generator
         // set all other attributes
         $attr_str = '';
         foreach ($attributes as $key => $value) {
-            if (! in_array($key, ['alt', 'title'])) {
-                $attr_str .= ' ' . $key . '="' . $value . '"';
+            if (in_array($key, ['alt', 'title'])) {
+                continue;
             }
+
+            $attr_str .= ' ' . $key . '="' . $value . '"';
         }
 
         // override the alt attribute
@@ -1194,6 +1164,7 @@ class Generator
 
         // generate the IMG tag
         $template = '<img src="themes/dot.gif" title="%s" alt="%s"%s>';
+
         return sprintf($template, $title, $alt, $attr_str);
     }
 
@@ -1429,11 +1400,12 @@ class Generator
             && mb_strlen($sqlQuery) > $cfg['MaxCharactersInDisplayedSQL']
         ) {
             $sqlQuery = mb_substr(
-                    $sqlQuery,
-                    0,
-                    $cfg['MaxCharactersInDisplayedSQL']
-                ) . '[...]';
+                $sqlQuery,
+                0,
+                $cfg['MaxCharactersInDisplayedSQL']
+            ) . '[...]';
         }
+
         return '<code class="sql"><pre>' . "\n"
             . htmlspecialchars($sqlQuery) . "\n"
             . '</pre></code>';
@@ -1453,7 +1425,7 @@ class Generator
 
         foreach ($GLOBALS['dbi']->types->getColumns() as $key => $value) {
             if (is_array($value)) {
-                $retval .= "<optgroup label='" . htmlspecialchars($key) . "'>";
+                $retval .= '<optgroup label="' . htmlspecialchars($key) . '">';
                 foreach ($value as $subvalue) {
                     if ($subvalue == $selected) {
                         $retval .= sprintf(
@@ -1488,6 +1460,7 @@ class Generator
                 );
             }
         }
+
         return $retval;
     }
 }

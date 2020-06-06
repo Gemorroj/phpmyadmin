@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\Controllers\Server\BinlogController
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
@@ -22,7 +23,9 @@ use function array_key_exists;
 class BinlogController extends AbstractController
 {
     /**
-     * array binary log files
+     * binary log files
+     *
+     * @var array
      */
     protected $binaryLogs;
 

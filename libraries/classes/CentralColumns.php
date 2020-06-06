@@ -2,6 +2,7 @@
 /**
  * Functions for displaying user preferences pages
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -149,6 +150,7 @@ class CentralColumns
             DatabaseInterface::CONNECT_CONTROL
         );
         $this->handleColumnExtra($has_list);
+
         return $has_list;
     }
 
@@ -279,6 +281,7 @@ class CentralColumns
         $isNull = $def['Null'] == 'NO' ? '0' : '1';
         $extra = $def['Extra'] ?? '';
         $default = $def['Default'] ?? '';
+
         return 'INSERT INTO '
             . Util::backquote($central_list_table) . ' '
             . 'VALUES ( \'' . $this->dbi->escapeString($db) . '\' ,'
@@ -410,6 +413,7 @@ class CentralColumns
                 }
             }
         }
+
         return $message;
     }
 
@@ -455,9 +459,11 @@ class CentralColumns
             $has_list = $this->findExistingColNames($database, $cols);
             foreach ($field_select as $table) {
                 foreach ($fields[$table] as $column) {
-                    if (! in_array($column, $has_list)) {
-                        $colNotExist[] = "'" . $column . "'";
+                    if (in_array($column, $has_list)) {
+                        continue;
                     }
+
+                    $colNotExist[] = "'" . $column . "'";
                 }
             }
         } else {
@@ -468,9 +474,11 @@ class CentralColumns
             $cols = trim($cols, ',');
             $has_list = $this->findExistingColNames($database, $cols);
             foreach ($field_select as $column) {
-                if (! in_array($column, $has_list)) {
-                    $colNotExist[] = "'" . $column . "'";
+                if (in_array($column, $has_list)) {
+                    continue;
                 }
+
+                $colNotExist[] = "'" . $column . "'";
             }
         }
         if (! empty($colNotExist)) {
@@ -499,6 +507,7 @@ class CentralColumns
                 )
             );
         }
+
         return $message;
     }
 
@@ -528,50 +537,55 @@ class CentralColumns
                 );
                 //column definition can only be changed if
                 //it is not referenced by another column
-                if ($column_status['isEditable']) {
-                    $query .= ' MODIFY ' . Util::backquote($column['col_name']) . ' '
-                        . $this->dbi->escapeString($column['col_type']);
-                    if ($column['col_length']) {
-                        $query .= '(' . $column['col_length'] . ')';
-                    }
-
-                    $query .= ' ' . $column['col_attribute'];
-                    if ($column['col_isNull']) {
-                        $query .= ' NULL';
-                    } else {
-                        $query .= ' NOT NULL';
-                    }
-
-                    $query .= ' ' . $column['col_extra'];
-                    if ($column['col_default']) {
-                        if ($column['col_default'] != 'CURRENT_TIMESTAMP'
-                            && $column['col_default'] != 'current_timestamp()') {
-                            $query .= ' DEFAULT \'' . $this->dbi->escapeString(
-                                (string) $column['col_default']
-                            ) . '\'';
-                        } else {
-                            $query .= ' DEFAULT ' . $this->dbi->escapeString(
-                                $column['col_default']
-                            );
-                        }
-                    }
-                    $query .= ',';
+                if (! $column_status['isEditable']) {
+                    continue;
                 }
+
+                $query .= ' MODIFY ' . Util::backquote($column['col_name']) . ' '
+                    . $this->dbi->escapeString($column['col_type']);
+                if ($column['col_length']) {
+                    $query .= '(' . $column['col_length'] . ')';
+                }
+
+                $query .= ' ' . $column['col_attribute'];
+                if ($column['col_isNull']) {
+                    $query .= ' NULL';
+                } else {
+                    $query .= ' NOT NULL';
+                }
+
+                $query .= ' ' . $column['col_extra'];
+                if ($column['col_default']) {
+                    if ($column['col_default'] != 'CURRENT_TIMESTAMP'
+                        && $column['col_default'] != 'current_timestamp()') {
+                        $query .= ' DEFAULT \'' . $this->dbi->escapeString(
+                            (string) $column['col_default']
+                        ) . '\'';
+                    } else {
+                        $query .= ' DEFAULT ' . $this->dbi->escapeString(
+                            $column['col_default']
+                        );
+                    }
+                }
+                $query .= ',';
             }
             $query = trim($query, ' ,') . ';';
-            if (! $this->dbi->tryQuery($query)) {
-                if ($message === true) {
-                    $message = Message::error(
-                        $this->dbi->getError()
-                    );
-                } else {
-                    $message->addText(
-                        $this->dbi->getError(),
-                        '<br>'
-                    );
-                }
+            if ($this->dbi->tryQuery($query)) {
+                continue;
+            }
+
+            if ($message === true) {
+                $message = Message::error(
+                    $this->dbi->getError()
+                );
+            } else {
+                $message->addText(
+                    $this->dbi->getError(),
+                    '<br>'
+                );
             }
         }
+
         return $message;
     }
 
@@ -678,6 +692,7 @@ class CentralColumns
                 $this->dbi->getError(DatabaseInterface::CONNECT_CONTROL)
             );
         }
+
         return true;
     }
 
@@ -720,6 +735,7 @@ class CentralColumns
                 return $message;
             }
         }
+
         return true;
     }
 
@@ -733,9 +749,7 @@ class CentralColumns
      */
     private function getEditTableHeader(array $headers): string
     {
-        return $this->template->render('database/central_columns/edit_table_header', [
-            'headers' => $headers,
-        ]);
+        return $this->template->render('database/central_columns/edit_table_header', ['headers' => $headers]);
     }
 
     /**
@@ -760,9 +774,7 @@ class CentralColumns
                 'column_meta' => [
                     'Field' => $row['col_name'],
                 ],
-                'cfg_relation' => [
-                    'centralcolumnswork' => false,
-                ],
+                'cfg_relation' => ['centralcolumnswork' => false],
                 'max_rows' => $this->maxRows,
             ])
             . '</td>';
@@ -868,6 +880,7 @@ class CentralColumns
             ])
             . '</td>';
         $tableHtml .= '</tr>';
+
         return $tableHtml;
     }
 
@@ -917,6 +930,7 @@ class CentralColumns
             DatabaseInterface::CONNECT_CONTROL
         );
         $this->handleColumnExtra($columns_list);
+
         return $columns_list;
     }
 
@@ -947,6 +961,7 @@ class CentralColumns
             'b_drop',
             'remove_from_central_columns'
         );
+
         return $html_output;
     }
 
@@ -1036,6 +1051,7 @@ class CentralColumns
         $html .= '</table>';
         $html .= $this->getEditTableFooter();
         $html .= '</form>';
+
         return $html;
     }
 
@@ -1096,12 +1112,15 @@ class CentralColumns
         );
         $selectColHtml = '';
         foreach ($columns as $column) {
-            if (! in_array($column, $existing_cols)) {
-                $selectColHtml .= '<option value="' . htmlspecialchars($column) . '">'
-                    . htmlspecialchars($column)
-                    . '</option>';
+            if (in_array($column, $existing_cols)) {
+                continue;
             }
+
+            $selectColHtml .= '<option value="' . htmlspecialchars($column) . '">'
+                . htmlspecialchars($column)
+                . '</option>';
         }
+
         return $selectColHtml;
     }
 

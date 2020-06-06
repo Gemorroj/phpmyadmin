@@ -2,6 +2,7 @@
 /**
  * set of functions for user group handling
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Server;
@@ -60,6 +61,7 @@ class UserGroups
         }
         $dbi->freeResult($result);
         $template = new Template();
+
         return $template->render('/server/user_groups/user_listings', [
             'user_group_special_chars' => $userGroupSpecialChars,
             'num_rows' => $numRows,
@@ -137,6 +139,7 @@ class UserGroups
         $addUserIcon = Generator::getIcon('b_usradd');
         $dbi->freeResult($result);
         $template = new Template();
+
         return $template->render('server/user_groups/user_groups', [
             'action' => $action,
             'hidden_inputs' => $hidden_inputs ?? '',
@@ -162,12 +165,15 @@ class UserGroups
         $tabNames = [];
         $tabs = Util::getMenuTabList($level);
         foreach ($tabs as $tab => $tabName) {
-            if (! isset($row[$level . '_' . $tab])
-                || $row[$level . '_' . $tab] == 'Y'
+            if (isset($row[$level . '_' . $tab])
+                && $row[$level . '_' . $tab] != 'Y'
             ) {
-                $tabNames[] = $tabName;
+                continue;
             }
+
+            $tabNames[] = $tabName;
         }
+
         return implode(', ', $tabNames);
     }
 
@@ -267,6 +273,7 @@ class UserGroups
         );
 
         $template = new Template();
+
         return $template->render('/server/user_groups/edit_user_groups', [
             'user_group' => $userGroup,
             'edit_user_group_special_chars' => $editUserGroupSpecialChars,
@@ -298,6 +305,7 @@ class UserGroups
             $tabDetails[] =$tabDetail;
         }
         $template = new Template();
+
         return $template->render('/server/user_groups/tab_list', [
             'title' => $title,
             'level' => $level,

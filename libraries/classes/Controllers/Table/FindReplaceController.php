@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -48,7 +49,7 @@ class FindReplaceController extends AbstractController
         parent::__construct($response, $dbi, $template, $db, $table);
         $this->_columnNames = [];
         $this->_columnTypes = [];
-        $this->_loadTableInfo();
+        $this->loadTableInfo();
         $this->_connectionCharSet = $this->dbi->fetchValue(
             'SELECT @@character_set_connection'
         );
@@ -60,6 +61,7 @@ class FindReplaceController extends AbstractController
 
         if (isset($_POST['find'])) {
             $this->findAction();
+
             return;
         }
 
@@ -78,7 +80,7 @@ class FindReplaceController extends AbstractController
     /**
      * Gets all the columns of a table along with their types.
      */
-    private function _loadTableInfo(): void
+    private function loadTableInfo(): void
     {
         // Gets the list and number of columns
         $columns = $this->dbi->getColumns(
@@ -204,7 +206,7 @@ class FindReplaceController extends AbstractController
     ) {
         $column = $this->_columnNames[$columnIndex];
         if ($useRegex) {
-            $result = $this->_getRegexReplaceRows(
+            $result = $this->getRegexReplaceRows(
                 $columnIndex,
                 $find,
                 $replaceWith,
@@ -252,7 +254,7 @@ class FindReplaceController extends AbstractController
      *
      * @return array|bool Array containing original values, replaced values and count
      */
-    private function _getRegexReplaceRows(
+    private function getRegexReplaceRows(
         $columnIndex,
         $find,
         $replaceWith,
@@ -308,6 +310,7 @@ class FindReplaceController extends AbstractController
                 );
             }
         }
+
         return $result;
     }
 
@@ -331,7 +334,7 @@ class FindReplaceController extends AbstractController
     ) {
         $column = $this->_columnNames[$columnIndex];
         if ($useRegex) {
-            $toReplace = $this->_getRegexReplaceRows(
+            $toReplace = $this->getRegexReplaceRows(
                 $columnIndex,
                 $find,
                 $replaceWith,

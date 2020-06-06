@@ -2,17 +2,17 @@
 /**
  * Test for Index class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Index;
-use function implode;
 
 /**
  * Test for Index class
  */
-class IndexTest extends PmaTestCase
+class IndexTest extends AbstractTestCase
 {
     private $_params = [];
 
@@ -21,6 +21,7 @@ class IndexTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->_params['Schema'] = 'PMA_Schema';
         $this->_params['Table'] = 'PMA_Table';
         $this->_params['Key_name'] = 'PMA_Key_name';

@@ -2,6 +2,7 @@
 /**
  * Class with Font related methods.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -239,6 +240,7 @@ class Font
                 break;
         }
         $textWidth = $count * $fontSize;
+
         return (int) ceil($textWidth * $modifier);
     }
 }

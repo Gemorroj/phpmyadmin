@@ -2,6 +2,7 @@
 /**
  * Functionality for the navigation tree
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Navigation\Nodes;
@@ -63,6 +64,7 @@ class NodeColumn extends Node
                 $retval = 'pause';
                 break;
         }
+
         return $retval;
     }
 
@@ -78,14 +80,16 @@ class NodeColumn extends Node
         $retval = $item['name'];
         $flag = 0;
         foreach ($item as $key => $value) {
-            if (! empty($value) && $key != 'name') {
-                $flag == 0 ? $retval .= ' (' : $retval .= ', ';
-                $flag = 1;
-                $retval .= $this->getTruncateValue($key, $value);
+            if (empty($value) || $key == 'name') {
+                continue;
             }
+
+            $flag == 0 ? $retval .= ' (' : $retval .= ', ';
+            $flag = 1;
+            $retval .= $this->getTruncateValue($key, $value);
         }
-        $retval .= ')';
-        return $retval;
+
+        return $retval . ')';
     }
 
     /**

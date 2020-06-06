@@ -2,6 +2,7 @@
 /**
  * functions for displaying server status sub item: monitor
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Server\Status;
@@ -54,7 +55,7 @@ class Monitor
         $sysinfo = $cpuload = $memory = 0;
 
         /* Accumulate all required variables and data */
-        list($serverVars, $statusVars, $ret) = $this->getJsonForChartingDataGet(
+        [$serverVars, $statusVars, $ret] = $this->getJsonForChartingDataGet(
             $ret,
             $serverVars,
             $statusVars,
@@ -89,6 +90,7 @@ class Monitor
         $ret = $this->getJsonForChartingDataSet($ret, $statusVarValues, $serverVarValues);
 
         $ret['x'] = (int) (microtime(true) * 1000);
+
         return $ret;
     }
 
@@ -122,6 +124,7 @@ class Monitor
                 }
             }
         }
+
         return $ret;
     }
 
@@ -151,7 +154,7 @@ class Monitor
             foreach ($chartNodes as $nodeId => $nodeDataPoints) {
                 // For each data point in the series (usually just 1)
                 foreach ($nodeDataPoints as $pointId => $dataPoint) {
-                    list($serverVars, $statusVars, $ret[$chartId][$nodeId][$pointId])
+                    [$serverVars, $statusVars, $ret[$chartId][$nodeId][$pointId]]
                         = $this->getJsonForChartingDataSwitch(
                             $dataPoint['type'],
                             $dataPoint['name'],
@@ -165,6 +168,7 @@ class Monitor
                 } /* foreach */
             } /* foreach */
         }
+
         return [
             $serverVars,
             $statusVars,
@@ -323,6 +327,7 @@ class Monitor
         $return['numRows'] = count($return['rows']);
 
         $this->dbi->freeResult($result);
+
         return $return;
     }
 
@@ -400,10 +405,10 @@ class Monitor
 
                             // Group this value, thus do not add to the result list
                             continue 2;
-                        } else {
-                            $insertTablesFirst = $i;
-                            $insertTables[$matches[2]] += $row['#'] - 1;
                         }
+
+                        $insertTablesFirst = $i;
+                        $insertTables[$matches[2]] += $row['#'] - 1;
                     }
                     // No break here
 
@@ -480,13 +485,12 @@ class Monitor
             }
         }
 
-        $loggingVars = $this->dbi->fetchResult(
+        return $this->dbi->fetchResult(
             'SHOW GLOBAL VARIABLES WHERE Variable_name IN'
             . ' ("general_log","slow_query_log","long_query_time","log_output")',
             0,
             1
         );
-        return $loggingVars;
     }
 
     /**
@@ -509,7 +513,9 @@ class Monitor
             $this->dbi->selectDb($database);
         }
 
-        if ($profiling = Util::profilingSupported()) {
+        $profiling = Util::profilingSupported();
+
+        if ($profiling) {
             $this->dbi->query('SET PROFILING=1;');
         }
 
@@ -544,6 +550,7 @@ class Monitor
             }
             $this->dbi->freeResult($result);
         }
+
         return $return;
     }
 }

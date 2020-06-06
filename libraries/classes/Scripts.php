@@ -2,10 +2,12 @@
 /**
  * JavaScript management
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use function defined;
 use function md5;
 use function strpos;
 
@@ -61,7 +63,7 @@ class Scripts
             return;
         }
 
-        $has_onload = $this->_eventBlacklist($filename);
+        $has_onload = $this->eventBlacklist($filename);
         $this->_files[$hash] = [
             'has_onload' => $has_onload,
             'filename' => $filename,
@@ -91,7 +93,7 @@ class Scripts
      *
      * @return int 1 to fire up the event, 0 not to
      */
-    private function _eventBlacklist($filename)
+    private function eventBlacklist($filename)
     {
         if (strpos($filename, 'jquery') !== false
             || strpos($filename, 'codemirror') !== false
@@ -136,6 +138,7 @@ class Scripts
                 'fire' => $file['has_onload'],
             ];
         }
+
         return $retval;
     }
 

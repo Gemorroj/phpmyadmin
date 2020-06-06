@@ -210,6 +210,7 @@ AJAX.registerTeardown('sql.js', function () {
     $('body').off('click', '#simulate_dml');
     $('body').off('keyup', '#sqlqueryform');
     $('body').off('click', 'form[name="resultsForm"].ajax button[name="submit_mult"], form[name="resultsForm"].ajax input[name="submit_mult"]');
+    $(document).off('submit', '#maxRowsForm');
 });
 
 /**
@@ -844,12 +845,49 @@ AJAX.registerOnload('sql.js', function () {
     $('body').on('click', 'form[name="resultsForm"].ajax button[name="submit_mult"], form[name="resultsForm"].ajax input[name="submit_mult"]', function (e) {
         e.preventDefault();
         var $button = $(this);
+        var action = $button.val();
         var $form = $button.closest('form');
         var argsep = CommonParams.get('arg_separator');
-        var submitData = $form.serialize() + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true' + argsep + 'submit_mult=' + $button.val();
+        var submitData = $form.serialize() + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true' + argsep;
         Functions.ajaxShowMessage();
         AJAX.source = $form;
-        $.post($form.attr('action'), submitData, AJAX.responseHandler);
+
+        var url;
+        if (action === 'edit') {
+            submitData = submitData + argsep + 'default_action=update';
+            url = 'index.php?route=/table/change/rows';
+        } else if (action === 'copy') {
+            submitData = submitData + argsep + 'default_action=insert';
+            url = 'index.php?route=/table/change/rows';
+        } else if (action === 'export') {
+            url = 'index.php?route=/table/export/rows';
+        } else if (action === 'delete') {
+            url = 'index.php?route=/table/delete/confirm';
+        } else {
+            return;
+        }
+
+        $.post(url, submitData, AJAX.responseHandler);
+    });
+
+    $(document).on('submit', '#maxRowsForm', function () {
+        var unlimNumRows = $(this).find('input[name="unlim_num_rows"]').val();
+
+        var maxRowsCheck = Functions.checkFormElementInRange(
+            this,
+            'session_max_rows',
+            Messages.strNotValidRowNumber,
+            1
+        );
+        var posCheck = Functions.checkFormElementInRange(
+            this,
+            'pos',
+            Messages.strNotValidRowNumber,
+            0,
+            unlimNumRows > 0 ? unlimNumRows - 1 : null
+        );
+
+        return maxRowsCheck && posCheck;
     });
 }); // end $()
 

@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for table related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium\Table;
@@ -63,11 +64,6 @@ class StructureTest extends TestBase
         $this->byCssSelector("input[name='do_save_data']")->click();
 
         $this->waitAjax();
-        $this->waitForElement(
-            'xpath',
-            "//div[@class='alert alert-success' and contains(., "
-            . "'Table test_table has been altered successfully')]"
-        );
 
         $this->byPartialLinkText('Structure')->click();
         $this->waitAjax();
@@ -104,12 +100,6 @@ class StructureTest extends TestBase
         $this->byId('field_0_1')->clear();
         $this->byId('field_0_1')->sendKeys('val3');
         $this->byCssSelector("input[name='do_save_data']")->click();
-
-        $this->waitForElement(
-            'xpath',
-            "//div[@class='alert alert-success' and contains(., "
-            . "'Table test_table has been altered successfully')]"
-        );
 
         $this->byPartialLinkText('Structure')->click();
         $this->waitAjax();

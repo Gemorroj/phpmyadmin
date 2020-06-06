@@ -2,6 +2,7 @@
 /**
  * Formset processing library
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Setup;
@@ -37,6 +38,7 @@ class FormProcessing
         if (! $form_display->process(false)) {
             // handle form view and failed POST
             echo $form_display->getDisplay(true, true);
+
             return;
         }
 
@@ -45,6 +47,7 @@ class FormProcessing
             $response = Response::getInstance();
             $response->disable();
             $response->generateHeader303('index.php' . Url::getCommonRaw());
+
             return;
         }
 

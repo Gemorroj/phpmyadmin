@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'services' =>
     [
@@ -328,9 +330,7 @@ return [
         [
             'class' => PhpMyAdmin\Controllers\ImportStatusController::class,
             'arguments' =>
-            [
-                'template' => '@template',
-            ],
+            ['template' => '@template'],
         ],
         PhpMyAdmin\Controllers\LicenseController::class =>
         [
@@ -758,6 +758,18 @@ return [
                 'relation' => '@relation',
             ],
         ],
+        PhpMyAdmin\Controllers\Table\DeleteController::class =>
+        [
+            'class' => PhpMyAdmin\Controllers\Table\DeleteController::class,
+            'arguments' =>
+                [
+                    'response' => '@response',
+                    'dbi' => '@dbi',
+                    'template' => '@template',
+                    'db' => '%db%',
+                    'table' => '%table%',
+                ],
+        ],
         PhpMyAdmin\Controllers\Table\ExportController::class =>
         [
             'class' => PhpMyAdmin\Controllers\Table\ExportController::class,
@@ -898,18 +910,6 @@ return [
                 'insertEdit' => '@insert_edit',
                 'transformations' => '@transformations',
                 'relation' => '@relation',
-            ],
-        ],
-        PhpMyAdmin\Controllers\Table\RowActionController::class =>
-        [
-            'class' => PhpMyAdmin\Controllers\Table\RowActionController::class,
-            'arguments' =>
-            [
-                'response' => '@response',
-                'dbi' => '@dbi',
-                'template' => '@template',
-                'db' => '%db%',
-                'table' => '%table%',
             ],
         ],
         PhpMyAdmin\Controllers\Table\SearchController::class =>

@@ -2,6 +2,7 @@
 /**
  * Saved searches managing
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -89,6 +90,7 @@ class SavedSearches
         }
 
         $this->_id = $searchId;
+
         return $this;
     }
 
@@ -112,6 +114,7 @@ class SavedSearches
     public function setSearchName($searchName)
     {
         $this->_searchName = $searchName;
+
         return $this;
     }
 
@@ -135,6 +138,7 @@ class SavedSearches
     public function setConfig(array $config)
     {
         $this->_config = $config;
+
         return $this;
     }
 
@@ -160,6 +164,7 @@ class SavedSearches
     {
         if ($json === true && is_string($criterias)) {
             $this->_criterias = json_decode($criterias, true);
+
             return $this;
         }
 
@@ -179,9 +184,11 @@ class SavedSearches
         $data['criteriaColumnCount'] = count($criterias['criteriaColumn']);
 
         foreach ($aListFieldsToGet as $field) {
-            if (isset($criterias[$field])) {
-                $data[$field] = $criterias[$field];
+            if (! isset($criterias[$field])) {
+                continue;
             }
+
+            $data[$field] = $criterias[$field];
         }
 
         /* Limit amount of rows */
@@ -199,6 +206,7 @@ class SavedSearches
         }
 
         $this->_criterias = $data;
+
         return $this;
     }
 
@@ -222,6 +230,7 @@ class SavedSearches
     public function setUsername($username)
     {
         $this->_username = $username;
+
         return $this;
     }
 
@@ -245,6 +254,7 @@ class SavedSearches
     public function setDbname($dbname)
     {
         $this->_dbname = $dbname;
+
         return $this;
     }
 
@@ -356,6 +366,7 @@ class SavedSearches
             . "`search_data` = '"
             . $GLOBALS['dbi']->escapeString(json_encode($this->getCriterias())) . "' "
             . 'WHERE id = ' . $this->getId();
+
         return (bool) $this->relation->queryAsControlUser($sqlQuery);
     }
 
@@ -413,8 +424,9 @@ class SavedSearches
             . "WHERE id = '" . $GLOBALS['dbi']->escapeString($this->getId()) . "' ";
 
         $resList = $this->relation->queryAsControlUser($sqlQuery);
+        $oneResult = $GLOBALS['dbi']->fetchArray($resList);
 
-        if (($oneResult = $GLOBALS['dbi']->fetchArray($resList)) === false) {
+        if ($oneResult === false) {
             $message = Message::error(__('Error while loading the search.'));
             $response = Response::getInstance();
             $response->setRequestStatus($message->isSuccess());

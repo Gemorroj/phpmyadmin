@@ -2,10 +2,21 @@
 /**
  * Manages the rendering of pages in PMA
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use const JSON_ERROR_CTRL_CHAR;
+use const JSON_ERROR_DEPTH;
+use const JSON_ERROR_INF_OR_NAN;
+use const JSON_ERROR_NONE;
+use const JSON_ERROR_RECURSION;
+use const JSON_ERROR_STATE_MISMATCH;
+use const JSON_ERROR_SYNTAX;
+use const JSON_ERROR_UNSUPPORTED_TYPE;
+use const JSON_ERROR_UTF8;
+use const PHP_SAPI;
 use function chdir;
 use function defined;
 use function explode;
@@ -19,16 +30,6 @@ use function json_last_error;
 use function mb_strlen;
 use function register_shutdown_function;
 use function strlen;
-use const JSON_ERROR_CTRL_CHAR;
-use const JSON_ERROR_DEPTH;
-use const JSON_ERROR_INF_OR_NAN;
-use const JSON_ERROR_NONE;
-use const JSON_ERROR_RECURSION;
-use const JSON_ERROR_STATE_MISMATCH;
-use const JSON_ERROR_SYNTAX;
-use const JSON_ERROR_UNSUPPORTED_TYPE;
-use const JSON_ERROR_UTF8;
-use const PHP_SAPI;
 
 /**
  * Singleton class used to manage the rendering of pages in PMA
@@ -223,6 +224,7 @@ class Response
         if (empty(self::$_instance)) {
             self::$_instance = new Response();
         }
+
         return self::$_instance;
     }
 
@@ -342,7 +344,7 @@ class Response
      *
      * @return string
      */
-    private function _getDisplay()
+    private function getDisplay()
     {
         // The header may contain nothing at all,
         // if its content was already rendered
@@ -351,6 +353,7 @@ class Response
         $retval  = $this->_header->getDisplay();
         $retval .= $this->_HTML;
         $retval .= $this->_footer->getDisplay();
+
         return $retval;
     }
 
@@ -359,9 +362,9 @@ class Response
      *
      * @return void
      */
-    private function _htmlResponse()
+    private function htmlResponse()
     {
-        echo $this->_getDisplay();
+        echo $this->getDisplay();
     }
 
     /**
@@ -369,16 +372,17 @@ class Response
      *
      * @return void
      */
-    private function _ajaxResponse()
+    private function ajaxResponse()
     {
         /* Avoid wrapping in case we're disabled */
         if ($this->_isDisabled) {
-            echo $this->_getDisplay();
+            echo $this->getDisplay();
+
             return;
         }
 
         if (! isset($this->_JSON['message'])) {
-            $this->_JSON['message'] = $this->_getDisplay();
+            $this->_JSON['message'] = $this->getDisplay();
         } elseif ($this->_JSON['message'] instanceof Message) {
             $this->_JSON['message'] = $this->_JSON['message']->getDisplay();
         }
@@ -517,9 +521,9 @@ class Response
             $this->_HTML = $buffer->getContents();
         }
         if ($this->isAjax()) {
-            $this->_ajaxResponse();
+            $this->ajaxResponse();
         } else {
-            $this->_htmlResponse();
+            $this->htmlResponse();
         }
         $buffer->flush();
         exit;
@@ -534,6 +538,7 @@ class Response
      */
     public function header($text)
     {
+        // phpcs:ignore SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
         header($text);
     }
 
@@ -573,9 +578,11 @@ class Response
         } else {
             $header .= 'Web server is down';
         }
-        if (PHP_SAPI !== 'cgi-fcgi') {
-            $this->header($header);
+        if (PHP_SAPI === 'cgi-fcgi') {
+            return;
         }
+
+        $this->header($header);
     }
 
     /**
@@ -606,6 +613,7 @@ class Response
             $this->setRequestStatus(false);
             // redirect_flag redirects to the login page
             $this->addJSON('redirect_flag', '1');
+
             return true;
         }
 
@@ -615,6 +623,7 @@ class Response
         $header->setTitle('phpMyAdmin');
         $header->disableMenuAndConsole();
         $header->disableWarnings();
+
         return false;
     }
 }

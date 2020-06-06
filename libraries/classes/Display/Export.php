@@ -2,6 +2,7 @@
 /**
  * functions for displaying server, database and table export
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Display;
@@ -13,6 +14,7 @@ use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Plugins;
 use PhpMyAdmin\Plugins\ExportPlugin;
+use PhpMyAdmin\Query\Utilities;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Table;
@@ -78,7 +80,7 @@ class Export
 
         $databases = [];
         foreach ($GLOBALS['dblist']->databases as $currentDb) {
-            if ($GLOBALS['dbi']->isSystemSchema($currentDb, true)) {
+            if (Utilities::isSystemSchema($currentDb, true)) {
                 continue;
             }
             $isSelected = false;
@@ -102,9 +104,7 @@ class Export
             ];
         }
 
-        return $this->template->render('display/export/select_options', [
-            'databases' => $databases,
-        ]);
+        return $this->template->render('display/export/select_options', ['databases' => $databases]);
     }
 
     /**
@@ -201,9 +201,7 @@ class Export
             $exportMethod = $cfg['Export']['method'];
         }
 
-        return $this->template->render('display/export/method', [
-            'export_method' => $exportMethod,
-        ]);
+        return $this->template->render('display/export/method', ['export_method' => $exportMethod]);
     }
 
     /**
@@ -232,9 +230,8 @@ class Export
     private function getHtmlForOptionsFormatDropdown($exportList)
     {
         $dropdown = Plugins::getChoice('Export', 'what', $exportList, 'format');
-        return $this->template->render('display/export/format_dropdown', [
-            'dropdown' => $dropdown,
-        ]);
+
+        return $this->template->render('display/export/format_dropdown', ['dropdown' => $dropdown]);
     }
 
     /**
@@ -563,6 +560,7 @@ class Export
         $html .= $this->getHtmlForAliasModalDialog();
         $html .= $this->getHtmlForOptionsOutput($exportType);
         $html .= $this->getHtmlForOptionsFormat($exportList);
+
         return $html;
     }
 
@@ -645,6 +643,7 @@ class Export
         $html .= $this->template->render('export/alias_add');
 
         $html .= '</div>';
+
         return $html;
     }
 
@@ -737,6 +736,7 @@ class Export
         );
 
         $html .= '</form>';
+
         return $html;
     }
 

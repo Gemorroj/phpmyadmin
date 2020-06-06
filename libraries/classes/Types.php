@@ -2,6 +2,7 @@
 /**
  * SQL data types definition
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -391,6 +392,7 @@ class Types
                     . ' (JavaScript Object Notation) documents'
                 );
         }
+
         return '';
     }
 
@@ -419,14 +421,12 @@ class Types
             case 'BOOLEAN':
             case 'SERIAL':
                 return 'NUMBER';
-
             case 'DATE':
             case 'DATETIME':
             case 'TIMESTAMP':
             case 'TIME':
             case 'YEAR':
                 return 'DATE';
-
             case 'CHAR':
             case 'VARCHAR':
             case 'TINYTEXT':
@@ -442,7 +442,6 @@ class Types
             case 'ENUM':
             case 'SET':
                 return 'CHAR';
-
             case 'GEOMETRY':
             case 'POINT':
             case 'LINESTRING':
@@ -452,7 +451,6 @@ class Types
             case 'MULTIPOLYGON':
             case 'GEOMETRYCOLLECTION':
                 return 'SPATIAL';
-
             case 'JSON':
                 return 'JSON';
         }
@@ -516,8 +514,8 @@ class Types
                 ) {
                     $ret = array_diff($ret, ['INET6_NTOA']);
                 }
-                return $ret;
 
+                return $ret;
             case 'DATE':
                 return [
                     'CURRENT_DATE',
@@ -536,7 +534,6 @@ class Types
                     'UTC_TIMESTAMP',
                     'YEAR',
                 ];
-
             case 'NUMBER':
                 $ret = [
                     'ABS',
@@ -597,8 +594,8 @@ class Types
                 ) {
                     $ret = array_diff($ret, ['INET6_ATON']);
                 }
-                return $ret;
 
+                return $ret;
             case 'SPATIAL':
                 if ($serverVersion >= 50600) {
                     return [
@@ -621,29 +618,30 @@ class Types
                         'ST_PolyFromWKB',
                         'ST_MPolyFromWKB',
                     ];
-                } else {
-                    return [
-                        'GeomFromText',
-                        'GeomFromWKB',
-
-                        'GeomCollFromText',
-                        'LineFromText',
-                        'MLineFromText',
-                        'PointFromText',
-                        'MPointFromText',
-                        'PolyFromText',
-                        'MPolyFromText',
-
-                        'GeomCollFromWKB',
-                        'LineFromWKB',
-                        'MLineFromWKB',
-                        'PointFromWKB',
-                        'MPointFromWKB',
-                        'PolyFromWKB',
-                        'MPolyFromWKB',
-                    ];
                 }
+
+                return [
+                    'GeomFromText',
+                    'GeomFromWKB',
+
+                    'GeomCollFromText',
+                    'LineFromText',
+                    'MLineFromText',
+                    'PointFromText',
+                    'MPointFromText',
+                    'PolyFromText',
+                    'MPolyFromText',
+
+                    'GeomCollFromWKB',
+                    'LineFromWKB',
+                    'MLineFromWKB',
+                    'PointFromWKB',
+                    'MPointFromWKB',
+                    'PolyFromWKB',
+                    'MPolyFromWKB',
+                ];
         }
+
         return [];
     }
 
@@ -657,6 +655,7 @@ class Types
     public function getFunctions($type)
     {
         $class = $this->getTypeClass($type);
+
         return $this->getFunctionsClass($class);
     }
 
@@ -674,6 +673,7 @@ class Types
             $this->getFunctionsClass('UUID')
         );
         sort($ret);
+
         return $ret;
     }
 
@@ -701,7 +701,7 @@ class Types
      *
      * @return string[]
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         $isMariaDB = $this->_dbi->isMariaDB();
         $serverVersion = $this->_dbi->getVersion();
@@ -775,9 +775,7 @@ class Types
 
         if (($isMariaDB && $serverVersion > 100207)
             || (! $isMariaDB && $serverVersion >= 50708)) {
-            $ret['JSON'] = [
-                'JSON',
-            ];
+            $ret['JSON'] = ['JSON'];
         }
 
         return $ret;
@@ -858,6 +856,7 @@ class Types
         $relevantArray = $signed
             ? $min_max_data['signed']
             : $min_max_data['unsigned'];
+
         return $relevantArray[$type] ?? [
             '',
             '',

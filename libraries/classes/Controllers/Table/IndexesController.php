@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -35,6 +36,7 @@ class IndexesController extends AbstractController
 
         if (isset($_POST['do_save_data'])) {
             $this->doSaveData($index);
+
             return;
         }
 

@@ -2,6 +2,7 @@
 /**
  * Superclass for the Property Group classes.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Properties\Options;
@@ -92,6 +93,7 @@ abstract class OptionsPropertyGroup extends OptionsPropertyItem implements Count
         if ($this->_properties === null) {
             return 0;
         }
+
         return count($this->_properties);
     }
 
